@@ -28,25 +28,13 @@ public abstract class Product {
         this.availableQuantity = availableQuantity;
     }
 
-    // ===== GETTERS =====
-    
     /**
-     * Gets the product ID.
+     * Abstract method that must be implemented by subclasses.
+     * Each subclass must provide its own specific description.
      * 
-     * @return The product ID
+     * @return A String with the complete description of the product
      */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Gets the product title.
-     * 
-     * @return The product title
-     */
-    public String getTitle() {
-        return title;
-    }
+    public abstract String getDescription();
 
     /**
      * Gets the product price.
@@ -66,8 +54,6 @@ public abstract class Product {
         return availableQuantity;
     }
 
-    // ===== SETTERS =====
-    
     /**
      * Updates the available quantity in stock.
      * 
@@ -76,14 +62,4 @@ public abstract class Product {
     public void setAvailableQuantity(int quantity) {
         this.availableQuantity = quantity;
     }
-
-    // ===== ABSTRACT METHOD =====
-    
-    /**
-     * Abstract method that must be implemented by subclasses.
-     * Each subclass must provide its own specific description.
-     * 
-     * @return A String with the complete description of the product
-     */
-    public abstract String getDescription();
 }
