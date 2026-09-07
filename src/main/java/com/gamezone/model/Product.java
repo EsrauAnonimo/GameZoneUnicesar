@@ -29,6 +29,16 @@ public abstract class Product {
     }
 
     /**
+     * Gets the product ID.
+     * Needed for stock update functionality.
+     * 
+     * @return The product ID
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
      * Abstract method that must be implemented by subclasses.
      * Each subclass must provide its own specific description.
      * 
