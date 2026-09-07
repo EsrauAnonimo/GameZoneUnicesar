@@ -2,9 +2,9 @@
 
 ## Team members
 
-esteban vergara (technical leader)- code : 1065595117
-luis gomes (developer 1 - products)- code: 1118821800
-cristian perez (developer 2 - people). code: 1067599993
+##esteban vergara (technical leader)- code : 1065595117
+##luis gomes (developer 1 - products)- code: 1118821800
+##cristian perez (developer 2 - people). code: 1067599993
 
 ### 1. Common and specific attributes
 
