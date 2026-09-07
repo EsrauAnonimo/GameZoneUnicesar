@@ -1,7 +1,6 @@
 # Hierarchy Diagram
 
-This diagram represents the inheritance relationships identified in the domain model.
-It shows only generalization/specialization relationships, without attributes, methods, or associations.
+This diagram illustrates the hierarchical structure of the domain classes, focusing exclusively on inheritance relationships. It does not include details such as attributes, methods, or associations between classes
 
 ```mermaid
 classDiagram
@@ -25,6 +24,4 @@ classDiagram
 ```
 
 ## Notes
-- `Person` and `Product` are abstract classes: they cannot be instantiated directly, since they only exist to group common characteristics of their subclasses.
-- `Customer`, `Seller`, `VideoGame`, and `Console` are concrete classes.
-- Both hierarchies belong exclusively to the `model` layer.
+The classes Person and Product are declared as abstract, meaning they cannot be instantiated directly. Their sole purpose is to encapsulate shared attributes and behavior for their respective subclasses. In contrast, Customer, Seller, VideoGame, and Console are concrete classes that can be instantiated. Both hierarchies are confined to the model layer
