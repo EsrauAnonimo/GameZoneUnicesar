@@ -1,9 +1,11 @@
 package com.gamezone.service;
 
 import com.gamezone.model.Customer;
+import com.gamezone.model.Person;
 import com.gamezone.model.Seller;
 import com.gamezone.persistence.PersonPersistence;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,32 +23,37 @@ public class PersonService {
 
     /**
      * Creates the service and immediately loads the previously stored data,
-     * fulfilling the "load automatically on startup" requirement.
+     * fulfilling the "load automatically on startup" requirement. The
+     * persistence layer returns a single mixed list of Person, which this
+     * service splits into customers and sellers by type.
      *
      * @param personPersistence repository used to read and write person data
      */
     public PersonService(PersonPersistence personPersistence) {
         this.personPersistence = personPersistence;
-        // Carga automática al iniciar la aplicación.
-        this.customers = personPersistence.loadClients();
-        this.sellers = personPersistence.loadVendors();
+        this.customers = new ArrayList<>();
+        this.sellers = new ArrayList<>();
+
+        // Carga automática al iniciar la aplicación: se separa por tipo.
+        List<Person> loadedPeople = personPersistence.loadAll();
+        for (Person person : loadedPeople) {
+            if (person instanceof Customer customer) {
+                customers.add(customer);
+            } else if (person instanceof Seller seller) {
+                sellers.add(seller);
+            }
+        }
     }
 
     /**
-     * Registers a new customer and immediately persists the updated list.
+     * Registers a new customer (already built by the caller) and
+     * immediately persists the updated combined list.
      *
-     * @param name           customer's full name
-     * @param identification customer's identification document
-     * @param phone          customer's phone number
-     * @param email          customer's email
-     * @return the newly created customer
+     * @param customer the customer to register
      */
-    public Customer registerCustomer(String name, String identification, String phone, String email) {
-        String id = UUID.randomUUID().toString();
-        Customer customer = new Customer(id, name, identification, phone, email);
+    public void registerCustomer(Customer customer) {
         customers.add(customer);
-        personPersistence.saveClients(customers); // Guardado automático tras la operación.
-        return customer;
+        saveAll(); // Guardado automático tras la operación.
     }
 
     /**
@@ -110,7 +117,19 @@ public class PersonService {
                     "1065123457", "3007654321", "V002", "Afternoon"));
             sellers.add(new Seller(UUID.randomUUID().toString(), "Maria Rodriguez",
                     "1065123458", "3009876543", "V003", "Evening"));
-            personPersistence.saveVendors(sellers);
+            saveAll();
         }
+    }
+
+    /**
+     * Combines customers and sellers into a single list and delegates the
+     * save to the persistence layer, since PersonPersistence works with one
+     * mixed List&lt;Person&gt; instead of two separate lists.
+     */
+    private void saveAll() {
+        List<Person> allPeople = new ArrayList<>();
+        allPeople.addAll(customers);
+        allPeople.addAll(sellers);
+        personPersistence.save(allPeople);
     }
 }

@@ -1,6 +1,7 @@
 package com.gamezone.persistence;
 
 import com.gamezone.model.Customer;
+import com.gamezone.model.Person;
 import com.gamezone.model.Seller;
 
 import java.io.BufferedReader;
@@ -13,55 +14,69 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles saving and loading Customer and Seller data to and from plain text
- * files. This class belongs to the persistence layer and is the ONLY class
- * in the person module allowed to touch the file system (see
- * docs/analysis.md, questions 9 and 10). It knows nothing about business
- * rules; it only reads and writes data.
+ * Handles saving and loading Person data (both Customers and Sellers) to and
+ * from a single plain text file. This class belongs to the persistence layer
+ * and is the ONLY class in the person module allowed to touch the file
+ * system (see docs/analysis.md, questions 9 and 10). It knows nothing about
+ * business rules; it only reads and writes data.
  */
 public class PersonPersistence {
 
-    // Rutas de los archivos de datos. Formato elegido: texto plano separado por ";".
-    private static final String CLIENTS_FILE = "data/clients.txt";
-    private static final String VENDORS_FILE = "data/vendors.txt";
+    // Un solo archivo para todas las personas. Cada línea empieza con una
+    // etiqueta (CUSTOMER o SELLER) para saber qué subclase reconstruir al cargar.
+    private static final String PEOPLE_FILE = "data/people.txt";
     private static final String SEPARATOR = ";";
 
     /**
-     * Saves the given list of customers to the customers file, overwriting
-     * any previous content.
+     * Saves the given list of people (customers and sellers mixed) to the
+     * people file, overwriting any previous content.
      *
-     * @param customers list of customers to persist
+     * @param people list of people to persist
      */
-    public void saveClients(List<Customer> customers) {
-        // Cada cliente se escribe como una línea: id;name;identification;phone;email
+    public void save(List<Person> people) {
         ensureDataFolderExists();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(CLIENTS_FILE))) {
-            for (Customer customer : customers) {
-                writer.write(String.join(SEPARATOR,
-                        customer.getId(),
-                        customer.getName(),
-                        customer.getIdentification(),
-                        customer.getPhone(),
-                        customer.getEmail()));
-                writer.newLine();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(PEOPLE_FILE))) {
+            for (Person person : people) {
+                if (person instanceof Customer customer) {
+                    // Línea: CUSTOMER;id;name;identification;phone;email
+                    writer.write(String.join(SEPARATOR,
+                            "CUSTOMER",
+                            customer.getId(),
+                            customer.getName(),
+                            customer.getIdentification(),
+                            customer.getPhone(),
+                            customer.getEmail()));
+                    writer.newLine();
+                } else if (person instanceof Seller seller) {
+                    // Línea: SELLER;id;name;identification;phone;employeeCode;workShift
+                    writer.write(String.join(SEPARATOR,
+                            "SELLER",
+                            seller.getId(),
+                            seller.getName(),
+                            seller.getIdentification(),
+                            seller.getPhone(),
+                            seller.getEmployeeCode(),
+                            seller.getWorkShift()));
+                    writer.newLine();
+                }
             }
         } catch (IOException e) {
-            System.out.println("Error saving customers: " + e.getMessage());
+            System.out.println("Error saving people: " + e.getMessage());
         }
     }
 
     /**
-     * Loads all customers stored in the customers file.
+     * Loads all people (customers and sellers) stored in the people file.
      *
-     * @return list of customers found in the file (empty list if the file
-     *         does not exist yet, e.g. on the very first execution)
+     * @return list of people found in the file (empty list if the file does
+     *         not exist yet, e.g. on the very first execution)
      */
-    public List<Customer> loadClients() {
-        List<Customer> customers = new ArrayList<>();
-        File file = new File(CLIENTS_FILE);
+    public List<Person> loadAll() {
+        List<Person> people = new ArrayList<>();
+        File file = new File(PEOPLE_FILE);
         if (!file.exists()) {
             // Primera ejecución: aún no hay archivo, se retorna lista vacía.
-            return customers;
+            return people;
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
@@ -70,64 +85,17 @@ public class PersonPersistence {
                     continue;
                 }
                 String[] parts = line.split(SEPARATOR);
-                customers.add(new Customer(parts[0], parts[1], parts[2], parts[3], parts[4]));
-            }
-        } catch (IOException e) {
-            System.out.println("Error loading customers: " + e.getMessage());
-        }
-        return customers;
-    }
-
-    /**
-     * Saves the given list of sellers to the sellers file, overwriting any
-     * previous content.
-     *
-     * @param sellers list of sellers to persist
-     */
-    public void saveVendors(List<Seller> sellers) {
-        // Cada vendedor se escribe como una línea: id;name;identification;phone;employeeCode;workShift
-        ensureDataFolderExists();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(VENDORS_FILE))) {
-            for (Seller seller : sellers) {
-                writer.write(String.join(SEPARATOR,
-                        seller.getId(),
-                        seller.getName(),
-                        seller.getIdentification(),
-                        seller.getPhone(),
-                        seller.getEmployeeCode(),
-                        seller.getWorkShift()));
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.out.println("Error saving sellers: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Loads all sellers stored in the sellers file.
-     *
-     * @return list of sellers found in the file (empty list if the file does
-     *         not exist yet)
-     */
-    public List<Seller> loadVendors() {
-        List<Seller> sellers = new ArrayList<>();
-        File file = new File(VENDORS_FILE);
-        if (!file.exists()) {
-            return sellers;
-        }
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) {
-                    continue;
+                String type = parts[0];
+                if (type.equals("CUSTOMER")) {
+                    people.add(new Customer(parts[1], parts[2], parts[3], parts[4], parts[5]));
+                } else if (type.equals("SELLER")) {
+                    people.add(new Seller(parts[1], parts[2], parts[3], parts[4], parts[5], parts[6]));
                 }
-                String[] parts = line.split(SEPARATOR);
-                sellers.add(new Seller(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
             }
         } catch (IOException e) {
-            System.out.println("Error loading sellers: " + e.getMessage());
+            System.out.println("Error loading people: " + e.getMessage());
         }
-        return sellers;
+        return people;
     }
 
     /**
