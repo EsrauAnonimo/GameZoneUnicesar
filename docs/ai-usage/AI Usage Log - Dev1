@@ -1,0 +1,27 @@
+Luis gomes
+Git and GitHub
+Used AI mainly for guidance on the team's Git workflow: cloning the repository, creating and switching branches (feature/product-module), and resolving the confusion between local merges and Pull Requests.
+Also used it to understand why pushes to develop were rejected due to branch protection rules, and to correctly interpret the git pull / merge conflict editor (Vim) prompts after the leader merged the Pull Request.
+
+Design decisions
+No design decisions for the Product module were asked directly to the AI.
+The entire architecture — classes, attributes, and methods for Product, VideoGame, Console, ProductPersistence, and ProductService — was strictly dictated by the approved class diagram provided by the team.
+AI was used only to transcribe these exact specifications into code, ensuring the strict visibility rules (private attributes) and the use of @Override annotations were respected.
+
+Java implementation
+AI explained the reasoning and structure needed for the Product module (class hierarchy and layering).
+It helped me understand how to structure ProductService to correctly instantiate and use ProductPersistence to save and load lists.
+It also helped me interpret the necessity of adding a getId() method — which was not explicitly in the diagram — to fulfill the logic required by the updateStock(productId, quantity) method in the Service layer.
+I wrote and adapted the actual implementation based on the diagram, while AI only assisted with syntax and structural logic.
+During implementation, I encountered a NotSerializableException and resolved it by adding implements Serializable and serialVersionUID to Product.
+
+Data files and preloaded data
+I created the data/ folder manually and added a sellers.csv file with 3 preloaded sellers, as required by the workshop.
+The products.dat file is generated automatically by ProductPersistence when the program saves product data.
+
+What I did NOT ask AI to do
+Did not ask AI to answer the Product design questions — those decisions were already made by the team beforehand.
+
+Did not ask AI to generate the Product or Sale diagrams from scratch — they were built from our own analysis. AI only helped with Java syntax and Git commands.
+
+Did not ask AI to make direct pushes or merge the Pull Request; that action was correctly handled by the Technical Lead after review.
