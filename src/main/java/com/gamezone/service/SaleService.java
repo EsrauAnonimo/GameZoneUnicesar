@@ -27,7 +27,7 @@ public class SaleService {
 
         for (Product product : products) {
             if (product.getAvailableQuantity() < 1) {
-                System.out.println("Error: not enough stock for " + product.getTitle());
+                System.out.println("Error: not enough stock for " + product.getId());
                 return;
             }
         }
