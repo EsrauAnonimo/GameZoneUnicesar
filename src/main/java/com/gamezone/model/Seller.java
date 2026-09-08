@@ -1,13 +1,13 @@
 package com.gamezone.model;
 
 /**
- * Represents a vendor (employee) who attends clients and registers sales.
+ * Represents a seller (employee) who attends clients and registers sales.
  */
-public class Vendor extends Person {
+public class Seller extends Person {
 
     // Atributos particulares del vendedor (no los tiene el cliente).
     private String employeeCode;
-    private String shift;
+    private String workshift;
 
     /**
      * Constructs a new Vendor.
@@ -19,11 +19,11 @@ public class Vendor extends Person {
      * @param employeeCode   employee code assigned by the store
      * @param shift          assigned work shift
      */
-    public Vendor(String id, String name, String identification, String phone,
+    public Seller(String id, String name, String identification, String phone,
                    String employeeCode, String shift) {
         super(id, name, identification, phone);
         this.employeeCode = employeeCode;
-        this.shift = shift;
+        this.workshift = shift;
     }
 
     public String getEmployeeCode() {
@@ -34,12 +34,12 @@ public class Vendor extends Person {
         this.employeeCode = employeeCode;
     }
 
-    public String getShift() {
-        return shift;
+    public String getWorkShift() {
+        return workshift;
     }
 
-    public void setShift(String shift) {
-        this.shift = shift;
+    public void setWorkShift(String shift) {
+        this.workshift = shift;
     }
 
     /**
@@ -47,7 +47,8 @@ public class Vendor extends Person {
      */
     @Override
     public String getRoleDescription() {
+        String workShift = null;
         // Descripción concreta para el rol Vendedor.
-        return "Role: Vendor | Employee Code: " + employeeCode + " | Shift: " + shift;
+        return "Role: Seller | Employee Code: " + employeeCode + " | Shift: " + workShift;
     }
 }

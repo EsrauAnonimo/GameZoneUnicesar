@@ -1,7 +1,7 @@
 package com.gamezone.service;
 
 import com.gamezone.model.Customer;
-import com.gamezone.model.Vendor;
+import com.gamezone.model.Seller;
 import com.gamezone.persistence.PersonRepository;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public class PersonService {
 
     private final PersonRepository personRepository;
     private List<Customer> clients;
-    private List<Vendor> vendors;
+    private List<Seller> vendors;
 
     /**
      * Creates the service and immediately loads the previously stored data,
@@ -63,7 +63,7 @@ public class PersonService {
      *
      * @return list of vendors
      */
-    public List<Vendor> listVendors() {
+    public List<Seller> listVendors() {
         return vendors;
     }
 
@@ -88,7 +88,7 @@ public class PersonService {
      * @param id vendor id
      * @return the matching vendor, or null if none is found
      */
-    public Vendor findVendorById(String id) {
+    public Seller findVendorById(String id) {
         return vendors.stream()
                 .filter(vendor -> vendor.getId().equals(id))
                 .findFirst()
@@ -104,11 +104,11 @@ public class PersonService {
     public void preloadVendorsIfEmpty() {
         if (vendors.isEmpty()) {
             // Datos precargados: vendedores que ya trabajan en la tienda.
-            vendors.add(new Vendor(UUID.randomUUID().toString(), "Laura Gomez",
+            vendors.add(new Seller(UUID.randomUUID().toString(), "Laura Gomez",
                     "1065123456", "3001234567", "V001", "Morning"));
-            vendors.add(new Vendor(UUID.randomUUID().toString(), "Carlos Perez",
+            vendors.add(new Seller(UUID.randomUUID().toString(), "Carlos Perez",
                     "1065123457", "3007654321", "V002", "Afternoon"));
-            vendors.add(new Vendor(UUID.randomUUID().toString(), "Maria Rodriguez",
+            vendors.add(new Seller(UUID.randomUUID().toString(), "Maria Rodriguez",
                     "1065123458", "3009876543", "V003", "Evening"));
             personRepository.saveVendors(vendors);
         }

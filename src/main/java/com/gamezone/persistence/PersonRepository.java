@@ -1,7 +1,7 @@
 package com.gamezone.persistence;
 
 import com.gamezone.model.Customer;
-import com.gamezone.model.Vendor;
+import com.gamezone.model.Seller;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -84,18 +84,18 @@ public class PersonRepository {
      *
      * @param vendors list of vendors to persist
      */
-    public void saveVendors(List<Vendor> vendors) {
+    public void saveVendors(List<Seller> vendors) {
         // Cada vendedor se escribe como una línea: id;name;identification;phone;employeeCode;shift
         ensureDataFolderExists();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(VENDORS_FILE))) {
-            for (Vendor vendor : vendors) {
+            for (Seller vendor : vendors) {
                 writer.write(String.join(SEPARATOR,
                         vendor.getId(),
                         vendor.getName(),
                         vendor.getIdentification(),
                         vendor.getPhone(),
                         vendor.getEmployeeCode(),
-                        vendor.getShift()));
+                        vendor.getWorkShift()));
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -109,8 +109,8 @@ public class PersonRepository {
      * @return list of vendors found in the file (empty list if the file does
      *         not exist yet)
      */
-    public List<Vendor> loadVendors() {
-        List<Vendor> vendors = new ArrayList<>();
+    public List<Seller> loadVendors() {
+        List<Seller> vendors = new ArrayList<>();
         File file = new File(VENDORS_FILE);
         if (!file.exists()) {
             return vendors;
@@ -122,7 +122,7 @@ public class PersonRepository {
                     continue;
                 }
                 String[] parts = line.split(SEPARATOR);
-                vendors.add(new Vendor(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
+                vendors.add(new Seller(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
             }
         } catch (IOException e) {
             System.out.println("Error loading vendors: " + e.getMessage());
