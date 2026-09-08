@@ -1,11 +1,15 @@
 package com.gamezone.model;
 
+import java.io.Serializable;
+
 /**
  * Abstract base class that represents a generic product in the GameZone system.
  * This class contains common attributes and behaviors shared by all product types.
  * It cannot be instantiated directly; subclasses must provide specific implementations.
  */
-public abstract class Product {
+public abstract class Product implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     // Private attributes according to the class diagram
     private String id;
