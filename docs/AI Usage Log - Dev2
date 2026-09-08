@@ -1,0 +1,39 @@
+# AI Usage Log — Developer 2 (People Module)
+Team Member: Cristian Andres Perez Gonzalez
+
+## Tool Used
+Claude (Anthropic)
+
+### 1. Conceptual queries on inheritance and abstraction
+Before writing any code, I asked the AI why the `Person` class needed to be abstract rather than instantiable, and which Java mechanism enables this. The explanation I received was that in the context of GameZone's business domain, a generic "person" without a role never exists—it is always either a customer (`Customer`) or a salesperson (`Seller`). Therefore, directly instantiating a `Person` would create an entity with no real business meaning. The `abstract` modifier in Java is precisely the mechanism that prevents executing `new Person(...)`. Armed with this explanation, I understood and justified this design decision in my own words for the `docs/analysis.md` file.
+
+I also clarified why the `getRoleDescription()` method had to be declared as abstract in the base class: it forces every subclass to implement its own version, which serves as a concrete example of polymorphism that I can explain during the project defense.
+
+### 2. Support during initial module implementation
+I asked for assistance drafting the initial code structure for the `Person`, `Client`, `Vendor`, `PersonRepository`, and `PersonService` classes (the initial class names before our naming adjustments), strictly adhering to the assignment requirements: private attributes, getters/setters, an abstract base class, plain-text file persistence, and a strict separation among the model, persistence, and service layers. I manually transcribed each class into NetBeans, reviewed it, and verified that it compiled (`BUILD SUCCESS`) before pushing it to my feature branch with an independent commit for each class.
+
+I thoroughly understand and can explain the purpose of each class, its attributes, and specifically why a customer's purchase history is not stored inside the person class itself: the sales module handles this by querying sales referencing the customer ID, avoiding tight coupling between the people and sales modules.
+
+### 3. Layered architecture breakdown
+I consulted the AI regarding which types of classes belong in each layer (`model`, `persistence`, `service`, `ui`) and the underlying criteria for placement. It became clear that the persistence class is the only one interacting with files, the service class is the only component authorized to call persistence, and the user interface should only communicate directly with the service layer.
+
+### 4. Refactoring class names to match the team-approved class diagram
+After the tech lead reviewed the class diagram and noticed that some entity names did not match what had been approved, I used the AI for step-by-step guidance on renaming using NetBeans' refactoring tool (`Refactor > Rename`) rather than editing raw text manually, avoiding broken file references across the project:
+- `Client` -> `Customer`
+- `Vendor` -> `Seller` (and its attribute `shift` -> `workShift`)
+- `PersonRepository` -> `PersonPersistence`
+- The methods in `PersonService` were also updated for consistency with `Customer`/`Seller` (`registerCustomer`, `listCustomers`, `listSellers`, `findCustomerById`, `findSellerById`).
+
+I executed each of these modifications in its own atomic commit, verifying `Clean and Build` before every push to ensure the project continued to compile without errors.
+
+### 5. Git command explanations and troubleshooting
+I used the AI to understand and resolve various errors encountered while working with Git and GitHub throughout development:
+- `not a git repository`: I was not inside the cloned repository directory.
+- `403 Permission denied`: I lacked collaborator permissions on the repository until the tech lead added me and I accepted the GitHub invitation.
+- `fatal: a branch named 'feature/person-module' already exists`: The branch already existed locally from a previous attempt, so I used `git checkout` instead of `git checkout -b`.
+- A compilation error (`cannot find symbol: method getShift()`) after renaming an attribute via NetBeans refactoring, which was caused by an outdated method call in another class; I fixed it by updating that call to the new getter name.
+
+With this guidance, I understood and applied the complete Git Flow workflow: creating a `feature` branch off `develop`, making atomic commits for every change (one per class and one per bug fix), pushing each commit, and opening a Pull Request into `develop`.
+
+### 6. Excluded uses (Outside permitted policies)
+I did NOT ask the AI to answer the questions in `docs/analysis.md`, nor to generate hierarchy/class/layer diagrams, draft project documentation without my input, or make design decisions for the team (final class names were decided and approved by the tech lead, not the AI). Those components were completed by me or decided by the team; the AI only supported me by explaining concepts and guiding me on proper tool usage (NetBeans and Git) to implement what was already defined.
