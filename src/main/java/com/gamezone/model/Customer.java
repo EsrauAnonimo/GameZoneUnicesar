@@ -5,8 +5,9 @@ package com.gamezone.model;
  * <p>
  * Design note: the purchase history is NOT stored inside this class. It is
  * obtained on demand by the sale service, which searches the sale records
- * that reference this client's id. Keeping it out of Customer avoids coupling
- * the person module with the sale module (see docs/analysis.md, question 5).
+ * that reference this customer's id. Keeping it out of Customer avoids
+ * coupling the person module with the sale module (see docs/analysis.md,
+ * question 5).
  */
 public class Customer extends Person {
 

@@ -1,29 +1,29 @@
 package com.gamezone.model;
 
 /**
- * Represents a seller (employee) who attends clients and registers sales.
+ * Represents a seller (employee) who attends customers and registers sales.
  */
 public class Seller extends Person {
 
     // Atributos particulares del vendedor (no los tiene el cliente).
     private String employeeCode;
-    private String workshift;
+    private String workShift;
 
     /**
-     * Constructs a new Vendor.
+     * Constructs a new Seller.
      *
      * @param id             unique identifier
      * @param name           full name
      * @param identification identification document number
      * @param phone          contact phone number
      * @param employeeCode   employee code assigned by the store
-     * @param shift          assigned work shift
+     * @param workShift      assigned work shift
      */
     public Seller(String id, String name, String identification, String phone,
-                   String employeeCode, String shift) {
+                   String employeeCode, String workShift) {
         super(id, name, identification, phone);
         this.employeeCode = employeeCode;
-        this.workshift = shift;
+        this.workShift = workShift;
     }
 
     public String getEmployeeCode() {
@@ -35,11 +35,11 @@ public class Seller extends Person {
     }
 
     public String getWorkShift() {
-        return workshift;
+        return workShift;
     }
 
-    public void setWorkShift(String shift) {
-        this.workshift = shift;
+    public void setWorkShift(String workShift) {
+        this.workShift = workShift;
     }
 
     /**
@@ -47,7 +47,6 @@ public class Seller extends Person {
      */
     @Override
     public String getRoleDescription() {
-        String workShift = null;
         // Descripción concreta para el rol Vendedor.
         return "Role: Seller | Employee Code: " + employeeCode + " | Shift: " + workShift;
     }

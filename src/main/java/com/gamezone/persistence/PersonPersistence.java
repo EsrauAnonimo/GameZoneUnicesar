@@ -13,13 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles saving and loading Client and Vendor data to and from plain text
+ * Handles saving and loading Customer and Seller data to and from plain text
  * files. This class belongs to the persistence layer and is the ONLY class
  * in the person module allowed to touch the file system (see
  * docs/analysis.md, questions 9 and 10). It knows nothing about business
  * rules; it only reads and writes data.
  */
-public class PersonRepository {
+public class PersonPersistence {
 
     // Rutas de los archivos de datos. Formato elegido: texto plano separado por ";".
     private static final String CLIENTS_FILE = "data/clients.txt";
@@ -27,41 +27,41 @@ public class PersonRepository {
     private static final String SEPARATOR = ";";
 
     /**
-     * Saves the given list of clients to the clients file, overwriting any
-     * previous content.
+     * Saves the given list of customers to the customers file, overwriting
+     * any previous content.
      *
-     * @param clients list of clients to persist
+     * @param customers list of customers to persist
      */
-    public void saveClients(List<Customer> clients) {
+    public void saveClients(List<Customer> customers) {
         // Cada cliente se escribe como una línea: id;name;identification;phone;email
         ensureDataFolderExists();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(CLIENTS_FILE))) {
-            for (Customer client : clients) {
+            for (Customer customer : customers) {
                 writer.write(String.join(SEPARATOR,
-                        client.getId(),
-                        client.getName(),
-                        client.getIdentification(),
-                        client.getPhone(),
-                        client.getEmail()));
+                        customer.getId(),
+                        customer.getName(),
+                        customer.getIdentification(),
+                        customer.getPhone(),
+                        customer.getEmail()));
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.out.println("Error saving clients: " + e.getMessage());
+            System.out.println("Error saving customers: " + e.getMessage());
         }
     }
 
     /**
-     * Loads all clients stored in the clients file.
+     * Loads all customers stored in the customers file.
      *
-     * @return list of clients found in the file (empty list if the file does
-     *         not exist yet, e.g. on the very first execution)
+     * @return list of customers found in the file (empty list if the file
+     *         does not exist yet, e.g. on the very first execution)
      */
     public List<Customer> loadClients() {
-        List<Customer> clients = new ArrayList<>();
+        List<Customer> customers = new ArrayList<>();
         File file = new File(CLIENTS_FILE);
         if (!file.exists()) {
             // Primera ejecución: aún no hay archivo, se retorna lista vacía.
-            return clients;
+            return customers;
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
@@ -70,50 +70,50 @@ public class PersonRepository {
                     continue;
                 }
                 String[] parts = line.split(SEPARATOR);
-                clients.add(new Customer(parts[0], parts[1], parts[2], parts[3], parts[4]));
+                customers.add(new Customer(parts[0], parts[1], parts[2], parts[3], parts[4]));
             }
         } catch (IOException e) {
-            System.out.println("Error loading clients: " + e.getMessage());
+            System.out.println("Error loading customers: " + e.getMessage());
         }
-        return clients;
+        return customers;
     }
 
     /**
-     * Saves the given list of vendors to the vendors file, overwriting any
+     * Saves the given list of sellers to the sellers file, overwriting any
      * previous content.
      *
-     * @param vendors list of vendors to persist
+     * @param sellers list of sellers to persist
      */
-    public void saveVendors(List<Seller> vendors) {
-        // Cada vendedor se escribe como una línea: id;name;identification;phone;employeeCode;shift
+    public void saveVendors(List<Seller> sellers) {
+        // Cada vendedor se escribe como una línea: id;name;identification;phone;employeeCode;workShift
         ensureDataFolderExists();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(VENDORS_FILE))) {
-            for (Seller vendor : vendors) {
+            for (Seller seller : sellers) {
                 writer.write(String.join(SEPARATOR,
-                        vendor.getId(),
-                        vendor.getName(),
-                        vendor.getIdentification(),
-                        vendor.getPhone(),
-                        vendor.getEmployeeCode(),
-                        vendor.getWorkShift()));
+                        seller.getId(),
+                        seller.getName(),
+                        seller.getIdentification(),
+                        seller.getPhone(),
+                        seller.getEmployeeCode(),
+                        seller.getWorkShift()));
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.out.println("Error saving vendors: " + e.getMessage());
+            System.out.println("Error saving sellers: " + e.getMessage());
         }
     }
 
     /**
-     * Loads all vendors stored in the vendors file.
+     * Loads all sellers stored in the sellers file.
      *
-     * @return list of vendors found in the file (empty list if the file does
+     * @return list of sellers found in the file (empty list if the file does
      *         not exist yet)
      */
     public List<Seller> loadVendors() {
-        List<Seller> vendors = new ArrayList<>();
+        List<Seller> sellers = new ArrayList<>();
         File file = new File(VENDORS_FILE);
         if (!file.exists()) {
-            return vendors;
+            return sellers;
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
@@ -122,12 +122,12 @@ public class PersonRepository {
                     continue;
                 }
                 String[] parts = line.split(SEPARATOR);
-                vendors.add(new Seller(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
+                sellers.add(new Seller(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
             }
         } catch (IOException e) {
-            System.out.println("Error loading vendors: " + e.getMessage());
+            System.out.println("Error loading sellers: " + e.getMessage());
         }
-        return vendors;
+        return sellers;
     }
 
     /**
