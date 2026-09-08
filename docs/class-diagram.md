@@ -7,21 +7,26 @@ classDiagram
         <<abstract>>
         -id : String
         -name : String
+        -identification : String
         -phone : String
         +getId() String
         +getName() String
+        +getIdentification() String
         +getPhone() String
+        +getRoleDescription()* String
+        +getFullSummary() String
     }
     class Customer {
         -email : String
         +getEmail() String
+        +getRoleDescription() String
     }
     class Seller {
         -employeeCode : String
         -workShift : String
         +getEmployeeCode() String
+        +getRoleDescription() String
     }
-
     class Product {
         <<abstract>>
         -id : String
@@ -45,7 +50,6 @@ classDiagram
         -generation : String
         +getDescription() String
     }
-
     class Sale {
         -id : String
         -date : LocalDate
@@ -56,16 +60,13 @@ classDiagram
         +calculateTotal() double
         +getProducts() List~Product~
     }
-
     Person <|-- Customer
     Person <|-- Seller
     Product <|-- VideoGame
     Product <|-- Console
-
     Sale "1" --> "1" Customer
     Sale "1" --> "1" Seller
     Sale "1" --> "1..*" Product
-
     %% ===== PERSISTENCE LAYER =====
     class PersonPersistence {
         +save(people : List~Person~) void
@@ -79,11 +80,9 @@ classDiagram
         +save(sales : List~Sale~) void
         +loadAll() List~Sale~
     }
-
     PersonPersistence ..> Person
     ProductPersistence ..> Product
     SalePersistence ..> Sale
-
     %% ===== SERVICE LAYER =====
     class PersonService {
         -persistence : PersonPersistence
@@ -106,12 +105,10 @@ classDiagram
         +getSalesByCustomer(customerId : String) List~Sale~
         +getSalesBySeller(sellerId : String) List~Sale~
     }
-
     PersonService ..> PersonPersistence
     ProductService ..> ProductPersistence
     SaleService ..> SalePersistence
     SaleService ..> ProductService
-
     %% ===== UI LAYER =====
     class ConsoleUI {
         -personService : PersonService
@@ -122,7 +119,6 @@ classDiagram
         +showPersonMenu() void
         +showSaleMenu() void
     }
-
     ConsoleUI ..> PersonService
     ConsoleUI ..> ProductService
     ConsoleUI ..> SaleService
