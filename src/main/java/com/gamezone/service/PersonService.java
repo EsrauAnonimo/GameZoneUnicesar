@@ -1,6 +1,6 @@
 package com.gamezone.service;
 
-import com.gamezone.model.Client;
+import com.gamezone.model.Customer;
 import com.gamezone.model.Vendor;
 import com.gamezone.persistence.PersonRepository;
 
@@ -16,7 +16,7 @@ import java.util.UUID;
 public class PersonService {
 
     private final PersonRepository personRepository;
-    private List<Client> clients;
+    private List<Customer> clients;
     private List<Vendor> vendors;
 
     /**
@@ -41,9 +41,9 @@ public class PersonService {
      * @param email          client's email
      * @return the newly created client
      */
-    public Client registerClient(String name, String identification, String phone, String email) {
+    public Customer registerClient(String name, String identification, String phone, String email) {
         String id = UUID.randomUUID().toString();
-        Client client = new Client(id, name, identification, phone, email);
+        Customer client = new Customer(id, name, identification, phone, email);
         clients.add(client);
         personRepository.saveClients(clients); // Guardado automático tras la operación.
         return client;
@@ -54,7 +54,7 @@ public class PersonService {
      *
      * @return list of clients
      */
-    public List<Client> listClients() {
+    public List<Customer> listClients() {
         return clients;
     }
 
@@ -74,7 +74,7 @@ public class PersonService {
      * @param id client id
      * @return the matching client, or null if none is found
      */
-    public Client findClientById(String id) {
+    public Customer findClientById(String id) {
         return clients.stream()
                 .filter(client -> client.getId().equals(id))
                 .findFirst()

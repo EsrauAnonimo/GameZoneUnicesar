@@ -1,6 +1,6 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.Client;
+import com.gamezone.model.Customer;
 import com.gamezone.model.Vendor;
 
 import java.io.BufferedReader;
@@ -32,11 +32,11 @@ public class PersonRepository {
      *
      * @param clients list of clients to persist
      */
-    public void saveClients(List<Client> clients) {
+    public void saveClients(List<Customer> clients) {
         // Cada cliente se escribe como una línea: id;name;identification;phone;email
         ensureDataFolderExists();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(CLIENTS_FILE))) {
-            for (Client client : clients) {
+            for (Customer client : clients) {
                 writer.write(String.join(SEPARATOR,
                         client.getId(),
                         client.getName(),
@@ -56,8 +56,8 @@ public class PersonRepository {
      * @return list of clients found in the file (empty list if the file does
      *         not exist yet, e.g. on the very first execution)
      */
-    public List<Client> loadClients() {
-        List<Client> clients = new ArrayList<>();
+    public List<Customer> loadClients() {
+        List<Customer> clients = new ArrayList<>();
         File file = new File(CLIENTS_FILE);
         if (!file.exists()) {
             // Primera ejecución: aún no hay archivo, se retorna lista vacía.
@@ -70,7 +70,7 @@ public class PersonRepository {
                     continue;
                 }
                 String[] parts = line.split(SEPARATOR);
-                clients.add(new Client(parts[0], parts[1], parts[2], parts[3], parts[4]));
+                clients.add(new Customer(parts[0], parts[1], parts[2], parts[3], parts[4]));
             }
         } catch (IOException e) {
             System.out.println("Error loading clients: " + e.getMessage());
