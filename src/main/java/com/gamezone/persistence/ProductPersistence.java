@@ -7,11 +7,12 @@ import java.util.List;
 
 /**
  * Persistence class for Product objects.
- * Handles saving and loading products to/from a file.
+ * Handles saving and loading products to/from a file inside the data/ folder.
  */
 public class ProductPersistence {
 
-    private static final String FILE_NAME = "products.dat";
+    // ✅ Ruta actualizada: guarda en data/products.dat
+    private static final String FILE_NAME = "data/products.dat";
 
     /**
      * Saves a list of products to a file.
@@ -19,6 +20,12 @@ public class ProductPersistence {
      * @param products The list of products to save
      */
     public void save(List<Product> products) {
+        // Asegurar que la carpeta data/ existe
+        File dataDir = new File("data");
+        if (!dataDir.exists()) {
+            dataDir.mkdirs();
+        }
+
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
             oos.writeObject(products);
         } catch (IOException e) {
