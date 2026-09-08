@@ -1,35 +1,53 @@
 # GameZone Unicesar
 
-A management system tailored for the GameZone Unicesar video game store.
+Inventory and sales management system for a video game store, developed in Java with a layered architecture.
 
-##  Overview
+## Description
 
-Built with Java using a classic layered architecture, this system takes care of:
-- Products (video games and consoles)
-- People (managing customers and sales staff)
-- Sales processing (with automatic real-time inventory updates)
+GameZone Unicesar is a console-based system that manages products (video games and consoles), people (customers and sellers), and sales, with data persistence between executions.
 
-##  Architecture
+## Technologies
 
-- **Model**: Core domain models and entities
-- **Persistence**: File-based data storage
-- **Service**: Core business logic and rules
-- **UI**: Interactive command-line interface (CLI)
+- **Language:** Java 17
+- **Build tool:** Maven
+- **Persistence:** Java serialization (`.dat` files)
+
+## Architecture
+
+The project is organized into 4 layers within the `com.gamezone` package:
+
+## Prerequisites
+
+- JDK 17 or higher installed
+- Maven installed (or NetBeans's built-in Maven support)
+
+## How to build
+
+From the project root:
+
+```bash
+mvn clean install
+```
+
+## How to run
+
+**Option 1 — From NetBeans:**
+1. Open the project via `File → Open Project`, selecting the `GameZoneUnicesar` root folder
+2. Right-click the project → `Run`
+
+**Option 2 — From terminal, with Maven:**
+```bash
+mvn exec:java -Dexec.mainClass="com.gamezone.Main"
+```
+
+## Preloaded data
+
+On first run, the system automatically creates 3 preloaded sellers in `data/`.
 
 ## Team
 
-| Role | Team Member |
-|------|-------------|
-| Tech Lead | [Esteban Vergara] 
-| Developer 1 | [Luis gomes] 
-| Developer 2 | [Cristian Perez] 
+See [`TEAM.md`](./TEAM.md) for roles, class distribution, and responsibilities.
 
-## 🚀 Getting Started
+## Design documentation
 
-```bash
-# Build & compile
-mvn clean compile
-
-# Launch the application
-mvn exec:java -Dexec.mainClass="com.gamezone.Main"
-```
+See the [`docs/`](./docs) folder for the system analysis and diagrams (hierarchy, class, layers).
