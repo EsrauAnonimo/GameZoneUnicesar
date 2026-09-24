@@ -1,0 +1,4 @@
+type;id;title;price;availableQuantity;extra1;extra2;compatibleConsoleIds
+CONTROLLER;ACC-001;Control Xbox Series Inalambrico;180000;10;inalambrico;;CON-001|CON-002
+CABLE;ACC-002;Cable HDMI 2.1 de 2 metros;45000;25;2.0;HDMI;
+MEMORY;ACC-003;Memoria microSD 128GB;95000;15;128;microSD;CON-001
