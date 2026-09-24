@@ -80,10 +80,6 @@ Accessories are persisted in `data/accessories.csv` using a semicolon (`;`)
 separator. The file uses a type discriminator (`CONTROLLER`, `CABLE`,
 `MEMORY`) to reconstruct the correct subclass when loading.
 
-Columns:
-
-```text
-type;id;title;price;availableQuantity;extra1;extra2;compatibleConsoleIds
 
 ## Team
 
