@@ -43,6 +43,47 @@ mvn exec:java -Dexec.mainClass="com.gamezone.Main"
 ## Preloaded data
 
 On first run, the system automatically creates 3 preloaded sellers in `data/`.
+## Accessory module
+
+GameZone Unicesar now supports a new line of products: video game accessories.
+The system manages three types of accessories: controllers, cables and
+memories, which can be sold together with consoles and video games in the
+same transaction.
+
+### Features
+
+- Register controllers, cables and memories.
+- List all accessories.
+- List accessories by type (`CONTROLLER`, `CABLE`, `MEMORY`).
+- Query accessories compatible with a specific console.
+- Include accessories in sales together with consoles and video games.
+- Update accessory stock automatically after each sale.
+
+### New menu options
+
+The console menu now includes an **Accessory Management** submenu with the
+following options:
+
+1. Register a new controller.
+2. Register a new cable.
+3. Register a new memory.
+4. List all accessories.
+5. List accessories by type.
+6. Query accessories compatible with a console.
+
+The **Sales Management** submenu now allows selecting accessories in addition
+to products when registering a new sale.
+
+### Data
+
+Accessories are persisted in `data/accessories.csv` using a semicolon (`;`)
+separator. The file uses a type discriminator (`CONTROLLER`, `CABLE`,
+`MEMORY`) to reconstruct the correct subclass when loading.
+
+Columns:
+
+```text
+type;id;title;price;availableQuantity;extra1;extra2;compatibleConsoleIds
 
 ## Team
 
