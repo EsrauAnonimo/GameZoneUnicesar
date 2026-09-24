@@ -1,6 +1,7 @@
 package com.gamezone.ui;
 
 import com.gamezone.model.*;
+import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.SaleService;
@@ -14,12 +15,15 @@ public class ConsoleUI {
     private PersonService personService;
     private ProductService productService;
     private SaleService saleService;
+    private AccessoryService accessoryService;
     private Scanner scanner;
 
-    public ConsoleUI(PersonService personService, ProductService productService, SaleService saleService) {
+    public ConsoleUI(PersonService personService, ProductService productService, SaleService saleService,
+                      AccessoryService accessoryService) {
         this.personService = personService;
         this.productService = productService;
         this.saleService = saleService;
+        this.accessoryService = accessoryService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -30,6 +34,7 @@ public class ConsoleUI {
             System.out.println("1. Products menu");
             System.out.println("2. People menu");
             System.out.println("3. Sales menu");
+            System.out.println("4. Accessories menu");
             System.out.println("0. Exit");
             System.out.print("Choose an option: ");
             option = Integer.parseInt(scanner.nextLine());
@@ -38,6 +43,7 @@ public class ConsoleUI {
                 case 1: showProductMenu(); break;
                 case 2: showPersonMenu(); break;
                 case 3: showSaleMenu(); break;
+                case 4: showAccessoryMenu(); break;
                 case 0: System.out.println("Closing GameZone..."); break;
                 default: System.out.println("Invalid option.");
             }
@@ -171,11 +177,15 @@ public class ConsoleUI {
             List<Product> products = new ArrayList<>();
             String more = "s";
             while (more.equalsIgnoreCase("s")) {
-                System.out.print("Product ID: ");
-                String productId = scanner.nextLine();
-                Product product = findProductById(productId);
+                // CAMBIO 3: ahora el ID puede corresponder tanto a un Product
+                // (VideoGame/Console) como a un Accessory (Controller/Cable/Memory).
+                System.out.print("Product/Accessory ID: ");
+                String itemId = scanner.nextLine();
+                Product product = findItemById(itemId);
                 if (product != null) {
                     products.add(product);
+                } else {
+                    System.out.println("Warning: no product or accessory found with that ID, skipped.");
                 }
                 System.out.print("Add another product? (s/n): ");
                 more = scanner.nextLine();
@@ -204,13 +214,145 @@ public class ConsoleUI {
         }
     }
 
-    // NOTA: findCustomerById y findSellerById se eliminaron de aquí —
-    // ya no hacen falta porque PersonService los provee.
+    /**
+     * Shows the accessory management submenu: register controllers, cables
+     * and memories, list all accessories, filter by type, and query which
+     * accessories are compatible with a given console.
+     */
+    public void showAccessoryMenu() {
+        System.out.println("\n--- Gestión de accesorios ---");
+        System.out.println("1. Registrar un nuevo control.");
+        System.out.println("2. Registrar un nuevo cable.");
+        System.out.println("3. Registrar una nueva memoria.");
+        System.out.println("4. Listar todos los accesorios.");
+        System.out.println("5. Listar accesorios por tipo.");
+        System.out.println("6. Consultar accesorios compatibles con una consola.");
+        System.out.println("0. Volver al menú principal.");
+        System.out.print("Elija una opción: ");
+        int option = Integer.parseInt(scanner.nextLine());
+
+        switch (option) {
+            case 1: {
+                System.out.print("ID: ");
+                String id = scanner.nextLine();
+                System.out.print("Título: ");
+                String title = scanner.nextLine();
+                System.out.print("Precio: ");
+                double price = Double.parseDouble(scanner.nextLine());
+                System.out.print("Cantidad disponible: ");
+                int quantity = Integer.parseInt(scanner.nextLine());
+                System.out.print("Tipo de conexión: ");
+                String connectionType = scanner.nextLine();
+
+                Controller controller = new Controller(id, title, price, quantity, connectionType);
+                controller.setCompatibleConsoles(askCompatibleConsoles());
+                accessoryService.registerController(controller);
+                System.out.println("Control registrado.");
+                break;
+            }
+            case 2: {
+                System.out.print("ID: ");
+                String id = scanner.nextLine();
+                System.out.print("Título: ");
+                String title = scanner.nextLine();
+                System.out.print("Precio: ");
+                double price = Double.parseDouble(scanner.nextLine());
+                System.out.print("Cantidad disponible: ");
+                int quantity = Integer.parseInt(scanner.nextLine());
+                System.out.print("Longitud (metros): ");
+                double lengthMeters = Double.parseDouble(scanner.nextLine());
+                System.out.print("Tipo de conector: ");
+                String connectorType = scanner.nextLine();
+
+                Cable cable = new Cable(id, title, price, quantity, lengthMeters, connectorType);
+                cable.setCompatibleConsoles(askCompatibleConsoles());
+                accessoryService.registerCable(cable);
+                System.out.println("Cable registrado.");
+                break;
+            }
+            case 3: {
+                System.out.print("ID: ");
+                String id = scanner.nextLine();
+                System.out.print("Título: ");
+                String title = scanner.nextLine();
+                System.out.print("Precio: ");
+                double price = Double.parseDouble(scanner.nextLine());
+                System.out.print("Cantidad disponible: ");
+                int quantity = Integer.parseInt(scanner.nextLine());
+                System.out.print("Capacidad (GB): ");
+                int capacityGb = Integer.parseInt(scanner.nextLine());
+                System.out.print("Tipo de memoria: ");
+                String memoryType = scanner.nextLine();
+
+                Memory memory = new Memory(id, title, price, quantity, capacityGb, memoryType);
+                memory.setCompatibleConsoles(askCompatibleConsoles());
+                accessoryService.registerMemory(memory);
+                System.out.println("Memoria registrada.");
+                break;
+            }
+            case 4: {
+                for (Accessory accessory : accessoryService.listAllAccessories()) {
+                    System.out.println(accessory.getDescription());
+                }
+                break;
+            }
+            case 5: {
+                System.out.print("Tipo (CONTROLLER/CABLE/MEMORY): ");
+                String type = scanner.nextLine();
+                for (Accessory accessory : accessoryService.listAccessoriesByType(type)) {
+                    System.out.println(accessory.getDescription());
+                }
+                break;
+            }
+            case 6: {
+                System.out.print("ID de la consola: ");
+                String consoleId = scanner.nextLine();
+                for (Accessory accessory : accessoryService.findAccessoriesCompatibleWith(consoleId)) {
+                    System.out.println(accessory.getDescription());
+                }
+                break;
+            }
+            case 0:
+                break;
+            default:
+                System.out.println("Opción inválida.");
+        }
+    }
+
+
+    private List<Console> askCompatibleConsoles() {
+        List<Console> consoles = new ArrayList<>();
+        System.out.print("IDs de consolas compatibles (separados por coma, o vacío si ninguna): ");
+        String input = scanner.nextLine();
+        if (!input.isBlank()) {
+            String[] ids = input.split(",");
+            for (String rawId : ids) {
+                String consoleId = rawId.trim();
+                Product product = findProductById(consoleId);
+                if (product instanceof Console consoleProduct) {
+                    consoles.add(consoleProduct);
+                } else {
+                    System.out.println("Aviso: no se encontró una consola con ID " + consoleId + ", se omite.");
+                }
+            }
+        }
+        return consoles;
+    }
+
 
     private Product findProductById(String id) {
         for (Product p : productService.listAllProducts()) {
             if (p.getId().equals(id)) return p;
         }
         return null;
+    }
+
+
+    private Product findItemById(String id) {
+        Product product = findProductById(id);
+        if (product != null) {
+            return product;
+        }
+        return accessoryService.findById(id);
     }
 }
