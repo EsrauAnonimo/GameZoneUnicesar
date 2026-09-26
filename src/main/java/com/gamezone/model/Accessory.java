@@ -7,6 +7,8 @@ import java.util.List;
  * Abstract class that represents a generic accessory in the GameZone system.
  * This class extends Product and adds a list of compatible consoles.
  * It cannot be instantiated directly; subclasses must provide specific implementations.
+ * 
+ * @author Dev 1
  */
 public abstract class Accessory extends Product {
 

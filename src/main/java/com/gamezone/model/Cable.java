@@ -63,12 +63,13 @@ public class Cable extends Accessory {
         this.connectorType = connectorType;
     }
 
-    /**
-     * Generates a description of the cable.
-     * Includes the specific length and connector type attributes.
-     * 
-     * @return A string with the cable description
-     */
+  /**
+ * Abstract class that represents a generic accessory in the GameZone system.
+ * This class extends Product and adds a list of compatible consoles.
+ * It cannot be instantiated directly; subclasses must provide specific implementations.
+ * 
+ * @author Dev 1
+ */
     @Override
     public String getDescription() {
         return "Cable{" +

@@ -1,8 +1,11 @@
 package com.gamezone.model;
 
 /**
- * Represents a memory accessory in the GameZone system.
- * This class extends Accessory and adds capacity and memory type attributes.
+ * Abstract class that represents a generic accessory in the GameZone system.
+ * This class extends Product and adds a list of compatible consoles.
+ * It cannot be instantiated directly; subclasses must provide specific implementations.
+ * 
+ * @author Dev 1
  */
 public class Memory extends Accessory {
 
