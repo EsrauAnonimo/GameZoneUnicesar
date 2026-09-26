@@ -72,15 +72,11 @@ public class Memory extends Accessory {
      * 
      * @return A string with the memory description
      */
-    @Override
-    public String getDescription() {
-        return "Memory{" +
-               "id='" + getId() + '\'' +
-               ", title='" + getTitle() + '\'' +
-               ", price=" + getPrice() +
-               ", availableQuantity=" + getAvailableQuantity() +
-               ", capacityGb=" + capacityGb +
-               ", memoryType='" + memoryType + '\'' +
-               '}';
-    }
+   @Override
+public String getDescription() {
+    return String.format(
+        "Memory | ID: %s | Title: %s | Price: %.2f | Available: %d | Capacity: %dGB | Type: %s",
+        getId(), getTitle(), getPrice(), getAvailableQuantity(), capacityGb, memoryType
+    );
+}
 }

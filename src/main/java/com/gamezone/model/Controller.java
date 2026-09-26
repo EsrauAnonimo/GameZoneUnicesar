@@ -51,14 +51,10 @@ public class Controller extends Accessory {
      * 
      * @return A string with the controller description
      */
-    @Override
-    public String getDescription() {
-        return "Controller{" +
-               "id='" + getId() + '\'' +
-               ", title='" + getTitle() + '\'' +
-               ", price=" + getPrice() +
-               ", availableQuantity=" + getAvailableQuantity() +
-               ", connectionType='" + connectionType + '\'' +
-               '}';
-    }
+   @Override
+public String getDescription() {
+    return String.format(
+        "Controller | ID: %s | Title: %s | Price: %.2f | Available: %d | Connection: %s",
+        getId(), getTitle(), getPrice(), getAvailableQuantity(), connectionType
+    );
 }
