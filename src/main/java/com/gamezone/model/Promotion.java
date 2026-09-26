@@ -3,11 +3,12 @@ package com.gamezone.model;
 import java.time.LocalDate;
 
 /**
- * Abstract class that represents a promotion in the GameZone system.
- * Promotions have a validity period and a discount calculation strategy
- * that must be implemented by subclasses.
+ * Checks if the promotion is active on a given date.
+ * A promotion is active if the date is between startDate and endDate (inclusive).
+ * If the date is null, returns false.
  * 
- * @author Dev 1
+ * @param date The date to check (can be null)
+ * @return true if the promotion is active, false otherwise
  */
 public abstract class Promotion {
 
