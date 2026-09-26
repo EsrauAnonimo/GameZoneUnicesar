@@ -15,6 +15,8 @@ public class Sale implements Serializable {
     private Seller seller;
     private List<Product> products;
     private double total;
+    private String appliedPromotionName;
+    private double discountAmount;
 
 
     public Sale(String id, LocalDate date, Customer customer, Seller seller, List<Product> products) {
@@ -57,5 +59,41 @@ public class Sale implements Serializable {
 
     public double getTotal() {
         return total;
+    }
+
+    /**
+     * Gets the name of the promotion that was applied to this sale.
+     *
+     * @return the applied promotion name, or null if no promotion was applied
+     */
+    public String getAppliedPromotionName() {
+        return appliedPromotionName;
+    }
+
+    /**
+     * Sets the name of the promotion applied to this sale.
+     *
+     * @param appliedPromotionName the applied promotion name
+     */
+    public void setAppliedPromotionName(String appliedPromotionName) {
+        this.appliedPromotionName = appliedPromotionName;
+    }
+
+    /**
+     * Gets the amount subtracted from the subtotal by the applied promotion.
+     *
+     * @return the discount amount (zero if no promotion was applied)
+     */
+    public double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    /**
+     * Sets the amount subtracted from the subtotal by the applied promotion.
+     *
+     * @param discountAmount the discount amount
+     */
+    public void setDiscountAmount(double discountAmount) {
+        this.discountAmount = discountAmount;
     }
 }
