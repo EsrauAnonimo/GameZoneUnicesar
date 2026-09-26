@@ -1,9 +1,8 @@
 package com.gamezone.model;
 
 /**
- * Abstract class that represents a generic accessory in the GameZone system.
- * This class extends Product and adds a list of compatible consoles.
- * It cannot be instantiated directly; subclasses must provide specific implementations.
+ * Represents a controller accessory in the GameZone system.
+ * This class extends Accessory and adds a connection type attribute.
  * 
  * @author Dev 1
  */
@@ -51,10 +50,11 @@ public class Controller extends Accessory {
      * 
      * @return A string with the controller description
      */
-   @Override
-public String getDescription() {
-    return String.format(
-        "Controller | ID: %s | Title: %s | Price: %.2f | Available: %d | Connection: %s",
-        getId(), getTitle(), getPrice(), getAvailableQuantity(), connectionType
-    );
+    @Override
+    public String getDescription() {
+        return String.format(
+            "Controller | ID: %s | Title: %s | Price: %.2f | Available: %d | Connection: %s",
+            getId(), getTitle(), getPrice(), getAvailableQuantity(), connectionType
+        );
+    }
 }
