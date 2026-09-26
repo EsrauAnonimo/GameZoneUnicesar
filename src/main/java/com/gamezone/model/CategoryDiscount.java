@@ -83,13 +83,17 @@ public class CategoryDiscount extends Promotion {
         double categoryTotal = 0.0;
         List<Product> products = sale.getProducts();
         
-        for (Product product : products) {
-            if ("VIDEOGAME".equals(targetCategory) && product instanceof VideoGame) {
-                categoryTotal += product.getPrice();
-            } else if ("CONSOLE".equals(targetCategory) && product instanceof Console) {
-                categoryTotal += product.getPrice();
-            }
-        }
+        if (targetCategory == null) {
+    return 0.0;
+}
+
+for (Product product : products) {
+    if ("VIDEOGAME".equals(targetCategory) && product instanceof VideoGame) {
+        categoryTotal += product.getPrice();
+    } else if ("CONSOLE".equals(targetCategory) && product instanceof Console) {
+        categoryTotal += product.getPrice();
+    }
+}
         
         return categoryTotal * (percentage / 100.0);
     }

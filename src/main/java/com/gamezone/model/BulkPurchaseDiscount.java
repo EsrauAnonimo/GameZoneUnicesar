@@ -83,9 +83,9 @@ public class BulkPurchaseDiscount extends Promotion {
         }
         
         List<Product> products = sale.getProducts();
-        if (products.size() < minimumQuantity) {
-            return 0.0;
-        }
+        if (minimumQuantity <= 0 || products.size() < minimumQuantity) {
+        return 0.0;
+         }
         
         double total = sale.calculateTotal();
         return total * (percentage / 100.0);

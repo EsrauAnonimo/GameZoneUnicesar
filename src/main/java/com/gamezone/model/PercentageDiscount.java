@@ -53,11 +53,11 @@ public class PercentageDiscount extends Promotion {
      * @return The discount amount
      */
     @Override
-    public double calculateDiscount(Sale sale) {
-        if (sale == null) {
-            return 0.0;
-        }
-        double total = sale.calculateTotal();
-        return total * (percentage / 100.0);
+public double calculateDiscount(Sale sale) {
+    if (sale == null || sale.getProducts() == null) {
+        return 0.0;
     }
+    double total = sale.calculateTotal();
+    return total * (percentage / 100.0);
+}
 }
