@@ -8,16 +8,18 @@ import java.util.List;
 
 /**
  * Service class for sale operations.
- * Validates stock for every item in a sale and delegates the stock update
- * to the correct service depending on the item type: Accessory items are
- * updated through AccessoryService, everything else (VideoGame, Console)
- * through ProductService.
+ * Validates stock for every item in a sale, resolves the best promotion for
+ * the sale through PromotionService and delegates the stock update to the
+ * correct service depending on the item type: Accessory items are updated
+ * through AccessoryService, everything else (VideoGame, Console) through
+ * ProductService.
  */
 public class SaleService {
 
     private SalePersistence persistence;
     private ProductService productService;
     private AccessoryService accessoryService;
+    private PromotionService promotionService;
 
     /**
      * Creates a SaleService.
@@ -25,11 +27,14 @@ public class SaleService {
      * @param persistence      persistence layer used to load/save sales
      * @param productService   service used to update stock for non-accessory products
      * @param accessoryService service used to update stock for accessory items
+     * @param promotionService service used to resolve the best promotion for a sale
      */
-    public SaleService(SalePersistence persistence, ProductService productService, AccessoryService accessoryService) {
+    public SaleService(SalePersistence persistence, ProductService productService,
+                       AccessoryService accessoryService, PromotionService promotionService) {
         this.persistence = persistence;
         this.productService = productService;
         this.accessoryService = accessoryService;
+        this.promotionService = promotionService;
     }
 
     /**
