@@ -96,6 +96,9 @@ public class ConsoleUI {
 
             Console console = new Console(id, title, price, quantity, brand, model, generation);
             productService.registerConsole(console);
+            // La consola recién registrada debe poder referenciarse desde los
+            // accesorios, así que se refresca la lista de consolas conocidas.
+            accessoryService.setAvailableConsoles(listConsoles());
             System.out.println("Console registered.");
 
         } else if (option == 3) {
@@ -317,6 +320,17 @@ public class ConsoleUI {
             default:
                 System.out.println("Opción inválida.");
         }
+    }
+
+
+    private List<Console> listConsoles() {
+        List<Console> consoles = new ArrayList<>();
+        for (Product p : productService.listAllProducts()) {
+            if (p instanceof Console console) {
+                consoles.add(console);
+            }
+        }
+        return consoles;
     }
 
 

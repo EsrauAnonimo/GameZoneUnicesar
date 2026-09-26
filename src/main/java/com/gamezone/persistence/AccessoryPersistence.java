@@ -151,30 +151,64 @@ public class AccessoryPersistence {
      */
     private Accessory parseLine(String line, List<Console> availableConsoles) {
         String[] parts = line.split(FIELD_SEPARATOR, -1);
+        if (parts.length < 7) {
+            // Linea incompleta o corrupta: se ignora.
+            System.out.println("Malformed accessory line in file: " + line);
+            return null;
+        }
         String type = parts[0];
+        if (!type.equals("CONTROLLER") && !type.equals("CABLE") && !type.equals("MEMORY")) {
+            // Discriminador desconocido (por ejemplo, una fila de encabezado):
+            // se ignora la linea.
+            System.out.println("Unknown accessory type in file: " + type);
+            return null;
+        }
         String id = parts[1];
         String title = parts[2];
-        double price = Double.parseDouble(parts[3]);
-        int availableQuantity = Integer.parseInt(parts[4]);
         String extra1 = parts[5];
         String extra2 = parts[6];
         String compatibleIdsField = parts.length > 7 ? parts[7] : "";
 
+        double price;
+        int availableQuantity;
+        try {
+            price = Double.parseDouble(parts[3]);
+            availableQuantity = Integer.parseInt(parts[4]);
+        } catch (NumberFormatException e) {
+            System.out.println("Malformed accessory line in file: " + line);
+            return null;
+        }
+
         List<Console> compatibleConsoles = resolveCompatibleConsoles(compatibleIdsField, availableConsoles);
 
         switch (type) {
-            case "CONTROLLER":
-                return new Controller(id, title, price, availableQuantity, extra1, compatibleConsoles);
-            case "CABLE":
-                double lengthMeters = Double.parseDouble(extra1);
-                return new Cable(id, title, price, availableQuantity, lengthMeters, extra2, compatibleConsoles);
-            case "MEMORY":
-                int capacityGb = Integer.parseInt(extra1);
-                return new Memory(id, title, price, availableQuantity, capacityGb, extra2, compatibleConsoles);
-            default:
-                // Discriminador desconocido: se ignora la linea.
-                System.out.println("Unknown accessory type in file: " + type);
-                return null;
+            case "CONTROLLER": {
+                Controller controller = new Controller(id, title, price, availableQuantity, extra1);
+                controller.setCompatibleConsoles(compatibleConsoles);
+                return controller;
+            }
+            case "CABLE": {
+                Cable cable;
+                try {
+                    cable = new Cable(id, title, price, availableQuantity, Double.parseDouble(extra1), extra2);
+                } catch (NumberFormatException e) {
+                    System.out.println("Malformed cable line in file: " + line);
+                    return null;
+                }
+                cable.setCompatibleConsoles(compatibleConsoles);
+                return cable;
+            }
+            default: {
+                Memory memory;
+                try {
+                    memory = new Memory(id, title, price, availableQuantity, Integer.parseInt(extra1), extra2);
+                } catch (NumberFormatException e) {
+                    System.out.println("Malformed memory line in file: " + line);
+                    return null;
+                }
+                memory.setCompatibleConsoles(compatibleConsoles);
+                return memory;
+            }
         }
     }
 
