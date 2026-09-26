@@ -4,26 +4,33 @@ import com.gamezone.model.*;
 import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
+import com.gamezone.service.PromotionService;
 import com.gamezone.service.SaleService;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class ConsoleUI {
 
+    private static final String CATEGORY_VIDEOGAME = "VIDEOGAME";
+    private static final String CATEGORY_CONSOLE = "CONSOLE";
+
     private PersonService personService;
     private ProductService productService;
     private SaleService saleService;
     private AccessoryService accessoryService;
+    private PromotionService promotionService;
     private Scanner scanner;
 
     public ConsoleUI(PersonService personService, ProductService productService, SaleService saleService,
-                      AccessoryService accessoryService) {
+                      AccessoryService accessoryService, PromotionService promotionService) {
         this.personService = personService;
         this.productService = productService;
         this.saleService = saleService;
         this.accessoryService = accessoryService;
+        this.promotionService = promotionService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -35,6 +42,7 @@ public class ConsoleUI {
             System.out.println("2. People menu");
             System.out.println("3. Sales menu");
             System.out.println("4. Accessories menu");
+            System.out.println("5. Promociones menu");
             System.out.println("0. Exit");
             System.out.print("Choose an option: ");
             option = Integer.parseInt(scanner.nextLine());
@@ -44,6 +52,7 @@ public class ConsoleUI {
                 case 2: showPersonMenu(); break;
                 case 3: showSaleMenu(); break;
                 case 4: showAccessoryMenu(); break;
+                case 5: showPromotionMenu(); break;
                 case 0: System.out.println("Closing GameZone..."); break;
                 default: System.out.println("Invalid option.");
             }
@@ -197,6 +206,9 @@ public class ConsoleUI {
             Sale sale = new Sale(id, LocalDate.now(), customer, seller, products);
             saleService.registerSale(sale);
             System.out.println("Sale registered. Total: " + sale.getTotal());
+            // El recibo muestra el subtotal, el descuento aplicado (con el
+            // nombre de la promoción) y el total final.
+            System.out.println(sale.generateReceipt());
 
         } else if (option == 2) {
             for (Sale s : saleService.listAllSales()) {
@@ -319,6 +331,234 @@ public class ConsoleUI {
                 break;
             default:
                 System.out.println("Opción inválida.");
+        }
+    }
+
+    /**
+     * Shows the promotion management submenu: register promotions by
+     * percentage, by category and by bulk purchase, list all promotions and
+     * list only the promotions that are currently in force.
+     */
+    public void showPromotionMenu() {
+        System.out.println("\n--- Gestión de promociones ---");
+        System.out.println("1. Registrar promoción por porcentaje.");
+        System.out.println("2. Registrar promoción por categoría.");
+        System.out.println("3. Registrar promoción por volumen.");
+        System.out.println("4. Listar todas las promociones.");
+        System.out.println("5. Listar promociones vigentes.");
+        System.out.println("0. Volver al menú principal.");
+        System.out.print("Elija una opción: ");
+        int option = Integer.parseInt(scanner.nextLine());
+
+        switch (option) {
+            case 1: {
+                System.out.print("ID: ");
+                String id = scanner.nextLine();
+                System.out.print("Nombre: ");
+                String name = scanner.nextLine();
+                Period period = askPromotionPeriod();
+                if (period == null) {
+                    return;
+                }
+                double percentage = askPercentage("Porcentaje de descuento: ");
+
+                promotionService.registerPercentageDiscount(
+                        id, name, period.getStartDate(), period.getEndDate(), percentage);
+                System.out.println("Promoción por porcentaje registrada.");
+                break;
+            }
+            case 2: {
+                System.out.print("ID: ");
+                String id = scanner.nextLine();
+                System.out.print("Nombre: ");
+                String name = scanner.nextLine();
+                Period period = askPromotionPeriod();
+                if (period == null) {
+                    return;
+                }
+                double percentage = askPercentage("Porcentaje de descuento: ");
+                String category = askCategory();
+
+                promotionService.registerCategoryDiscount(
+                        id, name, period.getStartDate(), period.getEndDate(), percentage, category);
+                System.out.println("Promoción por categoría registrada.");
+                break;
+            }
+            case 3: {
+                System.out.print("ID: ");
+                String id = scanner.nextLine();
+                System.out.print("Nombre: ");
+                String name = scanner.nextLine();
+                Period period = askPromotionPeriod();
+                if (period == null) {
+                    return;
+                }
+                int minimumQuantity = askPositiveInt("Cantidad mínima de productos: ");
+                double percentage = askPercentage("Porcentaje de descuento: ");
+
+                promotionService.registerBulkPurchaseDiscount(
+                        id, name, period.getStartDate(), period.getEndDate(), minimumQuantity, percentage);
+                System.out.println("Promoción por volumen registrada.");
+                break;
+            }
+            case 4:
+                showPromotions(promotionService.listAllPromotions());
+                break;
+            case 5:
+                showPromotions(promotionService.listActivePromotions());
+                break;
+            case 0:
+                break;
+            default:
+                System.out.println("Opción inválida.");
+        }
+    }
+
+    /**
+     * Prints a list of promotions, or a message when the list is empty.
+     *
+     * @param promotions the promotions to print
+     */
+    private void showPromotions(List<Promotion> promotions) {
+        if (promotions.isEmpty()) {
+            System.out.println("No hay promociones registradas.");
+            return;
+        }
+        for (Promotion promotion : promotions) {
+            System.out.println(describe(promotion));
+        }
+    }
+
+    /**
+     * Builds the one-line description of a promotion using the common data
+     * shared by every promotion type.
+     *
+     * @param promotion the promotion to describe
+     * @return the description of the promotion
+     */
+    private String describe(Promotion promotion) {
+        return String.format("Promoción | ID: %s | Nombre: %s | Vigencia: %s a %s | ¿Vigente hoy?: %s",
+                promotion.getId(),
+                promotion.getName(),
+                promotion.getStartDate(),
+                promotion.getEndDate(),
+                promotion.isActive(LocalDate.now()) ? "Sí" : "No");
+    }
+
+    /**
+     * Asks for the validity period of a promotion. Dates are expected in
+     * ISO format (yyyy-MM-dd). If the end date is earlier than the start
+     * date, the registration is cancelled.
+     *
+     * @return the period, or null when the period is not valid
+     */
+    private Period askPromotionPeriod() {
+        LocalDate startDate = askDate("Fecha de inicio (yyyy-MM-dd): ");
+        LocalDate endDate = askDate("Fecha de fin (yyyy-MM-dd): ");
+        if (endDate.isBefore(startDate)) {
+            System.out.println("Error: la fecha de fin no puede ser anterior a la fecha de inicio.");
+            return null;
+        }
+        return new Period(startDate, endDate);
+    }
+
+    /**
+     * Asks for a date until a valid ISO date (yyyy-MM-dd) is entered.
+     *
+     * @param prompt the message shown to the user
+     * @return the date entered by the user
+     */
+    private LocalDate askDate(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+            try {
+                return LocalDate.parse(input);
+            } catch (DateTimeParseException e) {
+                System.out.println("Error: fecha inválida. Use el formato yyyy-MM-dd.");
+            }
+        }
+    }
+
+    /**
+     * Asks for a discount percentage until a value greater than zero and not
+     * greater than 100 is entered.
+     *
+     * @param prompt the message shown to the user
+     * @return the percentage entered by the user
+     */
+    private double askPercentage(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                double percentage = Double.parseDouble(scanner.nextLine().trim());
+                if (percentage > 0 && percentage <= 100) {
+                    return percentage;
+                }
+            } catch (NumberFormatException e) {
+                // Se cae al mensaje de error de abajo.
+            }
+            System.out.println("Error: el porcentaje debe ser un número mayor que 0 y menor o igual que 100.");
+        }
+    }
+
+    /**
+     * Asks for a positive integer until a valid value is entered.
+     *
+     * @param prompt the message shown to the user
+     * @return the number entered by the user
+     */
+    private int askPositiveInt(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                int value = Integer.parseInt(scanner.nextLine().trim());
+                if (value > 0) {
+                    return value;
+                }
+            } catch (NumberFormatException e) {
+                // Se cae al mensaje de error de abajo.
+            }
+            System.out.println("Error: debe ingresar un número entero mayor que 0.");
+        }
+    }
+
+    /**
+     * Asks for the category targeted by a promotion, accepting only the
+     * categories handled by the promotion module.
+     *
+     * @return the category in upper case (VIDEOGAME or CONSOLE)
+     */
+    private String askCategory() {
+        while (true) {
+            System.out.print("Categoría objetivo (VIDEOGAME/CONSOLE): ");
+            String input = scanner.nextLine().trim().toUpperCase();
+            if (input.equals(CATEGORY_VIDEOGAME) || input.equals(CATEGORY_CONSOLE)) {
+                return input;
+            }
+            System.out.println("Error: la categoría debe ser VIDEOGAME o CONSOLE.");
+        }
+    }
+
+    /**
+     * Simple holder for the validity period of a promotion.
+     */
+    private static class Period {
+
+        private final LocalDate startDate;
+        private final LocalDate endDate;
+
+        private Period(LocalDate startDate, LocalDate endDate) {
+            this.startDate = startDate;
+            this.endDate = endDate;
+        }
+
+        private LocalDate getStartDate() {
+            return startDate;
+        }
+
+        private LocalDate getEndDate() {
+            return endDate;
         }
     }
 
