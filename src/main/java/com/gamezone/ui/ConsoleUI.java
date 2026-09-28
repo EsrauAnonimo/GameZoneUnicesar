@@ -430,6 +430,7 @@ public class ConsoleUI {
         System.out.println("2. Consultar todas las devoluciones.");
         System.out.println("3. Consultar devoluciones por cliente.");
         System.out.println("4. Consultar devoluciones por venta.");
+        System.out.println("5. Consultar balance mensual.");
         System.out.println("0. Volver al menú principal.");
         System.out.print("Elija una opción: ");
         int option = Integer.parseInt(scanner.nextLine());
@@ -453,10 +454,65 @@ public class ConsoleUI {
                 showReturns(returnService.viewReturnsBySale(saleId));
                 break;
             }
+            case 5:
+                showMonthlyBalance();
+                break;
             case 0:
                 break;
             default:
                 System.out.println("Opción inválida.");
+        }
+    }
+
+    /**
+     * Asks for the month and the year of the requested balance and prints the
+     * total amount refunded in that period.
+     */
+    private void showMonthlyBalance() {
+        int month = askMonth();
+        int year = askYear();
+
+        double balance = returnService.generateMonthlyBalance(month, year);
+        System.out.printf("Balance de devoluciones de %02d/%d: $%.2f%n", month, year, balance);
+    }
+
+    /**
+     * Asks for a month number until a value between 1 and 12 is entered.
+     *
+     * @return the month entered by the user
+     */
+    private int askMonth() {
+        while (true) {
+            System.out.print("Mes (1-12): ");
+            try {
+                int month = Integer.parseInt(scanner.nextLine().trim());
+                if (month >= 1 && month <= 12) {
+                    return month;
+                }
+            } catch (NumberFormatException e) {
+                // Se cae al mensaje de error de abajo.
+            }
+            System.out.println("Error: el mes debe ser un número entre 1 y 12.");
+        }
+    }
+
+    /**
+     * Asks for a year until a plausible value is entered.
+     *
+     * @return the year entered by the user
+     */
+    private int askYear() {
+        while (true) {
+            System.out.print("Año: ");
+            try {
+                int year = Integer.parseInt(scanner.nextLine().trim());
+                if (year >= 2000 && year <= 2100) {
+                    return year;
+                }
+            } catch (NumberFormatException e) {
+                // Se cae al mensaje de error de abajo.
+            }
+            System.out.println("Error: el año debe estar entre 2000 y 2100.");
         }
     }
 
