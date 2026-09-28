@@ -9,12 +9,13 @@ import com.gamezone.persistence.AccessoryPersistence;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Contains the business rules of the accessory module (controllers, cables
  * and memories). This is the only class in the module allowed to call
  * AccessoryPersistence; the UI layer must always go through this service.
+ * Accessory objects are built and populated (including compatible consoles)
+ * by the caller before being registered here.
  */
 public class AccessoryService {
 
@@ -23,73 +24,143 @@ public class AccessoryService {
 
     /**
      * Creates the service and immediately loads the previously stored
-     * accessories, resolving their compatible consoles against the given
-     * list of consoles known by the system.
+     * accessories.
      *
      * @param accessoryPersistence repository used to read and write
      *                             accessory data
-     * @param availableConsoles    consoles currently registered in the
-     *                             system, needed to resolve compatibility
      */
-    public AccessoryService(AccessoryPersistence accessoryPersistence, List<Console> availableConsoles) {
+    public AccessoryService(AccessoryPersistence accessoryPersistence) {
         this.accessoryPersistence = accessoryPersistence;
-        this.accessories = accessoryPersistence.loadAll(availableConsoles);
+        this.accessories = accessoryPersistence.loadAll();
     }
 
     /**
-     * Registers a new controller and immediately persists the updated list.
+     * Registers an already built controller and immediately persists the
+     * updated list.
      *
-     * @param title              controller title
-     * @param price              controller price
-     * @param availableQuantity  initial available quantity
-     * @param connectionType     connection type (wireless or wired)
-     * @param compatibleConsoles consoles this controller is compatible with
-     * @return the newly created controller
+     * @param controller the controller to register
      */
-    public Controller registerController(String title, double price, int availableQuantity,
-                                          String connectionType, List<Console> compatibleConsoles) {
-        String id = UUID.randomUUID().toString();
-        Controller controller = new Controller(id, title, price, availableQuantity, connectionType, compatibleConsoles);
+    public void registerController(Controller controller) {
         accessories.add(controller);
         saveAll();
-        return controller;
     }
 
     /**
-     * Registers a new cable and immediately persists the updated list.
+     * Registers an already built cable and immediately persists the
+     * updated list.
      *
-     * @param title             cable title
-     * @param price             cable price
-     * @param availableQuantity initial available quantity
-     * @param lengthMeters      cable length in meters
-     * @param connectorType     connector type (HDMI, USB, optical, etc.)
-     * @return the newly created cable
+     * @param cable the cable to register
      */
-    public Cable registerCable(String title, double price, int availableQuantity,
-                                double lengthMeters, String connectorType) {
-        String id = UUID.randomUUID().toString();
-        // Los cables no manejan compatibilidad con consolas.
-        Cable cable = new Cable(id, title, price, availableQuantity, lengthMeters, connectorType, new ArrayList<>());
+    public void registerCable(Cable cable) {
         accessories.add(cable);
         saveAll();
-        return cable;
     }
 
     /**
-     * Registers a new memory and immediately persists the updated list.
+     * Registers an already built memory and immediately persists the
+     * updated list.
      *
-     * @param title              memory title
-     * @param price              memory price
-     * @param availableQuantity  initial available quantity
-     * @param capacityGb         storage capacity in gigabytes
-     * @param memoryType         memory type (SD, microSD, internal card)
-     * @param compatibleConsoles consoles this memory is compatible with
-     *                           (some memories are console-specific)
-     * @return the newly created memory
+     * @param memory the memory to register
      */
-    public Memory registerMemory(String title, double price, int availableQuantity,
-                                  int capacityGb, String memoryType, List<Console> compatibleConsoles) {
-        String id = UUID.randomUUID().toString();
-        Memory memory = new Memory(id, title, price, availableQuantity, capacityGb, memoryType, compatibleConsoles);
+    public void registerMemory(Memory memory) {
         accessories.add(memory);
         saveAll();
+    }
+
+    /**
+     * Returns the list of all registered accessories, regardless of type.
+     *
+     * @return list of accessories
+     */
+    public List<Accessory> listAllAccessories() {
+        return accessories;
+    }
+
+    /**
+     * Filters the registered accessories by their concrete type.
+     *
+     * @param type "CONTROLLER", "CABLE" or "MEMORY" (case-insensitive)
+     * @return list of accessories matching the given type
+     */
+    public List<Accessory> listAccessoriesByType(String type) {
+        List<Accessory> result = new ArrayList<>();
+        for (Accessory accessory : accessories) {
+            if (matchesType(accessory, type)) {
+                result.add(accessory);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Finds all accessories compatible with the console identified by the
+     * given id.
+     *
+     * @param consoleId id of the console to check compatibility against
+     * @return list of accessories compatible with that console
+     */
+    public List<Accessory> findAccessoriesCompatibleWith(String consoleId) {
+        List<Accessory> result = new ArrayList<>();
+        for (Accessory accessory : accessories) {
+            for (Console console : accessory.getCompatibleConsoles()) {
+                if (console.getId().equals(consoleId)) {
+                    result.add(accessory);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Finds an accessory by its id.
+     *
+     * @param id accessory id
+     * @return the matching accessory, or null if none is found
+     */
+    public Accessory findById(String id) {
+        return accessories.stream()
+                .filter(accessory -> accessory.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Updates the available quantity of an accessory and persists the
+     * change. Used both for manual stock corrections and for automatic
+     * inventory updates when a sale is registered.
+     *
+     * @param accessoryId id of the accessory to update
+     * @param quantity    new available quantity
+     */
+    public void updateStock(String accessoryId, int quantity) {
+        Accessory accessory = findById(accessoryId);
+        if (accessory != null) {
+            accessory.setAvailableQuantity(quantity);
+            saveAll();
+        }
+    }
+
+    /**
+     * Checks whether a given accessory matches the requested type label.
+     */
+    private boolean matchesType(Accessory accessory, String type) {
+        if (type == null) {
+            return false;
+        }
+        return switch (type.toUpperCase()) {
+            case "CONTROLLER" -> accessory instanceof Controller;
+            case "CABLE" -> accessory instanceof Cable;
+            case "MEMORY" -> accessory instanceof Memory;
+            default -> false;
+        };
+    }
+
+    /**
+     * Delegates the save of the current accessory list to the persistence
+     * layer.
+     */
+    private void saveAll() {
+        accessoryPersistence.saveAll(accessories);
+    }
+}

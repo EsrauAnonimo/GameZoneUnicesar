@@ -48,17 +48,16 @@ public class AccessoryPersistence {
     }
 
     /**
-     * Loads all accessories stored in the accessories file, resolving each
-     * accessory's compatible console ids against the given list of known
-     * consoles.
+     * Loads all accessories stored in the accessories file. Compatible
+     * console references are reconstructed as minimal placeholder Console
+     * objects carrying only their id, since this layer has no access to
+     * the real console catalog; that id is enough for compatibility
+     * comparisons elsewhere in the service.
      *
-     * @param availableConsoles consoles currently registered in the system,
-     *                           used to resolve compatibility ids into
-     *                           actual Console objects
-     * @return list of accessories found in the file (empty list if the file
-     *         does not exist yet, e.g. on the very first execution)
+     * @return list of accessories found in the file (empty list if the
+     *         file does not exist yet, e.g. on the very first execution)
      */
-    public List<Accessory> loadAll(List<Console> availableConsoles) {
+    public List<Accessory> loadAll() {
         List<Accessory> accessories = new ArrayList<>();
         File file = new File(ACCESSORIES_FILE);
         if (!file.exists()) {
@@ -71,7 +70,7 @@ public class AccessoryPersistence {
                 if (line.isBlank()) {
                     continue;
                 }
-                Accessory accessory = parseLine(line, availableConsoles);
+                Accessory accessory = parseLine(line);
                 if (accessory != null) {
                     accessories.add(accessory);
                 }
@@ -85,9 +84,6 @@ public class AccessoryPersistence {
     /**
      * Builds a single CSV line for the given accessory, using the correct
      * discriminator and extra fields depending on its concrete type.
-     *
-     * @param accessory accessory to serialize
-     * @return the CSV line representing this accessory
      */
     private String buildLine(Accessory accessory) {
         String type;
@@ -147,9 +143,9 @@ public class AccessoryPersistence {
 
     /**
      * Parses a single CSV line into the corresponding Accessory subclass,
-     * resolving compatible console ids against the given list of consoles.
+     * then attaches its compatible consoles (reconstructed by id only).
      */
-    private Accessory parseLine(String line, List<Console> availableConsoles) {
+    private Accessory parseLine(String line) {
         String[] parts = line.split(FIELD_SEPARATOR, -1);
         String type = parts[0];
         String id = parts[1];
@@ -160,41 +156,44 @@ public class AccessoryPersistence {
         String extra2 = parts[6];
         String compatibleIdsField = parts.length > 7 ? parts[7] : "";
 
-        List<Console> compatibleConsoles = resolveCompatibleConsoles(compatibleIdsField, availableConsoles);
+        List<Console> compatibleConsoles = resolveCompatibleConsoles(compatibleIdsField);
 
+        Accessory accessory;
         switch (type) {
             case "CONTROLLER":
-                return new Controller(id, title, price, availableQuantity, extra1, compatibleConsoles);
+                accessory = new Controller(id, title, price, availableQuantity, extra1);
+                break;
             case "CABLE":
                 double lengthMeters = Double.parseDouble(extra1);
-                return new Cable(id, title, price, availableQuantity, lengthMeters, extra2, compatibleConsoles);
+                accessory = new Cable(id, title, price, availableQuantity, lengthMeters, extra2);
+                break;
             case "MEMORY":
                 int capacityGb = Integer.parseInt(extra1);
-                return new Memory(id, title, price, availableQuantity, capacityGb, extra2, compatibleConsoles);
+                accessory = new Memory(id, title, price, availableQuantity, capacityGb, extra2);
+                break;
             default:
                 // Discriminador desconocido: se ignora la linea.
                 System.out.println("Unknown accessory type in file: " + type);
                 return null;
         }
+        accessory.setCompatibleConsoles(compatibleConsoles);
+        return accessory;
     }
 
     /**
-     * Resolves a "|"-separated field of console ids into actual Console
-     * objects, matching against the given list of available consoles.
+     * Resolves a "|"-separated field of console ids into placeholder
+     * Console objects carrying only their id. This layer has no access to
+     * the real console catalog, but the id is all that compatibility
+     * comparisons in AccessoryService need.
      */
-    private List<Console> resolveCompatibleConsoles(String compatibleIdsField, List<Console> availableConsoles) {
+    private List<Console> resolveCompatibleConsoles(String compatibleIdsField) {
         List<Console> resolved = new ArrayList<>();
         if (compatibleIdsField == null || compatibleIdsField.isBlank()) {
             return resolved;
         }
         String[] ids = compatibleIdsField.split(CONSOLE_ID_SEPARATOR);
         for (String consoleId : ids) {
-            for (Console console : availableConsoles) {
-                if (console.getId().equals(consoleId)) {
-                    resolved.add(console);
-                    break;
-                }
-            }
+            resolved.add(new Console(consoleId, "", 0, 0, "", "", ""));
         }
         return resolved;
     }
