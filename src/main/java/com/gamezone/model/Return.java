@@ -108,12 +108,13 @@ public class Return {
     public double getRefundAmount() {
         return refundAmount;
     }
-        /**
-     * Calculates the refund amount by summing the prices of all returned products.
-     * Assigns the calculated value to the refundAmount attribute.
-     * 
-     * @return The calculated refund amount
-     */
+       /**
+ * Calculates the refund amount by summing the prices of all returned products.
+ * Assigns the calculated value to the refundAmount attribute.
+ * If the list of returned products is empty, the refund amount will be 0.0.
+ * 
+ * @return The calculated refund amount
+ */
     public double calculateRefundAmount() {
         double total = 0.0;
         for (Product product : returnedProducts) {
