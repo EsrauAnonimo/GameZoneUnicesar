@@ -5,10 +5,12 @@ import com.gamezone.model.Product;
 import com.gamezone.persistence.AccessoryPersistence;
 import com.gamezone.persistence.PersonPersistence;
 import com.gamezone.persistence.ProductPersistence;
+import com.gamezone.persistence.PromotionRepository;
 import com.gamezone.persistence.SalePersistence;
 import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
+import com.gamezone.service.PromotionService;
 import com.gamezone.service.SaleService;
 import com.gamezone.ui.ConsoleUI;
 
@@ -27,11 +29,19 @@ public class Main {
         AccessoryService accessoryService = new AccessoryService(accessoryPersistence, currentConsoles(productService));
 
         SalePersistence salePersistence = new SalePersistence();
-        SaleService saleService = new SaleService(salePersistence, productService, accessoryService);
+
+        // Taller 2: módulo de promociones. El repositorio es la única capa
+        // que toca el archivo data/promotions.csv.
+        PromotionRepository promotionRepository = new PromotionRepository();
+        PromotionService promotionService = new PromotionService(promotionRepository);
+
+        SaleService saleService = new SaleService(salePersistence, productService, accessoryService,
+                promotionService);
 
         personService.preloadVendorsIfEmpty();
 
-        ConsoleUI ui = new ConsoleUI(personService, productService, saleService, accessoryService);
+        ConsoleUI ui = new ConsoleUI(personService, productService, saleService, accessoryService,
+                promotionService);
         ui.showMainMenu();
     }
 
