@@ -165,4 +165,19 @@ public class Sale implements Serializable {
     private String describe(Person person) {
         return person == null ? "(desconocido)" : person.getId();
     }
+        /**
+     * Checks if the sale can be returned.
+     * A sale can be returned if the current date is within 30 calendar days
+     * after the sale date.
+     * 
+     * @return true if the sale can be returned, false otherwise
+     */
+    public boolean canBeReturned() {
+        if (date == null) {
+            return false;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate limitDate = date.plusDays(30);
+        return !today.isAfter(limitDate);
+    }
 }
