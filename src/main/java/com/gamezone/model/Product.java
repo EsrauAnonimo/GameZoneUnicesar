@@ -43,6 +43,25 @@ public abstract class Product implements Serializable {
     }
 
     /**
+     * Gets the product title.
+     * Used by every description/listing method of the subclasses.
+     * 
+     * @return The product title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Updates the product title.
+     * 
+     * @param title The new title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
      * Abstract method that must be implemented by subclasses.
      * Each subclass must provide its own specific description.
      * 

@@ -141,9 +141,6 @@ public class AccessoryService {
         }
     }
 
-    /**
-     * Checks whether a given accessory matches the requested type label.
-     */
     private boolean matchesType(Accessory accessory, String type) {
         if (type == null) {
             return false;
@@ -156,10 +153,6 @@ public class AccessoryService {
         };
     }
 
-    /**
-     * Delegates the save of the current accessory list to the persistence
-     * layer.
-     */
     private void saveAll() {
         accessoryPersistence.saveAll(accessories);
     }

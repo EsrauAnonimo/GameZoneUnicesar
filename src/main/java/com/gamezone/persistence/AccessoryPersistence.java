@@ -23,7 +23,6 @@ import java.util.List;
  */
 public class AccessoryPersistence {
 
-    // Archivo unico con separador ";" y un discriminador de tipo por linea.
     private static final String ACCESSORIES_FILE = "data/accessories.csv";
     private static final String FIELD_SEPARATOR = ";";
     private static final String CONSOLE_ID_SEPARATOR = "\\|";
@@ -61,7 +60,6 @@ public class AccessoryPersistence {
         List<Accessory> accessories = new ArrayList<>();
         File file = new File(ACCESSORIES_FILE);
         if (!file.exists()) {
-            // Primera ejecucion: aun no hay archivo, se retorna lista vacia.
             return accessories;
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -81,10 +79,6 @@ public class AccessoryPersistence {
         return accessories;
     }
 
-    /**
-     * Builds a single CSV line for the given accessory, using the correct
-     * discriminator and extra fields depending on its concrete type.
-     */
     private String buildLine(Accessory accessory) {
         String type;
         String extra1;
@@ -103,7 +97,6 @@ public class AccessoryPersistence {
             extra1 = String.valueOf(memory.getCapacityGb());
             extra2 = memory.getMemoryType();
         } else {
-            // No deberia pasar: solo existen estos 3 tipos concretos.
             type = "UNKNOWN";
             extra1 = "";
             extra2 = "";
@@ -122,10 +115,6 @@ public class AccessoryPersistence {
                 compatibleIds);
     }
 
-    /**
-     * Joins the ids of an accessory's compatible consoles with the "|"
-     * separator, or returns an empty string if there are none.
-     */
     private String buildCompatibleIdsField(Accessory accessory) {
         List<Console> compatibleConsoles = accessory.getCompatibleConsoles();
         if (compatibleConsoles == null || compatibleConsoles.isEmpty()) {
@@ -144,48 +133,64 @@ public class AccessoryPersistence {
     /**
      * Parses a single CSV line into the corresponding Accessory subclass,
      * then attaches its compatible consoles (reconstructed by id only).
+     * Malformed lines (wrong column count, bad numbers, unknown type) are
+     * skipped with a console warning instead of crashing the load.
      */
     private Accessory parseLine(String line) {
         String[] parts = line.split(FIELD_SEPARATOR, -1);
+        if (parts.length < 7) {
+            System.out.println("Malformed accessory line in file: " + line);
+            return null;
+        }
         String type = parts[0];
+        if (!type.equals("CONTROLLER") && !type.equals("CABLE") && !type.equals("MEMORY")) {
+            System.out.println("Unknown accessory type in file: " + type);
+            return null;
+        }
         String id = parts[1];
         String title = parts[2];
-        double price = Double.parseDouble(parts[3]);
-        int availableQuantity = Integer.parseInt(parts[4]);
         String extra1 = parts[5];
         String extra2 = parts[6];
         String compatibleIdsField = parts.length > 7 ? parts[7] : "";
 
+        double price;
+        int availableQuantity;
+        try {
+            price = Double.parseDouble(parts[3]);
+            availableQuantity = Integer.parseInt(parts[4]);
+        } catch (NumberFormatException e) {
+            System.out.println("Malformed accessory line in file: " + line);
+            return null;
+        }
+
         List<Console> compatibleConsoles = resolveCompatibleConsoles(compatibleIdsField);
 
-        Accessory accessory;
-        switch (type) {
-            case "CONTROLLER":
-                accessory = new Controller(id, title, price, availableQuantity, extra1);
-                break;
-            case "CABLE":
-                double lengthMeters = Double.parseDouble(extra1);
-                accessory = new Cable(id, title, price, availableQuantity, lengthMeters, extra2);
-                break;
-            case "MEMORY":
-                int capacityGb = Integer.parseInt(extra1);
-                accessory = new Memory(id, title, price, availableQuantity, capacityGb, extra2);
-                break;
-            default:
-                // Discriminador desconocido: se ignora la linea.
-                System.out.println("Unknown accessory type in file: " + type);
-                return null;
+        try {
+            switch (type) {
+                case "CONTROLLER": {
+                    Controller controller = new Controller(id, title, price, availableQuantity, extra1);
+                    controller.setCompatibleConsoles(compatibleConsoles);
+                    return controller;
+                }
+                case "CABLE": {
+                    double lengthMeters = Double.parseDouble(extra1);
+                    Cable cable = new Cable(id, title, price, availableQuantity, lengthMeters, extra2);
+                    cable.setCompatibleConsoles(compatibleConsoles);
+                    return cable;
+                }
+                default: {
+                    int capacityGb = Integer.parseInt(extra1);
+                    Memory memory = new Memory(id, title, price, availableQuantity, capacityGb, extra2);
+                    memory.setCompatibleConsoles(compatibleConsoles);
+                    return memory;
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Malformed accessory line in file: " + line);
+            return null;
         }
-        accessory.setCompatibleConsoles(compatibleConsoles);
-        return accessory;
     }
 
-    /**
-     * Resolves a "|"-separated field of console ids into placeholder
-     * Console objects carrying only their id. This layer has no access to
-     * the real console catalog, but the id is all that compatibility
-     * comparisons in AccessoryService need.
-     */
     private List<Console> resolveCompatibleConsoles(String compatibleIdsField) {
         List<Console> resolved = new ArrayList<>();
         if (compatibleIdsField == null || compatibleIdsField.isBlank()) {
@@ -198,10 +203,6 @@ public class AccessoryPersistence {
         return resolved;
     }
 
-    /**
-     * Creates the data folder if it does not exist yet, so the first save
-     * does not fail.
-     */
     private void ensureDataFolderExists() {
         File folder = new File("data");
         if (!folder.exists()) {
