@@ -116,13 +116,20 @@ public class Return {
  * @return The calculated refund amount
  */
     public double calculateRefundAmount() {
-        double total = 0.0;
-        for (Product product : returnedProducts) {
+    if (returnedProducts == null || returnedProducts.isEmpty()) {
+        this.refundAmount = 0.0;
+        return 0.0;
+    }
+    
+    double total = 0.0;
+    for (Product product : returnedProducts) {
+        if (product != null) {
             total += product.getPrice();
         }
-        this.refundAmount = total;
-        return total;
     }
+    this.refundAmount = total;
+    return total;
+}
         /**
      * Generates a formatted receipt for the return.
      * The receipt is written in Spanish and includes all return details.
@@ -130,18 +137,26 @@ public class Return {
      * @return A formatted string with the return receipt
      */
     public String generateReturnReceipt() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("===== COMPROBANTE DE DEVOLUCIÓN =====\n");
-        sb.append("ID: ").append(id).append("\n");
-        sb.append("Fecha: ").append(date).append("\n");
-        sb.append("Venta original: ").append(originalSale != null ? originalSale.getId() : "N/A").append("\n");
-        sb.append("Motivo: ").append(reason).append("\n");
-        sb.append("Productos devueltos:\n");
+    StringBuilder sb = new StringBuilder();
+    sb.append("===== COMPROBANTE DE DEVOLUCIÓN =====\n");
+    sb.append("ID: ").append(id != null ? id : "N/A").append("\n");
+    sb.append("Fecha: ").append(date != null ? date : "N/A").append("\n");
+    sb.append("Venta original: ").append(originalSale != null ? originalSale.getId() : "N/A").append("\n");
+    sb.append("Motivo: ").append(reason != null ? reason : "No especificado").append("\n");
+    sb.append("Productos devueltos:\n");
+    
+    if (returnedProducts == null || returnedProducts.isEmpty()) {
+        sb.append("  (No hay productos devueltos)\n");
+    } else {
         for (Product product : returnedProducts) {
-            sb.append("  - ").append(product.getDescription()).append("\n");
+            if (product != null) {
+                sb.append("  - ").append(product.getDescription()).append("\n");
+            }
         }
-        sb.append("Monto reembolsado: $").append(String.format("%.2f", refundAmount)).append("\n");
-        sb.append("=====================================");
-        return sb.toString();
+    }
+    
+    sb.append("Monto reembolsado: $").append(String.format("%.2f", refundAmount)).append("\n");
+    sb.append("=====================================");
+    return sb.toString();
     }
 }
