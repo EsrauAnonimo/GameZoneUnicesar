@@ -5,6 +5,7 @@ import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.PromotionService;
+import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -22,15 +23,18 @@ public class ConsoleUI {
     private SaleService saleService;
     private AccessoryService accessoryService;
     private PromotionService promotionService;
+    private ReturnService returnService;
     private Scanner scanner;
 
     public ConsoleUI(PersonService personService, ProductService productService, SaleService saleService,
-                      AccessoryService accessoryService, PromotionService promotionService) {
+                      AccessoryService accessoryService, PromotionService promotionService,
+                      ReturnService returnService) {
         this.personService = personService;
         this.productService = productService;
         this.saleService = saleService;
         this.accessoryService = accessoryService;
         this.promotionService = promotionService;
+        this.returnService = returnService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -43,6 +47,7 @@ public class ConsoleUI {
             System.out.println("3. Sales menu");
             System.out.println("4. Accessories menu");
             System.out.println("5. Promociones menu");
+            System.out.println("6. Devoluciones menu");
             System.out.println("0. Exit");
             System.out.print("Choose an option: ");
             option = Integer.parseInt(scanner.nextLine());
@@ -53,6 +58,7 @@ public class ConsoleUI {
                 case 3: showSaleMenu(); break;
                 case 4: showAccessoryMenu(); break;
                 case 5: showPromotionMenu(); break;
+                case 6: showReturnMenu(); break;
                 case 0: System.out.println("Closing GameZone..."); break;
                 default: System.out.println("Invalid option.");
             }
@@ -412,6 +418,176 @@ public class ConsoleUI {
             default:
                 System.out.println("Opción inválida.");
         }
+    }
+
+    /**
+     * Shows the return management submenu: register a new return, list every
+     * registered return and query the returns by customer or by original sale.
+     */
+    public void showReturnMenu() {
+        System.out.println("\n--- Gestión de devoluciones ---");
+        System.out.println("1. Registrar nueva devolución.");
+        System.out.println("2. Consultar todas las devoluciones.");
+        System.out.println("3. Consultar devoluciones por cliente.");
+        System.out.println("4. Consultar devoluciones por venta.");
+        System.out.println("0. Volver al menú principal.");
+        System.out.print("Elija una opción: ");
+        int option = Integer.parseInt(scanner.nextLine());
+
+        switch (option) {
+            case 1:
+                registerReturnFlow();
+                break;
+            case 2:
+                showReturns(returnService.viewAllReturns());
+                break;
+            case 3: {
+                System.out.print("ID del cliente: ");
+                String customerId = scanner.nextLine();
+                showReturns(returnService.viewReturnsByCustomer(customerId));
+                break;
+            }
+            case 4: {
+                System.out.print("ID de la venta: ");
+                String saleId = scanner.nextLine();
+                showReturns(returnService.viewReturnsBySale(saleId));
+                break;
+            }
+            case 0:
+                break;
+            default:
+                System.out.println("Opción inválida.");
+        }
+    }
+
+    /**
+     * Guides the user through the registration of a return: asks for the
+     * original sale, lets the user pick the products to give back, asks for the
+     * reason and finally prints the receipt produced by the model.
+     */
+    private void registerReturnFlow() {
+        System.out.print("ID de la venta a devolver: ");
+        String saleId = scanner.nextLine().trim();
+
+        Sale sale = findSaleById(saleId);
+        if (sale == null) {
+            System.out.println("Error: no se encontró ninguna venta con el ID " + saleId + ".");
+            return;
+        }
+        if (!sale.canBeReturned()) {
+            System.out.println("Error: la venta " + saleId + " supera los 30 días y no admite devoluciones.");
+            return;
+        }
+
+        System.out.println("Productos de la venta " + saleId + ":");
+        for (Product product : sale.getProducts()) {
+            System.out.println("  - " + product.getId() + " | " + product.getDescription()
+                    + " | $" + product.getPrice());
+        }
+
+        List<String> productIds = askReturnedProductIds(sale);
+        if (productIds.isEmpty()) {
+            System.out.println("Devolución cancelada: no se seleccionó ningún producto.");
+            return;
+        }
+
+        System.out.print("Motivo de la devolución: ");
+        String reason = scanner.nextLine().trim();
+
+        Return registeredReturn = returnService.registerReturn(saleId, productIds, reason);
+        if (registeredReturn == null) {
+            System.out.println("Error: no fue posible registrar la devolución.");
+            return;
+        }
+        System.out.println(registeredReturn.generateReturnReceipt());
+    }
+
+    /**
+     * Asks for the ids of the products to be returned, accepting only ids that
+     * belong to the given sale. Unknown ids are reported and discarded, and
+     * repeated ids are ignored.
+     *
+     * @param sale the original sale of the return
+     * @return the ids of the products to return (empty if the input is empty)
+     */
+    private List<String> askReturnedProductIds(Sale sale) {
+        List<String> saleProductIds = new ArrayList<>();
+        for (Product product : sale.getProducts()) {
+            if (product != null && product.getId() != null && !saleProductIds.contains(product.getId())) {
+                saleProductIds.add(product.getId());
+            }
+        }
+
+        System.out.print("IDs de los productos a devolver (separados por coma): ");
+        String input = scanner.nextLine().trim();
+        if (input.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> selectedIds = new ArrayList<>();
+        for (String rawId : input.split(",")) {
+            String productId = rawId.trim();
+            if (!saleProductIds.contains(productId)) {
+                System.out.println("Aviso: el producto " + productId + " no pertenece a la venta, se omite.");
+                continue;
+            }
+            if (!selectedIds.contains(productId)) {
+                selectedIds.add(productId);
+            }
+        }
+        return selectedIds;
+    }
+
+    /**
+     * Prints a list of returns, or a message when there is nothing to show.
+     *
+     * @param returns the returns to print
+     */
+    private void showReturns(List<Return> returns) {
+        if (returns == null || returns.isEmpty()) {
+            System.out.println("No hay devoluciones registradas.");
+            return;
+        }
+        for (Return productReturn : returns) {
+            System.out.println(describe(productReturn));
+        }
+    }
+
+    /**
+     * Builds the one-line description of a return, including the links with the
+     * original sale and with the customer of that sale.
+     *
+     * @param productReturn the return to describe
+     * @return the description of the return
+     */
+    private String describe(Return productReturn) {
+        Sale originalSale = productReturn.getOriginalSale();
+        String saleId = originalSale != null ? originalSale.getId() : "N/A";
+        String customerId = originalSale != null && originalSale.getCustomer() != null
+                ? originalSale.getCustomer().getId() : "N/A";
+        return String.format(
+                "Devolución | ID: %s | Fecha: %s | Venta: %s | Cliente: %s | Motivo: %s | Reembolso: $%.2f",
+                productReturn.getId(),
+                productReturn.getDate(),
+                saleId,
+                customerId,
+                productReturn.getReason(),
+                productReturn.getRefundAmount());
+    }
+
+    /**
+     * Searches a registered sale by its id through the sale service.
+     *
+     * @param saleId the id of the sale to look for
+     * @return the sale, or null when no sale matches the id
+     */
+    private Sale findSaleById(String saleId) {
+        for (Sale sale : saleService.listAllSales()) {
+            if (sale.getId().equals(saleId)) {
+                return sale;
+            }
+        }
+        return null;
     }
 
     /**
