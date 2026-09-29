@@ -1,36 +1,74 @@
 Return Module — Analysis and Design
-This document covers the design decisions taken while integrating the return module into the GameZone Unicesar system, together with the layered-architecture justification for each one.
+This document outlines the core design decisions made while integrating the return module into the GameZone Unicesar system, along with the software architecture principles behind each choice.
 
-1. The business rule states that a sale can only be returned within 30 days after its date. Where is this rule implemented, and why does it belong to Sale instead of ReturnService?
-The rule is implemented in Sale through the canBeReturned() method, which compares LocalDate.now() against the sale date plus 30 days and treats the limit day as still valid.
+1. Business Rule: 30-Day Return Limit
+Where is it implemented?
 
-It belongs to Sale because the sale is the entity that owns the date the rule depends on, and because the rule is a property of the sale itself: asking a sale whether it may be returned is a question about that sale, not about a return that has not been created yet. ReturnService then reuses that answer as a precondition before registering anything.
+Inside the Sale class via the canBeReturned() method. It evaluates LocalDate.now() against the original sale date plus 30 days, considering the 30th day as still eligible for a return.
 
-Placing the check in ReturnService instead would duplicate the 30-day constant in a second place and would spread a rule about sales into the return module, where it would be harder to find and easier to change inconsistently.
+Why Sale instead of ReturnService?
 
-2. A Return keeps a reference to the original Sale instead of copying the customer, the seller, the date and the total. What does this decision buy us, and how does it protect the consistency of the data?
-Return declares a single attribute originalSale of type Sale and exposes it through getOriginalSale() with no setter, so a return can never be re-pointed to a different sale once it has been created.
+The sale owns the transaction date required for this check. Determining whether a sale is eligible for a return is a property of the sale itself—we are asking an existing sale about its state, not evaluating a return that hasn't been created yet. ReturnService simply consumes this result as a precondition before creating a return record.
 
-Because the sale is referenced rather than duplicated, there is only one source of truth for the customer, the date and the total. If the customer renames their phone number, every return of that sale shows the updated value, and it is structurally impossible for a return to claim a different customer than the one who actually bought the products. The lists of returned products and the refund amount are the only data the return owns on its own.
+Architectural Impact:
 
-3. The refund amount is the sum of the prices of the returned products. Which class computes it, and what stops the console from computing it instead?
-The amount is computed by Return.calculateRefundAmount(), which walks returnedProducts, sums getPrice() for each element, stores the result in the refundAmount attribute and returns it. An empty list yields 0.0 rather than an error.
+Placing this rule in ReturnService would leak domain logic across modules and duplicate the 30-day rule. Keeping it in Sale ensures domain rules stay encapsulated where the underlying data lives.
 
-The console only asks the return for the value and formats it. If the menu recalculated the sum, the same figure would be produced in two different places, and the receipt printed by the user interface could disagree with the figure stored in the file whenever one of them changed. Because the calculation lives in the model, the receipt, the persisted CSV row and any later report all read the same value.
+2. Referencing Sale vs. Duplicating Data
+Design Choice:
 
-4. Returning a product has to put the units back into the inventory, but the sale already decreased the stock when it was registered. Why was a new restoreStock method added to ProductService instead of reusing updateStock?
-The sale flow uses updateStock(String, int), which sets the available quantity to an absolute value, so it fits a scenario where the new quantity is already known.
+Return holds a single originalSale reference of type Sale, exposed through getOriginalSale() without a setter. Once instantiated, a return cannot be reassigned to a different sale.
 
-restoreStock(String, int) was added instead, and it increases the current quantity by the given amount and persists the result. The difference matters: an absolute setter would need the caller to read the current stock, add the returned units and write the total back, which puts inventory arithmetic in the return module. The additive method keeps the arithmetic inside ProductService, and it ignores non positive quantities so that a bad return can never reduce the stock by accident.
+Data Consistency:
 
-This change is purely additive: updateStock keeps its original behaviour and signature, so the product, sale, accessory and promotion modules are untouched.
+By referencing the original sale instead of copying customer information, seller details, date, and total amount, we maintain a single source of truth. For instance, if a customer updates their phone number, all associated returns automatically reflect the update. It becomes structurally impossible for a return to reference a different customer than the one who completed the purchase. The return entity only owns data specific to its operation: the list of returned items and the computed refund amount.
 
-5. The repository stores only identifiers in data/returns.csv, and it receives SaleService and ProductService to rebuild the objects when loading. What does that choice imply for the layering, and what is its cost?
-Because the file keeps the sale id and the product ids rather than whole objects, the repository needs the sale service and the product service to resolve them into real Sale and Product instances while loading. This is an inversion of the usual dependency direction: the persistence layer ends up depending on the service layer, since the rest of the system flows ui -> service -> persistence -> model.
+3. Refund Calculation Authority
+Calculation Ownership:
 
-The cost is real and should be stated plainly. It couples the repository to two services, it makes the repository impossible to test in isolation without those services, and it opens a risk of circular construction if those services ever need the repository back. It was implemented this way because the return record has to survive restarts of the program, and the sale and product data is the only place where that information lives. If the design were reopened, the cleaner alternative would be to keep the repository depending on nothing but the model, and let ReturnService perform the resolution after calling loadAll().
+The refund total is computed by Return.calculateRefundAmount(). It iterates through returnedProducts, sums the output of getPrice() for each item, stores the result in refundAmount, and returns it. If the item list is empty, it evaluates to 0.0 without throwing an exception.
 
-6. The same stock restoration problem appears again for accessories. How is it handled, and what is the pending gap?
-A sale can contain accessories as well as videogames and consoles, and accessories are stored in a different file and managed by AccessoryService, not by ProductService. restoreStock looks the product up in the product list, so a returned accessory is not found there and the inventory is left untouched.
+Why UI/Console Shouldn't Calculate It:
 
-The return service therefore restores the stock correctly for videogames and consoles, and silently does nothing for accessories. Closing the gap is a one-line change on the persistence and service constructors: ReturnRepository and ReturnService would also need an AccessoryService, and the restoration branch would check whether the returned item is an Accessory before delegating to restoreStock. Until that is agreed with Dev 2, the accessory case is a known limitation of the module and not a bug in the videogame and console flows.
+The user interface is strictly responsible for rendering data, not calculating financial totals. If the UI performed this calculation independently, any discrepancy in display logic could cause the printed receipt to mismatch the value stored on disk. Keeping the calculation inside the domain model guarantees that receipts, CSV logs, and reports all read from the exact same value.
+
+4. Stock Restoration Design
+The Problem:
+
+The standard sale workflow uses ProductService.updateStock(String, int), which accepts an absolute integer to overwrite current inventory levels. Reusing this method for returns would require the return module to fetch the current stock, add the returned quantity, and manually write back the total.
+
+The Solution:
+
+Instead of coupling stock arithmetic to the return module, a dedicated restoreStock(String, int) method was added to ProductService. This method directly increments inventory for a given product ID and persists the result. It also validates inputs to ensure non-positive quantities cannot inadvertently lower stock levels.
+
+Architectural Impact:
+
+This is a purely additive modification. updateStock retains its original signature and behavior, ensuring existing workflows (sales, products, promotions, accessories) remain completely unaffected while keeping inventory logic localized within ProductService.
+
+5. Repository Dependencies and Layering Trade-offs
+Persistence Strategy:
+
+To keep records compact, data/returns.csv stores only entity identifiers (sale ID and product IDs). Consequently, ReturnRepository receives instances of SaleService and ProductService to rehydrate complete objects upon loading data from disk.
+
+Layering Trade-offs:
+
+This creates an inverted dependency direction where the persistence layer depends on the service layer, breaking the standard UI -> Service -> Persistence -> Model flow.
+
+Costs & Future Improvements:
+
+Tight Coupling: The repository becomes directly dependent on two external services.
+
+Testability: Mocking or testing ReturnRepository in isolation requires setting up full service instances.
+
+Circular Dependency Risk: Increases the risk of circular references if those services ever require the repository.
+
+Alternative: A cleaner future refactor would strip service dependencies from ReturnRepository, allowing it to depend exclusively on domain models while shifting the entity resolution process into ReturnService after loading raw IDs.
+
+6. Accessory Stock Gap and Resolution Path
+Current Limitation:
+
+Sales can include accessories, which are managed separately by AccessoryService and persisted in a different data file. Currently, restoreStock only queries the product registry. When an accessory is returned, the lookup fails silently, leaving accessory stock unadjusted. As a result, stock restoration currently works for video games and consoles, but not accessories.
+
+Resolution Path:
+
+Fixing this requires injecting AccessoryService into ReturnRepository and ReturnService, then adding a type check (e.g., checking if an item is an Accessory) before delegating to the appropriate service. Until this architectural update is coordinated across the team, accessory stock restoration remains a documented system constraint rather than an unexpected runtime bug.
