@@ -157,8 +157,12 @@ public class AccessoryPersistence {
             return null;
         }
         String type = parts[0];
+        if (type.equalsIgnoreCase("type")) {
+            // Fila de encabezado: se ignora silenciosamente.
+            return null;
+        }
         if (!type.equals("CONTROLLER") && !type.equals("CABLE") && !type.equals("MEMORY")) {
-            // Discriminador desconocido (por ejemplo, una fila de encabezado):
+            // Discriminador desconocido:
             // se ignora la linea.
             System.out.println("Unknown accessory type in file: " + type);
             return null;

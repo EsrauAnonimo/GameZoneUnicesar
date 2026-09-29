@@ -6,11 +6,13 @@ import com.gamezone.persistence.AccessoryPersistence;
 import com.gamezone.persistence.PersonPersistence;
 import com.gamezone.persistence.ProductPersistence;
 import com.gamezone.persistence.PromotionRepository;
+import com.gamezone.persistence.ReturnRepository;
 import com.gamezone.persistence.SalePersistence;
 import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.PromotionService;
+import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 import com.gamezone.ui.ConsoleUI;
 
@@ -38,10 +40,17 @@ public class Main {
         SaleService saleService = new SaleService(salePersistence, productService, accessoryService,
                 promotionService);
 
+        // Taller 3: módulo de devoluciones. El repositorio es la única capa
+        // que toca el archivo data/returns.csv y necesita los servicios para
+        // resolver la venta original y los productos devueltos al leer.
+        ReturnRepository returnRepository = new ReturnRepository(saleService, productService, accessoryService);
+        ReturnService returnService = new ReturnService(returnRepository, saleService, productService,
+                accessoryService);
+
         personService.preloadVendorsIfEmpty();
 
         ConsoleUI ui = new ConsoleUI(personService, productService, saleService, accessoryService,
-                promotionService);
+                promotionService, returnService);
         ui.showMainMenu();
     }
 

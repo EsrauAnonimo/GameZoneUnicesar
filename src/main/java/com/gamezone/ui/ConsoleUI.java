@@ -5,6 +5,7 @@ import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.PromotionService;
+import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -22,15 +23,18 @@ public class ConsoleUI {
     private SaleService saleService;
     private AccessoryService accessoryService;
     private PromotionService promotionService;
+    private ReturnService returnService;
     private Scanner scanner;
 
     public ConsoleUI(PersonService personService, ProductService productService, SaleService saleService,
-                      AccessoryService accessoryService, PromotionService promotionService) {
+                      AccessoryService accessoryService, PromotionService promotionService,
+                      ReturnService returnService) {
         this.personService = personService;
         this.productService = productService;
         this.saleService = saleService;
         this.accessoryService = accessoryService;
         this.promotionService = promotionService;
+        this.returnService = returnService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -38,13 +42,14 @@ public class ConsoleUI {
         int option = -1;
         while (option != 0) {
             System.out.println("\n=== GameZone Unicesar ===");
-            System.out.println("1. Products menu");
-            System.out.println("2. People menu");
-            System.out.println("3. Sales menu");
-            System.out.println("4. Accessories menu");
-            System.out.println("5. Promociones menu");
-            System.out.println("0. Exit");
-            System.out.print("Choose an option: ");
+            System.out.println("1. Menu de productos");
+            System.out.println("2. Menu de personas");
+            System.out.println("3. Menu de ventas");
+            System.out.println("4. Menu de accesorios");
+            System.out.println("5. Menu de promociones");
+            System.out.println("6. Menu de devoluciones");
+            System.out.println("0. Salir");
+            System.out.print("Elija una opción: ");
             option = Integer.parseInt(scanner.nextLine());
 
             switch (option) {
@@ -53,54 +58,55 @@ public class ConsoleUI {
                 case 3: showSaleMenu(); break;
                 case 4: showAccessoryMenu(); break;
                 case 5: showPromotionMenu(); break;
-                case 0: System.out.println("Closing GameZone..."); break;
-                default: System.out.println("Invalid option.");
+                case 6: showReturnMenu(); break;
+                case 0: System.out.println("Cerrando GameZone..."); break;
+                default: System.out.println("Opción inválida.");
             }
         }
     }
 
     public void showProductMenu() {
-        System.out.println("\n--- Products ---");
-        System.out.println("1. Register video game");
-        System.out.println("2. Register console");
-        System.out.println("3. List all products");
-        System.out.print("Choose an option: ");
+        System.out.println("\n--- Productos ---");
+        System.out.println("1. Registrar videojuego");
+        System.out.println("2. Registrar consola");
+        System.out.println("3. Listar todos los productos");
+        System.out.print("Elija una opción: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         if (option == 1) {
             System.out.print("ID: ");
             String id = scanner.nextLine();
-            System.out.print("Title: ");
+            System.out.print("Título: ");
             String title = scanner.nextLine();
-            System.out.print("Price: ");
+            System.out.print("Precio: ");
             double price = Double.parseDouble(scanner.nextLine());
-            System.out.print("Available quantity: ");
+            System.out.print("Cantidad disponible: ");
             int quantity = Integer.parseInt(scanner.nextLine());
-            System.out.print("Platform: ");
+            System.out.print("Plataforma: ");
             String platform = scanner.nextLine();
-            System.out.print("Genre: ");
+            System.out.print("Género: ");
             String genre = scanner.nextLine();
-            System.out.print("Age rating: ");
+            System.out.print("Clasificación por edad: ");
             String ageRating = scanner.nextLine();
 
             VideoGame game = new VideoGame(id, title, price, quantity, platform, genre, ageRating);
             productService.registerVideoGame(game);
-            System.out.println("Video game registered.");
+            System.out.println("Videojuego registrado.");
 
         } else if (option == 2) {
             System.out.print("ID: ");
             String id = scanner.nextLine();
-            System.out.print("Title: ");
+            System.out.print("Titulo: ");
             String title = scanner.nextLine();
-            System.out.print("Price: ");
+            System.out.print("Precio: ");
             double price = Double.parseDouble(scanner.nextLine());
-            System.out.print("Available quantity: ");
+            System.out.print("Cantidad disponible: ");
             int quantity = Integer.parseInt(scanner.nextLine());
-            System.out.print("Brand: ");
+            System.out.print("Marca: ");
             String brand = scanner.nextLine();
-            System.out.print("Model: ");
+            System.out.print("Modelo: ");
             String model = scanner.nextLine();
-            System.out.print("Generation: ");
+            System.out.print("Generación: ");
             String generation = scanner.nextLine();
 
             Console console = new Console(id, title, price, quantity, brand, model, generation);
@@ -108,7 +114,7 @@ public class ConsoleUI {
             // La consola recién registrada debe poder referenciarse desde los
             // accesorios, así que se refresca la lista de consolas conocidas.
             accessoryService.setAvailableConsoles(listConsoles());
-            System.out.println("Console registered.");
+            System.out.println("Consola registrada.");
 
         } else if (option == 3) {
             List<Product> products = productService.listAllProducts();
@@ -119,28 +125,28 @@ public class ConsoleUI {
     }
 
     public void showPersonMenu() {
-        System.out.println("\n--- People ---");
-        System.out.println("1. Register customer");
-        System.out.println("2. List customers");
-        System.out.println("3. List sellers");
-        System.out.print("Choose an option: ");
+        System.out.println("\n--- Personas ---");
+        System.out.println("1. Registrar cliente");
+        System.out.println("2. Listar clientes");
+        System.out.println("3. Listar vendedores");
+        System.out.print("Elija una opción: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         if (option == 1) {
             System.out.print("ID: ");
             String id = scanner.nextLine();
-            System.out.print("Name: ");
+            System.out.print("Nombre: ");
             String name = scanner.nextLine();
-            System.out.print("Identification: ");
+            System.out.print("Identificacion: ");
             String identification = scanner.nextLine();
-            System.out.print("Phone: ");
+            System.out.print("Telefono: ");
             String phone = scanner.nextLine();
-            System.out.print("Email: ");
+            System.out.print("Correo electrónico: ");
             String email = scanner.nextLine();
 
             Customer customer = new Customer(id, name, identification, phone, email);
             personService.registerCustomer(customer);
-            System.out.println("Customer registered.");
+            System.out.println("Cliente registrado.");
 
         } else if (option == 2) {
             for (Customer c : personService.listCustomers()) {
@@ -154,20 +160,20 @@ public class ConsoleUI {
     }
 
     public void showSaleMenu() {
-        System.out.println("\n--- Sales ---");
-        System.out.println("1. Register sale");
-        System.out.println("2. List all sales");
-        System.out.println("3. List sales by customer");
-        System.out.println("4. List sales by seller");
-        System.out.print("Choose an option: ");
+        System.out.println("\n--- Ventas ---");
+        System.out.println("1. Registrar venta");
+        System.out.println("2. Listar todas las ventas");
+        System.out.println("3. Listar ventas por cliente");
+        System.out.println("4. Listar ventas por vendedor");
+        System.out.print("Elija una opción: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         if (option == 1) {
-            System.out.print("Sale ID: ");
+            System.out.print("ID de la venta: ");
             String id = scanner.nextLine();
-            System.out.print("Customer ID: ");
+            System.out.print("ID del cliente: ");
             String customerId = scanner.nextLine();
-            System.out.print("Seller ID: ");
+            System.out.print("ID del vendedor: ");
             String sellerId = scanner.nextLine();
 
             // CAMBIO 1: usamos los métodos que ya existen en PersonService,
@@ -178,11 +184,11 @@ public class ConsoleUI {
             // CAMBIO 2: validamos que existan antes de seguir, para no
             // construir una venta con datos nulos.
             if (customer == null) {
-                System.out.println("Error: no customer found with that ID.");
+                System.out.println("Error: no se encontró ningún cliente con ese ID.");
                 return;
             }
             if (seller == null) {
-                System.out.println("Error: no seller found with that ID.");
+                System.out.println("Error: no se encontró ningún vendedor con ese ID.");
                 return;
             }
 
@@ -191,40 +197,40 @@ public class ConsoleUI {
             while (more.equalsIgnoreCase("s")) {
                 // CAMBIO 3: ahora el ID puede corresponder tanto a un Product
                 // (VideoGame/Console) como a un Accessory (Controller/Cable/Memory).
-                System.out.print("Product/Accessory ID: ");
+                System.out.print("ID del producto o accesorio: ");
                 String itemId = scanner.nextLine();
                 Product product = findItemById(itemId);
                 if (product != null) {
                     products.add(product);
                 } else {
-                    System.out.println("Warning: no product or accessory found with that ID, skipped.");
+                    System.out.println("Aviso: no se encontró ningún producto o accesorio con ese ID, se omite.");
                 }
-                System.out.print("Add another product? (s/n): ");
+                System.out.print("¿Agregar otro producto? (s/n): ");
                 more = scanner.nextLine();
             }
 
             Sale sale = new Sale(id, LocalDate.now(), customer, seller, products);
             saleService.registerSale(sale);
-            System.out.println("Sale registered. Total: " + sale.getTotal());
+            System.out.println("Venta registrada. Total: " + sale.getTotal());
             // El recibo muestra el subtotal, el descuento aplicado (con el
             // nombre de la promoción) y el total final.
             System.out.println(sale.generateReceipt());
 
         } else if (option == 2) {
             for (Sale s : saleService.listAllSales()) {
-                System.out.println("Sale " + s.getId() + " - Total: " + s.getTotal());
+                System.out.println("Venta " + s.getId() + " - Total: " + s.getTotal());
             }
         } else if (option == 3) {
-            System.out.print("Customer ID: ");
+            System.out.print("ID del cliente: ");
             String customerId = scanner.nextLine();
             for (Sale s : saleService.getSalesByCustomer(customerId)) {
-                System.out.println("Sale " + s.getId() + " - Total: " + s.getTotal());
+                System.out.println("Venta " + s.getId() + " - Total: " + s.getTotal());
             }
         } else if (option == 4) {
-            System.out.print("Seller ID: ");
+            System.out.print("ID del vendedor: ");
             String sellerId = scanner.nextLine();
             for (Sale s : saleService.getSalesBySeller(sellerId)) {
-                System.out.println("Sale " + s.getId() + " - Total: " + s.getTotal());
+                System.out.println("Venta " + s.getId() + " - Total: " + s.getTotal());
             }
         }
     }
@@ -412,6 +418,251 @@ public class ConsoleUI {
             default:
                 System.out.println("Opción inválida.");
         }
+    }
+
+    /**
+     * Shows the return management submenu: register a new return, list every
+     * registered return and query the returns by customer or by original sale.
+     */
+    public void showReturnMenu() {
+        System.out.println("\n--- Gestión de devoluciones ---");
+        System.out.println("1. Registrar nueva devolución.");
+        System.out.println("2. Consultar todas las devoluciones.");
+        System.out.println("3. Consultar devoluciones por cliente.");
+        System.out.println("4. Consultar devoluciones por venta.");
+        System.out.println("5. Consultar balance mensual.");
+        System.out.println("0. Volver al menú principal.");
+        System.out.print("Elija una opción: ");
+        int option = Integer.parseInt(scanner.nextLine());
+
+        switch (option) {
+            case 1:
+                registerReturnFlow();
+                break;
+            case 2:
+                showReturns(returnService.viewAllReturns());
+                break;
+            case 3: {
+                System.out.print("ID del cliente: ");
+                String customerId = scanner.nextLine();
+                showReturns(returnService.viewReturnsByCustomer(customerId));
+                break;
+            }
+            case 4: {
+                System.out.print("ID de la venta: ");
+                String saleId = scanner.nextLine();
+                showReturns(returnService.viewReturnsBySale(saleId));
+                break;
+            }
+            case 5:
+                showMonthlyBalance();
+                break;
+            case 0:
+                break;
+            default:
+                System.out.println("Opción inválida.");
+        }
+    }
+
+    /**
+     * Asks for the month and the year of the requested balance and prints the
+     * three figures the module offers: the sales of the period, the returns of
+     * the period and the resulting net balance.
+     */
+    private void showMonthlyBalance() {
+        int month = askMonth();
+        int year = askYear();
+
+        double sales = returnService.calculateMonthlySales(month, year);
+        double returns = returnService.calculateMonthlyReturns(month, year);
+        double balance = returnService.generateMonthlyBalance(month, year);
+
+        System.out.printf("Balance de devoluciones de %02d/%d:%n", month, year);
+        System.out.printf("  Total de ventas:      $%.2f%n", sales);
+        System.out.printf("  Total de devoluciones: $%.2f%n", returns);
+        System.out.printf("  Balance neto:         $%.2f%n", balance);
+    }
+
+    /**
+     * Asks for a month number until a value between 1 and 12 is entered.
+     *
+     * @return the month entered by the user
+     */
+    private int askMonth() {
+        while (true) {
+            System.out.print("Mes (1-12): ");
+            try {
+                int month = Integer.parseInt(scanner.nextLine().trim());
+                if (month >= 1 && month <= 12) {
+                    return month;
+                }
+            } catch (NumberFormatException e) {
+                // Se cae al mensaje de error de abajo.
+            }
+            System.out.println("Error: el mes debe ser un número entre 1 y 12.");
+        }
+    }
+
+    /**
+     * Asks for a year until a plausible value is entered.
+     *
+     * @return the year entered by the user
+     */
+    private int askYear() {
+        while (true) {
+            System.out.print("Año: ");
+            try {
+                int year = Integer.parseInt(scanner.nextLine().trim());
+                if (year >= 2000 && year <= 2100) {
+                    return year;
+                }
+            } catch (NumberFormatException e) {
+                // Se cae al mensaje de error de abajo.
+            }
+            System.out.println("Error: el año debe estar entre 2000 y 2100.");
+        }
+    }
+
+    /**
+     * Guides the user through the registration of a return: asks for the
+     * original sale, lets the user pick the products to give back, asks for the
+     * reason and finally prints the receipt produced by the model.
+     */
+    private void registerReturnFlow() {
+        System.out.print("ID de la venta a devolver: ");
+        String saleId = scanner.nextLine().trim();
+
+        Sale sale = findSaleById(saleId);
+        if (sale == null) {
+            System.out.println("Error: no se encontró ninguna venta con el ID " + saleId + ".");
+            return;
+        }
+        if (!sale.canBeReturned()) {
+            System.out.println("Error: la venta " + saleId + " supera los 30 días y no admite devoluciones.");
+            return;
+        }
+
+        System.out.println("Productos de la venta " + saleId + ":");
+        for (Product product : sale.getProducts()) {
+            System.out.println("  - " + product.getId() + " | " + product.getDescription()
+                    + " | $" + product.getPrice());
+        }
+
+        List<String> productIds = askReturnedProductIds(sale);
+        if (productIds.isEmpty()) {
+            System.out.println("Devolución cancelada: no se seleccionó ningún producto.");
+            return;
+        }
+
+        System.out.print("Motivo de la devolución: ");
+        String reason = scanner.nextLine().trim();
+
+        Return registeredReturn;
+        try {
+            registeredReturn = returnService.registerReturn(saleId, productIds, reason);
+        } catch (IllegalArgumentException e) {
+            // El servicio comunica los rechazos lanzando IllegalArgumentException
+            // y ese mensaje ya viene en espanol, asi que se muestra tal cual en
+            // vez de dejar que la excepcion salga del menu y tumbe la app de
+            // consola. Las validaciones de arriba ya evitan los rechazos
+            // conocidos; esta red de seguridad cubre los que se agreguen.
+            System.out.println("No se pudo registrar la devolución: " + e.getMessage());
+            return;
+        }
+
+        if (registeredReturn == null) {
+            System.out.println("Error: no fue posible registrar la devolución.");
+            return;
+        }
+        System.out.println(registeredReturn.generateReturnReceipt());
+    }
+
+    /**
+     * Asks for the ids of the products to be returned, accepting only ids that
+     * belong to the given sale. Unknown ids are reported and discarded, and
+     * repeated ids are ignored.
+     *
+     * @param sale the original sale of the return
+     * @return the ids of the products to return (empty if the input is empty)
+     */
+    private List<String> askReturnedProductIds(Sale sale) {
+        List<String> saleProductIds = new ArrayList<>();
+        for (Product product : sale.getProducts()) {
+            if (product != null && product.getId() != null && !saleProductIds.contains(product.getId())) {
+                saleProductIds.add(product.getId());
+            }
+        }
+
+        System.out.print("IDs de los productos a devolver (separados por coma): ");
+        String input = scanner.nextLine().trim();
+        if (input.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> selectedIds = new ArrayList<>();
+        for (String rawId : input.split(",")) {
+            String productId = rawId.trim();
+            if (!saleProductIds.contains(productId)) {
+                System.out.println("Aviso: el producto " + productId + " no pertenece a la venta, se omite.");
+                continue;
+            }
+            if (!selectedIds.contains(productId)) {
+                selectedIds.add(productId);
+            }
+        }
+        return selectedIds;
+    }
+
+    /**
+     * Prints a list of returns, or a message when there is nothing to show.
+     *
+     * @param returns the returns to print
+     */
+    private void showReturns(List<Return> returns) {
+        if (returns == null || returns.isEmpty()) {
+            System.out.println("No hay devoluciones registradas.");
+            return;
+        }
+        for (Return productReturn : returns) {
+            System.out.println(describe(productReturn));
+        }
+    }
+
+    /**
+     * Builds the one-line description of a return, including the links with the
+     * original sale and with the customer of that sale.
+     *
+     * @param productReturn the return to describe
+     * @return the description of the return
+     */
+    private String describe(Return productReturn) {
+        Sale originalSale = productReturn.getOriginalSale();
+        String saleId = originalSale != null ? originalSale.getId() : "N/A";
+        String customerId = originalSale != null && originalSale.getCustomer() != null
+                ? originalSale.getCustomer().getId() : "N/A";
+        return String.format(
+                "Devolución | ID: %s | Fecha: %s | Venta: %s | Cliente: %s | Motivo: %s | Reembolso: $%.2f",
+                productReturn.getId(),
+                productReturn.getDate(),
+                saleId,
+                customerId,
+                productReturn.getReason(),
+                productReturn.getRefundAmount());
+    }
+
+    /**
+     * Searches a registered sale by its id through the sale service.
+     *
+     * @param saleId the id of the sale to look for
+     * @return the sale, or null when no sale matches the id
+     */
+    private Sale findSaleById(String saleId) {
+        for (Sale sale : saleService.listAllSales()) {
+            if (sale.getId().equals(saleId)) {
+                return sale;
+            }
+        }
+        return null;
     }
 
     /**
