@@ -42,14 +42,14 @@ public class ConsoleUI {
         int option = -1;
         while (option != 0) {
             System.out.println("\n=== GameZone Unicesar ===");
-            System.out.println("1. Products menu");
-            System.out.println("2. People menu");
-            System.out.println("3. Sales menu");
-            System.out.println("4. Accessories menu");
-            System.out.println("5. Promociones menu");
-            System.out.println("6. Devoluciones menu");
-            System.out.println("0. Exit");
-            System.out.print("Choose an option: ");
+            System.out.println("1. Menú de productos");
+            System.out.println("2. Menú de personas");
+            System.out.println("3. Menú de ventas");
+            System.out.println("4. Menú de accesorios");
+            System.out.println("5. Menú de promociones");
+            System.out.println("6. Menú de devoluciones");
+            System.out.println("0. Salir");
+            System.out.print("Elija una opción: ");
             option = Integer.parseInt(scanner.nextLine());
 
             switch (option) {
@@ -59,54 +59,54 @@ public class ConsoleUI {
                 case 4: showAccessoryMenu(); break;
                 case 5: showPromotionMenu(); break;
                 case 6: showReturnMenu(); break;
-                case 0: System.out.println("Closing GameZone..."); break;
-                default: System.out.println("Invalid option.");
+                case 0: System.out.println("Cerrando GameZone..."); break;
+                default: System.out.println("Opción inválida.");
             }
         }
     }
 
     public void showProductMenu() {
-        System.out.println("\n--- Products ---");
-        System.out.println("1. Register video game");
-        System.out.println("2. Register console");
-        System.out.println("3. List all products");
-        System.out.print("Choose an option: ");
+        System.out.println("\n--- Productos ---");
+        System.out.println("1. Registrar videojuego");
+        System.out.println("2. Registrar consola");
+        System.out.println("3. Listar todos los productos");
+        System.out.print("Elija una opción: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         if (option == 1) {
             System.out.print("ID: ");
             String id = scanner.nextLine();
-            System.out.print("Title: ");
+            System.out.print("Título: ");
             String title = scanner.nextLine();
-            System.out.print("Price: ");
+            System.out.print("Precio: ");
             double price = Double.parseDouble(scanner.nextLine());
-            System.out.print("Available quantity: ");
+            System.out.print("Cantidad disponible: ");
             int quantity = Integer.parseInt(scanner.nextLine());
-            System.out.print("Platform: ");
+            System.out.print("Plataforma: ");
             String platform = scanner.nextLine();
-            System.out.print("Genre: ");
+            System.out.print("Género: ");
             String genre = scanner.nextLine();
-            System.out.print("Age rating: ");
+            System.out.print("Clasificación por edad: ");
             String ageRating = scanner.nextLine();
 
             VideoGame game = new VideoGame(id, title, price, quantity, platform, genre, ageRating);
             productService.registerVideoGame(game);
-            System.out.println("Video game registered.");
+            System.out.println("Videojuego registrado.");
 
         } else if (option == 2) {
             System.out.print("ID: ");
             String id = scanner.nextLine();
-            System.out.print("Title: ");
+            System.out.print("Título: ");
             String title = scanner.nextLine();
-            System.out.print("Price: ");
+            System.out.print("Precio: ");
             double price = Double.parseDouble(scanner.nextLine());
-            System.out.print("Available quantity: ");
+            System.out.print("Cantidad disponible: ");
             int quantity = Integer.parseInt(scanner.nextLine());
-            System.out.print("Brand: ");
+            System.out.print("Marca: ");
             String brand = scanner.nextLine();
-            System.out.print("Model: ");
+            System.out.print("Modelo: ");
             String model = scanner.nextLine();
-            System.out.print("Generation: ");
+            System.out.print("Generación: ");
             String generation = scanner.nextLine();
 
             Console console = new Console(id, title, price, quantity, brand, model, generation);
@@ -114,7 +114,7 @@ public class ConsoleUI {
             // La consola recién registrada debe poder referenciarse desde los
             // accesorios, así que se refresca la lista de consolas conocidas.
             accessoryService.setAvailableConsoles(listConsoles());
-            System.out.println("Console registered.");
+            System.out.println("Consola registrada.");
 
         } else if (option == 3) {
             List<Product> products = productService.listAllProducts();
@@ -125,28 +125,28 @@ public class ConsoleUI {
     }
 
     public void showPersonMenu() {
-        System.out.println("\n--- People ---");
-        System.out.println("1. Register customer");
-        System.out.println("2. List customers");
-        System.out.println("3. List sellers");
-        System.out.print("Choose an option: ");
+        System.out.println("\n--- Personas ---");
+        System.out.println("1. Registrar cliente");
+        System.out.println("2. Listar clientes");
+        System.out.println("3. Listar vendedores");
+        System.out.print("Elija una opción: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         if (option == 1) {
             System.out.print("ID: ");
             String id = scanner.nextLine();
-            System.out.print("Name: ");
+            System.out.print("Nombre: ");
             String name = scanner.nextLine();
-            System.out.print("Identification: ");
+            System.out.print("Identificación: ");
             String identification = scanner.nextLine();
-            System.out.print("Phone: ");
+            System.out.print("Teléfono: ");
             String phone = scanner.nextLine();
-            System.out.print("Email: ");
+            System.out.print("Correo electrónico: ");
             String email = scanner.nextLine();
 
             Customer customer = new Customer(id, name, identification, phone, email);
             personService.registerCustomer(customer);
-            System.out.println("Customer registered.");
+            System.out.println("Cliente registrado.");
 
         } else if (option == 2) {
             for (Customer c : personService.listCustomers()) {
@@ -160,20 +160,20 @@ public class ConsoleUI {
     }
 
     public void showSaleMenu() {
-        System.out.println("\n--- Sales ---");
-        System.out.println("1. Register sale");
-        System.out.println("2. List all sales");
-        System.out.println("3. List sales by customer");
-        System.out.println("4. List sales by seller");
-        System.out.print("Choose an option: ");
+        System.out.println("\n--- Ventas ---");
+        System.out.println("1. Registrar venta");
+        System.out.println("2. Listar todas las ventas");
+        System.out.println("3. Listar ventas por cliente");
+        System.out.println("4. Listar ventas por vendedor");
+        System.out.print("Elija una opción: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         if (option == 1) {
-            System.out.print("Sale ID: ");
+            System.out.print("ID de la venta: ");
             String id = scanner.nextLine();
-            System.out.print("Customer ID: ");
+            System.out.print("ID del cliente: ");
             String customerId = scanner.nextLine();
-            System.out.print("Seller ID: ");
+            System.out.print("ID del vendedor: ");
             String sellerId = scanner.nextLine();
 
             // CAMBIO 1: usamos los métodos que ya existen en PersonService,
@@ -184,11 +184,11 @@ public class ConsoleUI {
             // CAMBIO 2: validamos que existan antes de seguir, para no
             // construir una venta con datos nulos.
             if (customer == null) {
-                System.out.println("Error: no customer found with that ID.");
+                System.out.println("Error: no se encontró ningún cliente con ese ID.");
                 return;
             }
             if (seller == null) {
-                System.out.println("Error: no seller found with that ID.");
+                System.out.println("Error: no se encontró ningún vendedor con ese ID.");
                 return;
             }
 
@@ -197,40 +197,40 @@ public class ConsoleUI {
             while (more.equalsIgnoreCase("s")) {
                 // CAMBIO 3: ahora el ID puede corresponder tanto a un Product
                 // (VideoGame/Console) como a un Accessory (Controller/Cable/Memory).
-                System.out.print("Product/Accessory ID: ");
+                System.out.print("ID del producto o accesorio: ");
                 String itemId = scanner.nextLine();
                 Product product = findItemById(itemId);
                 if (product != null) {
                     products.add(product);
                 } else {
-                    System.out.println("Warning: no product or accessory found with that ID, skipped.");
+                    System.out.println("Aviso: no se encontró ningún producto o accesorio con ese ID, se omite.");
                 }
-                System.out.print("Add another product? (s/n): ");
+                System.out.print("¿Agregar otro producto? (s/n): ");
                 more = scanner.nextLine();
             }
 
             Sale sale = new Sale(id, LocalDate.now(), customer, seller, products);
             saleService.registerSale(sale);
-            System.out.println("Sale registered. Total: " + sale.getTotal());
+            System.out.println("Venta registrada. Total: " + sale.getTotal());
             // El recibo muestra el subtotal, el descuento aplicado (con el
             // nombre de la promoción) y el total final.
             System.out.println(sale.generateReceipt());
 
         } else if (option == 2) {
             for (Sale s : saleService.listAllSales()) {
-                System.out.println("Sale " + s.getId() + " - Total: " + s.getTotal());
+                System.out.println("Venta " + s.getId() + " - Total: " + s.getTotal());
             }
         } else if (option == 3) {
-            System.out.print("Customer ID: ");
+            System.out.print("ID del cliente: ");
             String customerId = scanner.nextLine();
             for (Sale s : saleService.getSalesByCustomer(customerId)) {
-                System.out.println("Sale " + s.getId() + " - Total: " + s.getTotal());
+                System.out.println("Venta " + s.getId() + " - Total: " + s.getTotal());
             }
         } else if (option == 4) {
-            System.out.print("Seller ID: ");
+            System.out.print("ID del vendedor: ");
             String sellerId = scanner.nextLine();
             for (Sale s : saleService.getSalesBySeller(sellerId)) {
-                System.out.println("Sale " + s.getId() + " - Total: " + s.getTotal());
+                System.out.println("Venta " + s.getId() + " - Total: " + s.getTotal());
             }
         }
     }
