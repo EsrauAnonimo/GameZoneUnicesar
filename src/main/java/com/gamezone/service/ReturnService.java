@@ -78,6 +78,7 @@ public class ReturnService {
             }
             productsToReturn.add(product);
         }
+        rejectAlreadyReturned(sale, productsToReturn);
 
         Return newReturn = new Return(UUID.randomUUID().toString(), LocalDate.now(), sale, reason);
         for (Product product : productsToReturn) {
@@ -209,5 +210,64 @@ public class ReturnService {
             }
         }
         return null;
+    }
+
+    /**
+     * Rejects a return that would give back more units of a product than the
+     * ones the sale actually contained.
+     *
+     * <p>Without this check the same unit could be returned twice: the stock
+     * would grow past its original value and the customer would be refunded
+     * twice for the same product. Units are counted instead of compared as a
+     * set, so a sale that contains the same product more than once keeps
+     * working.</p>
+     *
+     * @param sale             the original sale of the return
+     * @param productsToReturn the products of the return being registered
+     * @throws IllegalArgumentException if a product would be over returned
+     */
+    private void rejectAlreadyReturned(Sale sale, List<Product> productsToReturn) {
+        for (Product product : productsToReturn) {
+            int sold = countInSale(sale, product.getId());
+            int alreadyReturned = countAlreadyReturned(sale.getId(), product.getId());
+            int requested = countInList(productsToReturn, product.getId());
+
+            if (alreadyReturned + requested > sold) {
+                throw new IllegalArgumentException("El producto " + product.getId()
+                        + " ya fue devuelto y no quedan unidades por devolver.");
+            }
+        }
+    }
+
+    private int countInSale(Sale sale, String productId) {
+        int count = 0;
+        for (Product product : sale.getProducts()) {
+            if (product != null && product.getId().equals(productId)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private int countAlreadyReturned(String saleId, String productId) {
+        int count = 0;
+        for (Return theReturn : returns) {
+            if (theReturn.getOriginalSale() == null
+                    || !theReturn.getOriginalSale().getId().equals(saleId)) {
+                continue;
+            }
+            count += countInList(theReturn.getReturnedProducts(), productId);
+        }
+        return count;
+    }
+
+    private int countInList(List<Product> products, String productId) {
+        int count = 0;
+        for (Product product : products) {
+            if (product != null && product.getId().equals(productId)) {
+                count++;
+            }
+        }
+        return count;
     }
 }
