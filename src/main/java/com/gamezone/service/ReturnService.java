@@ -98,10 +98,14 @@ public class ReturnService {
     /**
      * Returns the full history of returns.
      *
+     * <p>A copy is returned on purpose: handing out the internal list would let
+     * any caller change the state of the service, for example emptying the
+     * history or dropping entries from it.</p>
+     *
      * @return list of all returns
      */
     public List<Return> viewAllReturns() {
-        return returns;
+        return new ArrayList<>(returns);
     }
 
     /**

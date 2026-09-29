@@ -199,6 +199,12 @@ public class ReturnRepository {
                 Product product = findProductById(productId);
                 if (product != null) {
                     theReturn.addReturnedProduct(product);
+                } else {
+                    // Avisar en vez de omitir en silencio: si el producto ya no
+                    // esta, el reembolso de esta devolucion quedaria incompleto
+                    // y nadie se enteraria de por que.
+                    System.out.println("Return " + id + " references unknown product " + productId
+                            + ", it is left out of the refund.");
                 }
             }
         }
