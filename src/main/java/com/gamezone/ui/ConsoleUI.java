@@ -550,7 +550,19 @@ public class ConsoleUI {
         System.out.print("Motivo de la devolución: ");
         String reason = scanner.nextLine().trim();
 
-        Return registeredReturn = returnService.registerReturn(saleId, productIds, reason);
+        Return registeredReturn;
+        try {
+            registeredReturn = returnService.registerReturn(saleId, productIds, reason);
+        } catch (IllegalArgumentException e) {
+            // El servicio comunica los rechazos lanzando IllegalArgumentException
+            // y ese mensaje ya viene en espanol, asi que se muestra tal cual en
+            // vez de dejar que la excepcion salga del menu y tumbe la app de
+            // consola. Las validaciones de arriba ya evitan los rechazos
+            // conocidos; esta red de seguridad cubre los que se agreguen.
+            System.out.println("No se pudo registrar la devolución: " + e.getMessage());
+            return;
+        }
+
         if (registeredReturn == null) {
             System.out.println("Error: no fue posible registrar la devolución.");
             return;
