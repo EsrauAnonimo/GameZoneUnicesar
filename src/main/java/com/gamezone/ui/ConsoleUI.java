@@ -42,12 +42,12 @@ public class ConsoleUI {
         int option = -1;
         while (option != 0) {
             System.out.println("\n=== GameZone Unicesar ===");
-            System.out.println("1. Menú de productos");
-            System.out.println("2. Menú de personas");
-            System.out.println("3. Menú de ventas");
-            System.out.println("4. Menú de accesorios");
-            System.out.println("5. Menú de promociones");
-            System.out.println("6. Menú de devoluciones");
+            System.out.println("1. Menu de productos");
+            System.out.println("2. Menu de personas");
+            System.out.println("3. Menu de ventas");
+            System.out.println("4. Menu de accesorios");
+            System.out.println("5. Menu de promociones");
+            System.out.println("6. Menu de devoluciones");
             System.out.println("0. Salir");
             System.out.print("Elija una opción: ");
             option = Integer.parseInt(scanner.nextLine());
@@ -96,7 +96,7 @@ public class ConsoleUI {
         } else if (option == 2) {
             System.out.print("ID: ");
             String id = scanner.nextLine();
-            System.out.print("Título: ");
+            System.out.print("Titulo: ");
             String title = scanner.nextLine();
             System.out.print("Precio: ");
             double price = Double.parseDouble(scanner.nextLine());
@@ -137,9 +137,9 @@ public class ConsoleUI {
             String id = scanner.nextLine();
             System.out.print("Nombre: ");
             String name = scanner.nextLine();
-            System.out.print("Identificación: ");
+            System.out.print("Identificacion: ");
             String identification = scanner.nextLine();
-            System.out.print("Teléfono: ");
+            System.out.print("Telefono: ");
             String phone = scanner.nextLine();
             System.out.print("Correo electrónico: ");
             String email = scanner.nextLine();
