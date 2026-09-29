@@ -466,14 +466,21 @@ public class ConsoleUI {
 
     /**
      * Asks for the month and the year of the requested balance and prints the
-     * total amount refunded in that period.
+     * three figures the module offers: the sales of the period, the returns of
+     * the period and the resulting net balance.
      */
     private void showMonthlyBalance() {
         int month = askMonth();
         int year = askYear();
 
+        double sales = returnService.calculateMonthlySales(month, year);
+        double returns = returnService.calculateMonthlyReturns(month, year);
         double balance = returnService.generateMonthlyBalance(month, year);
-        System.out.printf("Balance de devoluciones de %02d/%d: $%.2f%n", month, year, balance);
+
+        System.out.printf("Balance de devoluciones de %02d/%d:%n", month, year);
+        System.out.printf("  Total de ventas:      $%.2f%n", sales);
+        System.out.printf("  Total de devoluciones: $%.2f%n", returns);
+        System.out.printf("  Balance neto:         $%.2f%n", balance);
     }
 
     /**
