@@ -3,6 +3,7 @@ package com.gamezone.persistence;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
+import com.gamezone.service.AccessoryService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.SaleService;
 
@@ -34,18 +35,23 @@ public class ReturnRepository {
 
     private final SaleService saleService;
     private final ProductService productService;
+    private final AccessoryService accessoryService;
 
     /**
      * Creates the repository.
      *
-     * @param saleService    used to resolve the original Sale referenced by
-     *                       each stored return
-     * @param productService used to resolve the returned Product objects
-     *                       referenced by each stored return
+     * @param saleService      used to resolve the original Sale referenced by
+     *                         each stored return
+     * @param productService   used to resolve the returned Product objects
+     *                         referenced by each stored return
+     * @param accessoryService used to resolve the returned accessories, which
+     *                         are not part of the product list
      */
-    public ReturnRepository(SaleService saleService, ProductService productService) {
+    public ReturnRepository(SaleService saleService, ProductService productService,
+                            AccessoryService accessoryService) {
         this.saleService = saleService;
         this.productService = productService;
+        this.accessoryService = accessoryService;
     }
 
     /**
@@ -227,7 +233,10 @@ public class ReturnRepository {
                 return product;
             }
         }
-        return null;
+        // Los accesorios no viven en la lista de productos, asi que sin esta
+        // segunda busqueda una devolucion de un accesorio se recargaria sin
+        // productos y con reembolso cero.
+        return accessoryService.findById(productId);
     }
 
     private void ensureDataFolderExists() {

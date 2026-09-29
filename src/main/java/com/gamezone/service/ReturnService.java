@@ -1,5 +1,6 @@
 package com.gamezone.service;
 
+import com.gamezone.model.Accessory;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
@@ -21,6 +22,7 @@ public class ReturnService {
     private final ReturnRepository returnRepository;
     private final SaleService saleService;
     private final ProductService productService;
+    private final AccessoryService accessoryService;
     private List<Return> returns;
 
     /**
@@ -30,13 +32,17 @@ public class ReturnService {
      * @param returnRepository repository used to read and write return data
      * @param saleService      service used to validate and look up sales
      * @param productService   service used to restore stock of returned
-     *                         products
+     *                         videogames and consoles
+     * @param accessoryService service used to restore stock of returned
+     *                         accessories, which are not part of the product
+     *                         list
      */
     public ReturnService(ReturnRepository returnRepository, SaleService saleService,
-                          ProductService productService) {
+                          ProductService productService, AccessoryService accessoryService) {
         this.returnRepository = returnRepository;
         this.saleService = saleService;
         this.productService = productService;
+        this.accessoryService = accessoryService;
         this.returns = returnRepository.loadAll();
     }
 
@@ -87,7 +93,7 @@ public class ReturnService {
         newReturn.calculateRefundAmount();
 
         for (Product product : productsToReturn) {
-            productService.restoreStock(product.getId(), 1);
+            restoreStock(product);
         }
 
         returns.add(newReturn);
@@ -273,5 +279,26 @@ public class ReturnService {
             }
         }
         return count;
+    }
+
+    /**
+     * Puts one unit back into the inventory of a returned product.
+     *
+     * <p>Accessories are not part of the product list, they live in their own
+     * file behind {@link AccessoryService}, so they need their own branch.
+     * Without it a returned accessory would be refunded but its stock would
+     * never go back up.</p>
+     *
+     * @param product the product being returned
+     */
+    private void restoreStock(Product product) {
+        if (product instanceof Accessory) {
+            Accessory registered = accessoryService.findById(product.getId());
+            if (registered != null) {
+                accessoryService.updateStock(registered.getId(), registered.getAvailableQuantity() + 1);
+            }
+            return;
+        }
+        productService.restoreStock(product.getId(), 1);
     }
 }

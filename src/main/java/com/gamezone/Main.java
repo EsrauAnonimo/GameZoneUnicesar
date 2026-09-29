@@ -43,8 +43,9 @@ public class Main {
         // Taller 3: módulo de devoluciones. El repositorio es la única capa
         // que toca el archivo data/returns.csv y necesita los servicios para
         // resolver la venta original y los productos devueltos al leer.
-        ReturnRepository returnRepository = new ReturnRepository(saleService, productService);
-        ReturnService returnService = new ReturnService(returnRepository, saleService, productService);
+        ReturnRepository returnRepository = new ReturnRepository(saleService, productService, accessoryService);
+        ReturnService returnService = new ReturnService(returnRepository, saleService, productService,
+                accessoryService);
 
         personService.preloadVendorsIfEmpty();
 
