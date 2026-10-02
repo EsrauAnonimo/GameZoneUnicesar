@@ -94,12 +94,55 @@ warranty it should not have.
 
 ---
 
+## Coordination notes for the other developers
+
+The leader's part only calls methods that exist in the agreed warranty service
+API. No extra method was introduced on top of it, so the pieces can be merged
+in any order once the warranty model and persistence land:
+
+| Called from | Method used |
+| --- | --- |
+| `SaleService` | `assignBasicWarranty(Product, Sale, LocalDate)` |
+| `SaleService` | `assignExtendedWarranty(Product, Sale, LocalDate)` |
+| `SaleService` | `findWarrantyByProduct(String, String)` |
+| `SaleService` | `Warranty.getAdditionalCost()` |
+| `ConsoleUI` | `findWarrantyByProduct(String, String)` |
+| `ConsoleUI` | `listAllWarranties()` |
+| `ConsoleUI` | `listActiveWarranties()` |
+| `ConsoleUI` | `listWarrantiesExpiringSoon(int)` |
+| `ConsoleUI` | `Warranty.generateWarrantyCertificate()` |
+| `ConsoleUI` | `Warranty.getProduct()`, `getSale()`, `getEndDate()`, `getWarrantyType()` |
+| `Main` | `new WarrantyRepository(SalePersistence, ProductService, AccessoryService)` |
+
+Two coordination points that do need agreement:
+
+1. **`WarrantyRepository`'s constructor signature.** This part builds it as
+   `(SalePersistence, ProductService, AccessoryService)`. Dev 2 should either
+   use that signature or announce a different one, because `Main` has to match.
+2. **`assignBasicWarranty` / `assignExtendedWarranty` return values.** This
+   part treats a `null` return as "the warranty was not created" and simply
+   skips the cost, so the sale is still registered. Returning `null` for an
+   invalid call is therefore safe; throwing is not.
+
+---
+
 ## Known limitations
 
+- This part does not compile on its own: `SaleService` and `ConsoleUI` reference
+  `Warranty` and `WarrantyService`, which are contributed by the other two
+  developers. Until those land, `javac` and `mvn` both report missing symbols,
+  and that is expected rather than a defect.
+- Behaviour was verified against a temporary stub of the warranty classes
+  matching the agreed API, covering: console with extended warranty adds 10%,
+  console without it gets the basic warranty at no cost, video games get no
+  warranty, one warranty per product and sale, the file round-trips through a
+  restart, and the four submenu queries. Once the real classes arrive those
+  checks should be re-run, because a different constructor or return contract
+  would change the outcome.
 - `mvn clean package` has not been run in the environment where this module was
-  written; the module was verified compiling with `javac --release 17`, matching
-  the `maven.compiler.release` value in `pom.xml`, and verified through the real
-  console application.
+  written; verification was done with `javac --release 17`, matching the
+  `maven.compiler.release` value in `pom.xml`, and through the real console
+  application.
 - The console main menu still calls `Integer.parseInt` without a `try/catch`, so
   a non-numeric answer kills the application. This is pre-existing behaviour
   from Taller 1 and was left untouched on purpose.

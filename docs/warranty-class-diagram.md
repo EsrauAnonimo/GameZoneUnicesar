@@ -46,14 +46,10 @@ classDiagram
         +WarrantyService(WarrantyRepository)
         +BasicWarranty assignBasicWarranty(Product, Sale, LocalDate)
         +ExtendedWarranty assignExtendedWarranty(Product, Sale, LocalDate)
-        +boolean revokeWarrantyFor(Product, Sale)
         +Warranty findWarrantyByProduct(String, String)
         +List~Warranty~ listAllWarranties()
         +List~Warranty~ listActiveWarranties()
         +List~Warranty~ listWarrantiesExpiringSoon(int)
-        -boolean isNotAssignable(Product, Sale, LocalDate)
-        -void store(Warranty)
-        -String newWarrantyId()
     }
 
     class WarrantyRepository {
@@ -144,13 +140,14 @@ classDiagram
     SaleService --> WarrantyService : grants warranties
     WarrantyService --> WarrantyRepository : load/save
 
-    WarrantyRepository --> SalePersistence : resolves Sale
-    WarrantyRepository --> ProductService : resolves Product
-    WarrantyRepository --> AccessoryService : resolves Accessory
+WarrantyRepository --> SalePersistence : resolves Sale
+WarrantyRepository --> ProductService : resolves Product
+WarrantyRepository --> AccessoryService : resolves Accessory
 
-    SaleService --> SalePersistence
-    SaleService --> ProductService
-    SaleService --> AccessoryService
+SaleService --> SalePersistence
+SaleService --> ProductService
+SaleService --> AccessoryService
+SaleService --> PromotionService
 
     classDef model fill:#e8f4ea,stroke:#4a7
     classDef service fill:#e6eef8,stroke:#47a
@@ -175,3 +172,19 @@ ConsoleUI  ->  SaleService  ->  WarrantyService  ->  WarrantyRepository
 `SaleService`. Injecting `SaleService` there would produce the cycle
 `SaleService -> WarrantyService -> WarrantyRepository -> SaleService`, which
 constructor injection cannot build. See `warranty-analysis.md`, question 2.
+
+## Division of labour
+
+The diagram shows the whole warranty module, but only these classes belong to
+the technical leader's part of Taller 4:
+
+| Class | Author |
+| --- | --- |
+| `Warranty`, `BasicWarranty`, `ExtendedWarranty` | Dev 1 (model) |
+| `WarrantyRepository` | Dev 2 (persistence) |
+| `WarrantyService` | Dev 2 (service) |
+| `SaleService`, `ConsoleUI`, `Main` | Technical leader |
+
+`SaleService` and `ConsoleUI` are shown because they are the classes this part
+modifies; the warranty model and persistence above them are contributed
+separately.
