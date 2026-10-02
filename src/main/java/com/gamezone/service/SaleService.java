@@ -1,6 +1,7 @@
 package com.gamezone.service;
 
 import com.gamezone.model.Accessory;
+import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.Promotion;
 import com.gamezone.model.Sale;
@@ -14,6 +15,12 @@ import java.util.List;
  * correct service depending on the item type: Accessory items are updated
  * through AccessoryService, everything else (VideoGame, Console) through
  * ProductService.
+ * <p>
+ * Taller 4: the service also grants the warranty that covers each console in
+ * the sale, through WarrantyService. A console always receives a warranty; the
+ * one the customer paid for is the extended one, otherwise the included basic
+ * one. Only WarrantyService knows how to build and store a warranty, so this
+ * class never reaches the warranty file itself.
  */
 public class SaleService {
 
@@ -21,6 +28,7 @@ public class SaleService {
     private ProductService productService;
     private AccessoryService accessoryService;
     private PromotionService promotionService;
+    private WarrantyService warrantyService;
 
     /**
      * Creates a SaleService.
@@ -29,24 +37,46 @@ public class SaleService {
      * @param productService   service used to update stock for non-accessory products
      * @param accessoryService service used to update stock for accessory items
      * @param promotionService service used to resolve the best promotion for a sale
+     * @param warrantyService  service used to grant the warranty of each console
      */
     public SaleService(SalePersistence persistence, ProductService productService,
-                       AccessoryService accessoryService, PromotionService promotionService) {
+                       AccessoryService accessoryService, PromotionService promotionService,
+                       WarrantyService warrantyService) {
         this.persistence = persistence;
         this.productService = productService;
         this.accessoryService = accessoryService;
         this.promotionService = promotionService;
+        this.warrantyService = warrantyService;
+    }
+
+    /**
+     * Registers a sale without any extended warranty. Kept as an overload so
+     * existing callers that do not sell warranties keep working unchanged.
+     *
+     * @param sale the sale to register
+     */
+    public void registerSale(Sale sale) {
+        registerSale(sale, null);
     }
 
     /**
      * Registers a sale: validates that the sale is not empty, validates
      * available stock for every item, applies the best promotion available
-     * for the sale, updates stock through the appropriate service (Accessory
-     * vs regular Product) and persists the sale.
+     * for the sale, grants the warranty of every console, updates stock
+     * through the appropriate service (Accessory vs regular Product) and
+     * persists the sale.
+     * <p>
+     * Only consoles are eligible for a warranty; video games and accessories
+     * are registered exactly as before.
      *
-     * @param sale the sale to register
+     * @param sale                          the sale to register
+     * @param productIdsWithExtendedWarranty identifiers of the products the
+     *                                       customer wants the extended
+     *                                       warranty for. May be null or
+     *                                       empty, in which case no extended
+     *                                       warranty is granted.
      */
-    public void registerSale(Sale sale) {
+    public void registerSale(Sale sale, List<String> productIdsWithExtendedWarranty) {
         List<Product> products = sale.getProducts();
 
         if (products == null || products.isEmpty()) {
@@ -63,6 +93,8 @@ public class SaleService {
 
         applyBestPromotion(sale);
 
+        assignWarranties(sale, productIdsWithExtendedWarranty);
+
         for (Product product : products) {
             int newQuantity = product.getAvailableQuantity() - 1;
             if (product instanceof Accessory) {
@@ -75,6 +107,45 @@ public class SaleService {
         List<Sale> sales = persistence.loadAll();
         sales.add(sale);
         persistence.save(sales);
+    }
+
+    /**
+     * Grants a warranty for every console in the sale and adds the cost of the
+     * extended ones to the total of the sale. Consoles get the included basic
+     * warranty, except those the customer paid to extend, which get the
+     * extended warranty instead.
+     * <p>
+     * The extra amount is added after the promotion discount was applied, so a
+     * discount can never be used to pay for the warranty itself. The included
+     * basic warranty adds nothing to the total.
+     *
+     * @param sale                          the sale being registered
+     * @param productIdsWithExtendedWarranty identifiers of the products that
+     *                                       need the extended warranty
+     */
+    private void assignWarranties(Sale sale, List<String> productIdsWithExtendedWarranty) {
+        if (warrantyService == null) {
+            return;
+        }
+        for (Product product : sale.getProducts()) {
+            if (!(product instanceof Console)) {
+                continue;
+            }
+            // Una sola garantia por producto y venta. Si el producto ya tiene
+            // una asignada, se respeta la existente en lugar de duplicarla.
+            if (warrantyService.findWarrantyByProduct(product.getId(), sale.getId()) != null) {
+                continue;
+            }
+            if (wantsExtendedWarranty(product, productIdsWithExtendedWarranty)) {
+                warrantyService.assignExtendedWarranty(product, sale, sale.getDate());
+            } else {
+                warrantyService.assignBasicWarranty(product, sale, sale.getDate());
+            }
+        }
+    }
+
+    private boolean wantsExtendedWarranty(Product product, List<String> productIdsWithExtendedWarranty) {
+        return productIdsWithExtendedWarranty != null && productIdsWithExtendedWarranty.contains(product.getId());
     }
 
 
