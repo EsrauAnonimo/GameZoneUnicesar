@@ -5,6 +5,7 @@ import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.Promotion;
 import com.gamezone.model.Sale;
+import com.gamezone.model.Warranty;
 import com.gamezone.persistence.SalePersistence;
 import java.util.List;
 
@@ -17,10 +18,10 @@ import java.util.List;
  * ProductService.
  * <p>
  * Taller 4: the service also grants the warranty that covers each console in
- * the sale, through WarrantyService. A console always receives a warranty; the
- * one the customer paid for is the extended one, otherwise the included basic
- * one. Only WarrantyService knows how to build and store a warranty, so this
- * class never reaches the warranty file itself.
+ * the sale, through WarrantyService. A console always receives the included
+ * basic warranty; when the customer asks for the extended coverage the basic
+ * one is replaced by the extended one, so a purchase never ends up with two
+ * overlapping warranties for the same product.
  */
 public class SaleService {
 
@@ -127,6 +128,7 @@ public class SaleService {
         if (warrantyService == null) {
             return;
         }
+        double warrantyTotal = 0;
         for (Product product : sale.getProducts()) {
             if (!(product instanceof Console)) {
                 continue;
@@ -136,11 +138,15 @@ public class SaleService {
             if (warrantyService.findWarrantyByProduct(product.getId(), sale.getId()) != null) {
                 continue;
             }
-            if (wantsExtendedWarranty(product, productIdsWithExtendedWarranty)) {
-                warrantyService.assignExtendedWarranty(product, sale, sale.getDate());
-            } else {
-                warrantyService.assignBasicWarranty(product, sale, sale.getDate());
+            Warranty warranty = wantsExtendedWarranty(product, productIdsWithExtendedWarranty)
+                    ? warrantyService.assignExtendedWarranty(product, sale, sale.getDate())
+                    : warrantyService.assignBasicWarranty(product, sale, sale.getDate());
+            if (warranty != null) {
+                warrantyTotal += warranty.getAdditionalCost();
             }
+        }
+        if (warrantyTotal > 0) {
+            sale.setTotal(roundToCents(sale.getTotal() + warrantyTotal));
         }
     }
 
