@@ -635,7 +635,7 @@ public class ConsoleUI {
             return;
         }
         for (Return productReturn : returns) {
-            System.out.println(describe(productReturn));
+            System.out.println(describeReturn(productReturn));
         }
     }
 
@@ -646,7 +646,7 @@ public class ConsoleUI {
      * @param productReturn the return to describe
      * @return the description of the return
      */
-    private String describe(Return productReturn) {
+    private String describeReturn(Return productReturn) {
         Sale originalSale = productReturn.getOriginalSale();
         String saleId = originalSale != null ? originalSale.getId() : "N/A";
         String customerId = originalSale != null && originalSale.getCustomer() != null
@@ -687,7 +687,7 @@ public class ConsoleUI {
             return;
         }
         for (Promotion promotion : promotions) {
-            System.out.println(describe(promotion));
+            System.out.println(describePromotion(promotion));
         }
     }
 
@@ -698,7 +698,7 @@ public class ConsoleUI {
      * @param promotion the promotion to describe
      * @return the description of the promotion
      */
-    private String describe(Promotion promotion) {
+    private String describePromotion(Promotion promotion) {
         return String.format("Promoción | ID: %s | Nombre: %s | Vigencia: %s a %s | ¿Vigente hoy?: %s",
                 promotion.getId(),
                 promotion.getName(),
@@ -911,11 +911,11 @@ public class ConsoleUI {
             return;
         }
         for (Warranty warranty : warranties) {
-            System.out.println(describe(warranty));
+            System.out.println(describeWarranty(warranty));
         }
     }
 
-    private String describe(Warranty warranty) {
+    private String describeWarranty(Warranty warranty) {
         long daysLeft = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), warranty.getEndDate());
         String remaining = daysLeft < 0
                 ? "vencida hace " + Math.abs(daysLeft) + " días"
