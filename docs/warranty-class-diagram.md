@@ -91,7 +91,7 @@ classDiagram
         +void showWarrantyMenu()
         -boolean wantsExtendedWarranty(Product)
         -void showWarranties(List~Warranty~)
-        -String describe(Warranty)
+        -String describeWarranty(Warranty)
     }
 
     class Product {
@@ -101,7 +101,7 @@ classDiagram
         -double price
         -int availableQuantity
         +String getId()
-        +String getPrice()
+        +double getPrice()
     }
 
     class Console {
@@ -140,14 +140,14 @@ classDiagram
     SaleService --> WarrantyService : grants warranties
     WarrantyService --> WarrantyRepository : load/save
 
-WarrantyRepository --> SalePersistence : resolves Sale
-WarrantyRepository --> ProductService : resolves Product
-WarrantyRepository --> AccessoryService : resolves Accessory
+    WarrantyRepository --> SalePersistence : resolves Sale
+    WarrantyRepository --> ProductService : resolves Product
+    WarrantyRepository --> AccessoryService : resolves Accessory
 
-SaleService --> SalePersistence
-SaleService --> ProductService
-SaleService --> AccessoryService
-SaleService --> PromotionService
+    SaleService --> SalePersistence
+    SaleService --> ProductService
+    SaleService --> AccessoryService
+    SaleService --> PromotionService
 
     classDef model fill:#e8f4ea,stroke:#4a7
     classDef service fill:#e6eef8,stroke:#47a
@@ -159,32 +159,3 @@ SaleService --> PromotionService
     class WarrantyRepository,SalePersistence persistence
     class ConsoleUI ui
 ```
-
-## Dependency direction
-
-```
-ConsoleUI  ->  SaleService  ->  WarrantyService  ->  WarrantyRepository
-                  |                                     |
-                  +------------> SalePersistence <-------+
-```
-
-`WarrantyRepository` resolves sales through `SalePersistence` rather than
-`SaleService`. Injecting `SaleService` there would produce the cycle
-`SaleService -> WarrantyService -> WarrantyRepository -> SaleService`, which
-constructor injection cannot build. See `warranty-analysis.md`, question 2.
-
-## Division of labour
-
-The diagram shows the whole warranty module, but only these classes belong to
-the technical leader's part of Taller 4:
-
-| Class | Author |
-| --- | --- |
-| `Warranty`, `BasicWarranty`, `ExtendedWarranty` | Dev 1 (model) |
-| `WarrantyRepository` | Dev 2 (persistence) |
-| `WarrantyService` | Dev 2 (service) |
-| `SaleService`, `ConsoleUI`, `Main` | Technical leader |
-
-`SaleService` and `ConsoleUI` are shown because they are the classes this part
-modifies; the warranty model and persistence above them are contributed
-separately.
