@@ -1,7 +1,7 @@
-# Warranty Class Diagram (Taller 4)
-
 ```mermaid
 classDiagram
+    direction LR
+
     class Warranty {
         <<abstract>>
         -String id
@@ -9,89 +9,23 @@ classDiagram
         -Sale sale
         -LocalDate startDate
         -LocalDate endDate
-        +Warranty(String, Product, Sale, LocalDate)
-        +int getDurationInMonths()*
-        +String getWarrantyType()*
-        +double getAdditionalCost()*
-        +boolean isActive(LocalDate)
-        +String generateWarrantyCertificate()
-        +String getId()
-        +Product getProduct()
-        +Sale getSale()
-        +LocalDate getStartDate()
-        +LocalDate getEndDate()
+        +getDurationInMonths() int
+        +getWarrantyType() String
+        +getAdditionalCost() double
+        +isActive(LocalDate) boolean
+        +generateWarrantyCertificate() String
     }
 
     class BasicWarranty {
-        -int DURATION_IN_MONTHS = 6
-        -String WARRANTY_TYPE = "Garantia Basica"
-        +BasicWarranty(String, Product, Sale, LocalDate)
-        +int getDurationInMonths()
-        +String getWarrantyType()
-        +double getAdditionalCost()
+        +getDurationInMonths() int
+        +getWarrantyType() String
+        +getAdditionalCost() double
     }
 
     class ExtendedWarranty {
-        -int DURATION_IN_MONTHS = 12
-        -String WARRANTY_TYPE = "Garantia Extendida"
-        -double COST_PERCENTAGE = 0.10
-        +ExtendedWarranty(String, Product, Sale, LocalDate)
-        +int getDurationInMonths()
-        +String getWarrantyType()
-        +double getAdditionalCost()
-    }
-
-    class WarrantyService {
-        -WarrantyRepository repository
-        +WarrantyService(WarrantyRepository)
-        +BasicWarranty assignBasicWarranty(Product, Sale, LocalDate)
-        +ExtendedWarranty assignExtendedWarranty(Product, Sale, LocalDate)
-        +Warranty findWarrantyByProduct(String, String)
-        +List~Warranty~ listAllWarranties()
-        +List~Warranty~ listActiveWarranties()
-        +List~Warranty~ listWarrantiesExpiringSoon(int)
-    }
-
-    class WarrantyRepository {
-        -SalePersistence salePersistence
-        -ProductService productService
-        -AccessoryService accessoryService
-        +WarrantyRepository(SalePersistence, ProductService, AccessoryService)
-        +void saveAll(List~Warranty~)
-        +List~Warranty~ loadAll()
-        -String buildLine(Warranty)
-        -Warranty parseLine(String)
-        -Sale findSaleById(String)
-        -Product findProductById(String)
-        -void ensureDataFolderExists()
-    }
-
-    class SaleService {
-        -SalePersistence persistence
-        -ProductService productService
-        -AccessoryService accessoryService
-        -PromotionService promotionService
-        -WarrantyService warrantyService
-        +SaleService(SalePersistence, ProductService, AccessoryService, PromotionService, WarrantyService)
-        +void registerSale(Sale)
-        +void registerSale(Sale, List~String~)
-        +List~Sale~ listAllSales()
-        +List~Sale~ getSalesByCustomer(String)
-        +List~Sale~ getSalesBySeller(String)
-        -void applyBestPromotion(Sale)
-        -void assignWarranties(Sale, List~String~)
-        -boolean wantsExtendedWarranty(Product, List~String~)
-        -double roundToCents(double)
-    }
-
-    class ConsoleUI {
-        -WarrantyService warrantyService
-        +void showMainMenu()
-        +void showSaleMenu()
-        +void showWarrantyMenu()
-        -boolean wantsExtendedWarranty(Product)
-        -void showWarranties(List~Warranty~)
-        -String describeWarranty(Warranty)
+        +getDurationInMonths() int
+        +getWarrantyType() String
+        +getAdditionalCost() double
     }
 
     class Product {
@@ -100,8 +34,6 @@ classDiagram
         -String title
         -double price
         -int availableQuantity
-        +String getId()
-        +double getPrice()
     }
 
     class Console {
@@ -110,61 +42,78 @@ classDiagram
         -String generation
     }
 
+    class VideoGame {
+        -String platform
+        -String genre
+        -String ageRating
+    }
+
     class Sale {
         -String id
         -LocalDate date
+        -Customer customer
+        -Seller seller
+        -List~Product~ products
         -double total
+        -String appliedPromotionName
+        -double discountAmount
+        +getProducts() List~Product~
+        +getDate() LocalDate
+        +canBeReturned() boolean
     }
 
-    class SalePersistence {
-        +List~Sale~ loadAll()
+    class WarrantyRepository {
+        +saveAll(List~Warranty~) void
+        +loadAll() List~Warranty~
+    }
+
+    class WarrantyService {
+        -WarrantyRepository repository
+        +assignBasicWarranty(Product, Sale, LocalDate) BasicWarranty
+        +assignExtendedWarranty(Product, Sale, LocalDate) ExtendedWarranty
+        +findWarrantyByProduct(String, String) Warranty
+        +listAllWarranties() List~Warranty~
+        +listActiveWarranties() List~Warranty~
+        +listWarrantiesExpiringSoon(int) List~Warranty~
+    }
+
+    class SaleService {
+        -ProductService productService
+        -AccessoryService accessoryService
+        -PromotionService promotionService
+        -WarrantyService warrantyService
+        +registerSale(Sale, List~String~) void
     }
 
     class ProductService {
-        +List~Product~ listAllProducts()
+        +updateStock(String, int) void
+        +restoreStock(String, int) void
     }
 
     class AccessoryService {
-        +Product findById(String)
+        +updateStock(String, int) void
+        +restoreStock(String, int) void
+    }
+
+    class PromotionService {
+        +findBestPromotionFor(Sale) Promotion
     }
 
     Warranty <|-- BasicWarranty
     Warranty <|-- ExtendedWarranty
 
-    Warranty o-- Product : product
-    Warranty o-- Sale : sale
+    Product <|-- Console
+    Product <|-- VideoGame
 
-    ConsoleUI --> WarrantyService : queries
-    ConsoleUI --> SaleService : registerSale(sale, extendedIds)
+    Warranty --> Product : covers
+    Warranty --> Sale : belongs to
 
-    SaleService --> WarrantyService : grants warranties
-    WarrantyService --> WarrantyRepository : load/save
+    Sale "1" o-- "1..*" Product : contains
 
-    WarrantyRepository --> SalePersistence : resolves Sale
-    WarrantyRepository --> ProductService : resolves Product
-    WarrantyRepository --> AccessoryService : resolves Accessory
+    SaleService --> ProductService : uses
+    SaleService --> AccessoryService : uses
+    SaleService --> PromotionService : uses
+    SaleService --> WarrantyService : uses
 
-    SaleService --> SalePersistence
-    SaleService --> ProductService
-    SaleService --> AccessoryService
-    SaleService --> PromotionService
-
-    classDef model fill:#e8f4ea,stroke:#4a7
-    classDef service fill:#e6eef8,stroke:#47a
-    classDef persistence fill:#fdf0e0,stroke:#a74
-    classDef ui fill:#f3e8f8,stroke:#74a
-
-    class Warranty model
-    class BasicWarranty model
-    class ExtendedWarranty model
-    class Product model
-    class Console model
-    class Sale model
-    class WarrantyService service
-    class SaleService service
-    class ProductService service
-    class AccessoryService service
-    class WarrantyRepository persistence
-    class SalePersistence persistence
-    class ConsoleUI ui
+    WarrantyService --> WarrantyRepository : uses
 ```
