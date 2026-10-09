@@ -154,8 +154,17 @@ classDiagram
     classDef persistence fill:#fdf0e0,stroke:#a74
     classDef ui fill:#f3e8f8,stroke:#74a
 
-    class Warranty,BasicWarranty,ExtendedWarranty,Product,Console,Sale model
-    class WarrantyService,SaleService,ProductService,AccessoryService service
-    class WarrantyRepository,SalePersistence persistence
+    class Warranty model
+    class BasicWarranty model
+    class ExtendedWarranty model
+    class Product model
+    class Console model
+    class Sale model
+    class WarrantyService service
+    class SaleService service
+    class ProductService service
+    class AccessoryService service
+    class WarrantyRepository persistence
+    class SalePersistence persistence
     class ConsoleUI ui
 ```
