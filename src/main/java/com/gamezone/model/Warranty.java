@@ -80,11 +80,13 @@ public abstract class Warranty {
     }
 
     /**
-     * Checks if the warranty is active on a given date.
-     * 
-     * @param date The date to check
-     * @return true if the warranty is active, false otherwise
-     */
+ * Checks if the warranty is active on a given date.
+ * A warranty is active if the date is between startDate and endDate (inclusive).
+ * If the date is null or the warranty dates are null, returns false.
+ * 
+ * @param date The date to check (can be null)
+ * @return true if the warranty is active, false otherwise
+ */
    public boolean isActive(LocalDate date) {
     if (date == null || startDate == null || endDate == null) {
         return false;
