@@ -85,12 +85,12 @@ public abstract class Warranty {
      * @param date The date to check
      * @return true if the warranty is active, false otherwise
      */
-    public boolean isActive(LocalDate date) {
-        if (date == null) {
-            return false;
-        }
-        return !date.isBefore(startDate) && !date.isAfter(endDate);
+   public boolean isActive(LocalDate date) {
+    if (date == null || startDate == null || endDate == null) {
+        return false;
     }
+    return !date.isBefore(startDate) && !date.isAfter(endDate);
+}
 
     /**
      * Generates a formatted certificate for the warranty.
@@ -99,18 +99,19 @@ public abstract class Warranty {
      * @return A formatted string with the warranty certificate
      */
     public String generateWarrantyCertificate() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("===== CERTIFICADO DE GARANTÍA =====\n");
-        sb.append("ID: ").append(id).append("\n");
-        sb.append("Tipo: ").append(getWarrantyType()).append("\n");
-        sb.append("Producto: ").append(product != null ? product.getTitle() : "N/A").append("\n");
-        sb.append("Fecha de inicio: ").append(startDate).append("\n");
-        sb.append("Fecha de fin: ").append(endDate).append("\n");
-        sb.append("Duración: ").append(getDurationInMonths()).append(" meses\n");
-        sb.append("Costo adicional: $").append(String.format("%.2f", getAdditionalCost())).append("\n");
-        sb.append("====================================");
-        return sb.toString();
-    }
+    StringBuilder sb = new StringBuilder();
+    sb.append("===== CERTIFICADO DE GARANTÍA =====\n");
+    sb.append("ID: ").append(id != null ? id : "N/A").append("\n");
+    sb.append("Tipo: ").append(getWarrantyType()).append("\n");
+    sb.append("Producto: ").append(product != null ? product.getTitle() : "N/A").append("\n");
+    sb.append("Venta: ").append(sale != null ? sale.getId() : "N/A").append("\n");
+    sb.append("Fecha de inicio: ").append(startDate != null ? startDate : "N/A").append("\n");
+    sb.append("Fecha de fin: ").append(endDate != null ? endDate : "N/A").append("\n");
+    sb.append("Duración: ").append(getDurationInMonths()).append(" meses\n");
+    sb.append("Costo adicional: $").append(String.format("%.2f", getAdditionalCost())).append("\n");
+    sb.append("====================================");
+    return sb.toString();
+}
 
     /**
      * Gets the duration of the warranty in months.
