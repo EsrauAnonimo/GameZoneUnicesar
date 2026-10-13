@@ -30,9 +30,9 @@ public class BasicWarranty extends Warranty {
      */
     @Override
     public int getDurationInMonths() {
-        return 6;
-    }
-
+    final int BASIC_DURATION_MONTHS = 6;
+    return BASIC_DURATION_MONTHS;
+}
     /**
      * Gets the type of the basic warranty.
      * 
@@ -51,6 +51,7 @@ public class BasicWarranty extends Warranty {
      */
     @Override
     public double getAdditionalCost() {
-        return 0.0;
-    }
+    final double NO_ADDITIONAL_COST = 0.0;
+    return NO_ADDITIONAL_COST;
+}
 }

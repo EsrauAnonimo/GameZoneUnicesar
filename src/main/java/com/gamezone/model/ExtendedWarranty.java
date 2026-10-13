@@ -31,8 +31,9 @@ public class ExtendedWarranty extends Warranty {
      */
     @Override
     public int getDurationInMonths() {
-        return 12;
-    }
+    final int EXTENDED_DURATION_MONTHS = 12;
+    return EXTENDED_DURATION_MONTHS;
+}
 
     /**
      * Gets the type of the extended warranty.
@@ -52,9 +53,11 @@ public class ExtendedWarranty extends Warranty {
      */
     @Override
     public double getAdditionalCost() {
-        if (getProduct() == null) {
-            return 0.0;
-        }
-        return getProduct().getPrice() * 0.10;
+    final double EXTENDED_WARRANTY_RATE = 0.10;
+    
+    if (getProduct() == null) {
+        return 0.0;
     }
+    return getProduct().getPrice() * EXTENDED_WARRANTY_RATE;
+}
 }
