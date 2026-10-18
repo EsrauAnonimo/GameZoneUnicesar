@@ -177,19 +177,28 @@ public class WarrantyRepository {
      * general product inventory and finally among the accessories.
      */
     private Product findProduct(Sale sale, String productId) {
-        for (Product product : sale.getProducts()) {
-            if (product.getId().equals(productId)) {
-                return product;
+        if (productId == null) {
+            return null;
+        }
+        if (sale != null && sale.getProducts() != null) {
+            for (Product product : sale.getProducts()) {
+                if (product != null && productId.equals(product.getId())) {
+                    return product;
+                }
             }
         }
-        for (Product product : productService.listAllProducts()) {
-            if (product.getId().equals(productId)) {
-                return product;
+        if (productService != null) {
+            for (Product product : productService.listAllProducts()) {
+                if (product != null && productId.equals(product.getId())) {
+                    return product;
+                }
             }
         }
-        for (Product accessory : accessoryService.listAllAccessories()) {
-            if (accessory.getId().equals(productId)) {
-                return accessory;
+        if (accessoryService != null) {
+            for (Product accessory : accessoryService.listAllAccessories()) {
+                if (accessory != null && productId.equals(accessory.getId())) {
+                    return accessory;
+                }
             }
         }
         return null;
