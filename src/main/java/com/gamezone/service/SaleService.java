@@ -94,8 +94,8 @@ public class SaleService {
 
         applyBestPromotion(sale);
 
-        // Se calcula el costo de garantías extendidas antes de persistir la venta
-        // para que el total guardado en disco incluya el valor de las garantías.
+        // Se calcula el costo de garantias extendidas antes de persistir la venta
+        // para que el total guardado en disco incluya el valor de las garantias.
         double warrantyTotal = calculateWarrantyCost(sale, productIdsWithExtendedWarranty);
         if (warrantyTotal > 0) {
             sale.setTotal(roundToCents(sale.getTotal() + warrantyTotal));
@@ -114,8 +114,8 @@ public class SaleService {
         sales.add(sale);
         persistence.save(sales);
 
-        // Se asignan y persisten las garantías una vez la venta ya existe en
-        // persistencia, evitando que WarrantyRepository descarte las garantías
+        // Se asignan y persisten las garantias una vez la venta ya existe en
+        // persistencia, evitando que WarrantyRepository descarte las garantias
         // al no encontrar la venta asociada en sales.dat.
         assignWarranties(sale, productIdsWithExtendedWarranty);
     }

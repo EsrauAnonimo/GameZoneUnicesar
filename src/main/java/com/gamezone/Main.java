@@ -34,14 +34,14 @@ public class Main {
 
         SalePersistence salePersistence = new SalePersistence();
 
-        // Taller 4: módulo de garantías. El repositorio resuelve la venta a
-        // través de SalePersistence y no de SaleService, porque SaleService ya
-        // depende de WarrantyService y eso cerraría un ciclo de constructores.
+        // Taller 4: modulo de garantias. El repositorio resuelve la venta a
+        // traves de SalePersistence y no de SaleService, porque SaleService ya
+        // depende de WarrantyService y eso cerraria un ciclo de constructores.
         WarrantyRepository warrantyRepository = new WarrantyRepository(salePersistence, productService,
                 accessoryService);
         WarrantyService warrantyService = new WarrantyService(warrantyRepository);
 
-        // Taller 2: módulo de promociones. El repositorio es la única capa
+        // Taller 2: modulo de promociones. El repositorio es la unica capa
         // que toca el archivo data/promotions.csv.
         PromotionRepository promotionRepository = new PromotionRepository();
         PromotionService promotionService = new PromotionService(promotionRepository);
@@ -49,7 +49,7 @@ public class Main {
         SaleService saleService = new SaleService(salePersistence, productService, accessoryService,
                 promotionService, warrantyService);
 
-        // Taller 3: módulo de devoluciones. El repositorio es la única capa
+        // Taller 3: modulo de devoluciones. El repositorio es la unica capa
         // que toca el archivo data/returns.csv y necesita los servicios para
         // resolver la venta original y los productos devueltos al leer.
         ReturnRepository returnRepository = new ReturnRepository(saleService, productService, accessoryService);

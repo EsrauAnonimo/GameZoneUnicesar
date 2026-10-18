@@ -53,7 +53,7 @@ public class ConsoleUI {
             System.out.println("6. Menu de devoluciones");
             System.out.println("7. Menu de garantias");
             System.out.println("0. Salir");
-            System.out.print("Elija una opción: ");
+            System.out.print("Elija una opcion: ");
             option = Integer.parseInt(scanner.nextLine());
 
             switch (option) {
@@ -65,7 +65,7 @@ public class ConsoleUI {
                 case 6: showReturnMenu(); break;
                 case 7: showWarrantyMenu(); break;
                 case 0: System.out.println("Cerrando GameZone..."); break;
-                default: System.out.println("Opción inválida.");
+                default: System.out.println("Opcion invalida.");
             }
         }
     }
@@ -75,13 +75,13 @@ public class ConsoleUI {
         System.out.println("1. Registrar videojuego");
         System.out.println("2. Registrar consola");
         System.out.println("3. Listar todos los productos");
-        System.out.print("Elija una opción: ");
+        System.out.print("Elija una opcion: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         if (option == 1) {
             System.out.print("ID: ");
             String id = scanner.nextLine();
-            System.out.print("Título: ");
+            System.out.print("Titulo: ");
             String title = scanner.nextLine();
             System.out.print("Precio: ");
             double price = Double.parseDouble(scanner.nextLine());
@@ -89,9 +89,9 @@ public class ConsoleUI {
             int quantity = Integer.parseInt(scanner.nextLine());
             System.out.print("Plataforma: ");
             String platform = scanner.nextLine();
-            System.out.print("Género: ");
+            System.out.print("Genero: ");
             String genre = scanner.nextLine();
-            System.out.print("Clasificación por edad: ");
+            System.out.print("Clasificacion por edad: ");
             String ageRating = scanner.nextLine();
 
             VideoGame game = new VideoGame(id, title, price, quantity, platform, genre, ageRating);
@@ -111,13 +111,13 @@ public class ConsoleUI {
             String brand = scanner.nextLine();
             System.out.print("Modelo: ");
             String model = scanner.nextLine();
-            System.out.print("Generación: ");
+            System.out.print("Generacion: ");
             String generation = scanner.nextLine();
 
             Console console = new Console(id, title, price, quantity, brand, model, generation);
             productService.registerConsole(console);
-            // La consola recién registrada debe poder referenciarse desde los
-            // accesorios, así que se refresca la lista de consolas conocidas.
+            // La consola recien registrada debe poder referenciarse desde los
+            // accesorios, asi que se refresca la lista de consolas conocidas.
             accessoryService.setAvailableConsoles(listConsoles());
             System.out.println("Consola registrada.");
 
@@ -134,7 +134,7 @@ public class ConsoleUI {
         System.out.println("1. Registrar cliente");
         System.out.println("2. Listar clientes");
         System.out.println("3. Listar vendedores");
-        System.out.print("Elija una opción: ");
+        System.out.print("Elija una opcion: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         if (option == 1) {
@@ -146,7 +146,7 @@ public class ConsoleUI {
             String identification = scanner.nextLine();
             System.out.print("Telefono: ");
             String phone = scanner.nextLine();
-            System.out.print("Correo electrónico: ");
+            System.out.print("Correo electronico: ");
             String email = scanner.nextLine();
 
             Customer customer = new Customer(id, name, identification, phone, email);
@@ -170,7 +170,7 @@ public class ConsoleUI {
         System.out.println("2. Listar todas las ventas");
         System.out.println("3. Listar ventas por cliente");
         System.out.println("4. Listar ventas por vendedor");
-        System.out.print("Elija una opción: ");
+        System.out.print("Elija una opcion: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         if (option == 1) {
@@ -181,19 +181,19 @@ public class ConsoleUI {
             System.out.print("ID del vendedor: ");
             String sellerId = scanner.nextLine();
 
-            // CAMBIO 1: usamos los métodos que ya existen en PersonService,
-            // en vez de reimplementar la búsqueda aquí en la UI.
+            // CAMBIO 1: usamos los metodos que ya existen en PersonService,
+            // en vez de reimplementar la busqueda aqui en la UI.
             Customer customer = personService.findCustomerById(customerId);
             Seller seller = personService.findSellerById(sellerId);
 
             // CAMBIO 2: validamos que existan antes de seguir, para no
             // construir una venta con datos nulos.
             if (customer == null) {
-                System.out.println("Error: no se encontró ningún cliente con ese ID.");
+                System.out.println("Error: no se encontro ningun cliente con ese ID.");
                 return;
             }
             if (seller == null) {
-                System.out.println("Error: no se encontró ningún vendedor con ese ID.");
+                System.out.println("Error: no se encontro ningun vendedor con ese ID.");
                 return;
             }
 
@@ -208,15 +208,15 @@ public class ConsoleUI {
                 Product product = findItemById(itemId);
                 if (product != null) {
                     products.add(product);
-                    // Taller 4: solo las consolas tienen garantía, y la básica
-                    // viene incluida. Se pregunta únicamente por la extendida.
+                    // Taller 4: solo las consolas tienen garantia, y la basica
+                    // viene incluida. Se pregunta unicamente por la extendida.
                     if (product instanceof Console && wantsExtendedWarranty(product)) {
                         productIdsWithExtendedWarranty.add(product.getId());
                     }
                 } else {
-                    System.out.println("Aviso: no se encontró ningún producto o accesorio con ese ID, se omite.");
+                    System.out.println("Aviso: no se encontro ningun producto o accesorio con ese ID, se omite.");
                 }
-                System.out.print("¿Agregar otro producto? (s/n): ");
+                System.out.print("Agregar otro producto? (s/n): ");
                 more = scanner.nextLine();
             }
 
@@ -224,7 +224,7 @@ public class ConsoleUI {
             saleService.registerSale(sale, productIdsWithExtendedWarranty);
             System.out.println("Venta registrada. Total: " + sale.getTotal());
             // El recibo muestra el subtotal, el descuento aplicado (con el
-            // nombre de la promoción) y el total final.
+            // nombre de la promocion) y el total final.
             System.out.println(sale.generateReceipt());
 
         } else if (option == 2) {
@@ -252,28 +252,28 @@ public class ConsoleUI {
      * accessories are compatible with a given console.
      */
     public void showAccessoryMenu() {
-        System.out.println("\n--- Gestión de accesorios ---");
+        System.out.println("\n--- Gestion de accesorios ---");
         System.out.println("1. Registrar un nuevo control.");
         System.out.println("2. Registrar un nuevo cable.");
         System.out.println("3. Registrar una nueva memoria.");
         System.out.println("4. Listar todos los accesorios.");
         System.out.println("5. Listar accesorios por tipo.");
         System.out.println("6. Consultar accesorios compatibles con una consola.");
-        System.out.println("0. Volver al menú principal.");
-        System.out.print("Elija una opción: ");
+        System.out.println("0. Volver al menu principal.");
+        System.out.print("Elija una opcion: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         switch (option) {
             case 1: {
                 System.out.print("ID: ");
                 String id = scanner.nextLine();
-                System.out.print("Título: ");
+                System.out.print("Titulo: ");
                 String title = scanner.nextLine();
                 System.out.print("Precio: ");
                 double price = Double.parseDouble(scanner.nextLine());
                 System.out.print("Cantidad disponible: ");
                 int quantity = Integer.parseInt(scanner.nextLine());
-                System.out.print("Tipo de conexión: ");
+                System.out.print("Tipo de conexion: ");
                 String connectionType = scanner.nextLine();
 
                 Controller controller = new Controller(id, title, price, quantity, connectionType);
@@ -285,7 +285,7 @@ public class ConsoleUI {
             case 2: {
                 System.out.print("ID: ");
                 String id = scanner.nextLine();
-                System.out.print("Título: ");
+                System.out.print("Titulo: ");
                 String title = scanner.nextLine();
                 System.out.print("Precio: ");
                 double price = Double.parseDouble(scanner.nextLine());
@@ -305,7 +305,7 @@ public class ConsoleUI {
             case 3: {
                 System.out.print("ID: ");
                 String id = scanner.nextLine();
-                System.out.print("Título: ");
+                System.out.print("Titulo: ");
                 String title = scanner.nextLine();
                 System.out.print("Precio: ");
                 double price = Double.parseDouble(scanner.nextLine());
@@ -347,7 +347,7 @@ public class ConsoleUI {
             case 0:
                 break;
             default:
-                System.out.println("Opción inválida.");
+                System.out.println("Opcion invalida.");
         }
     }
 
@@ -357,14 +357,14 @@ public class ConsoleUI {
      * list only the promotions that are currently in force.
      */
     public void showPromotionMenu() {
-        System.out.println("\n--- Gestión de promociones ---");
-        System.out.println("1. Registrar promoción por porcentaje.");
-        System.out.println("2. Registrar promoción por categoría.");
-        System.out.println("3. Registrar promoción por volumen.");
+        System.out.println("\n--- Gestion de promociones ---");
+        System.out.println("1. Registrar promocion por porcentaje.");
+        System.out.println("2. Registrar promocion por categoria.");
+        System.out.println("3. Registrar promocion por volumen.");
         System.out.println("4. Listar todas las promociones.");
         System.out.println("5. Listar promociones vigentes.");
-        System.out.println("0. Volver al menú principal.");
-        System.out.print("Elija una opción: ");
+        System.out.println("0. Volver al menu principal.");
+        System.out.print("Elija una opcion: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         switch (option) {
@@ -381,7 +381,7 @@ public class ConsoleUI {
 
                 promotionService.registerPercentageDiscount(
                         id, name, period.getStartDate(), period.getEndDate(), percentage);
-                System.out.println("Promoción por porcentaje registrada.");
+                System.out.println("Promocion por porcentaje registrada.");
                 break;
             }
             case 2: {
@@ -398,7 +398,7 @@ public class ConsoleUI {
 
                 promotionService.registerCategoryDiscount(
                         id, name, period.getStartDate(), period.getEndDate(), percentage, category);
-                System.out.println("Promoción por categoría registrada.");
+                System.out.println("Promocion por categoria registrada.");
                 break;
             }
             case 3: {
@@ -410,12 +410,12 @@ public class ConsoleUI {
                 if (period == null) {
                     return;
                 }
-                int minimumQuantity = askPositiveInt("Cantidad mínima de productos: ");
+                int minimumQuantity = askPositiveInt("Cantidad minima de productos: ");
                 double percentage = askPercentage("Porcentaje de descuento: ");
 
                 promotionService.registerBulkPurchaseDiscount(
                         id, name, period.getStartDate(), period.getEndDate(), minimumQuantity, percentage);
-                System.out.println("Promoción por volumen registrada.");
+                System.out.println("Promocion por volumen registrada.");
                 break;
             }
             case 4:
@@ -427,7 +427,7 @@ public class ConsoleUI {
             case 0:
                 break;
             default:
-                System.out.println("Opción inválida.");
+                System.out.println("Opcion invalida.");
         }
     }
 
@@ -436,14 +436,14 @@ public class ConsoleUI {
      * registered return and query the returns by customer or by original sale.
      */
     public void showReturnMenu() {
-        System.out.println("\n--- Gestión de devoluciones ---");
-        System.out.println("1. Registrar nueva devolución.");
+        System.out.println("\n--- Gestion de devoluciones ---");
+        System.out.println("1. Registrar nueva devolucion.");
         System.out.println("2. Consultar todas las devoluciones.");
         System.out.println("3. Consultar devoluciones por cliente.");
         System.out.println("4. Consultar devoluciones por venta.");
         System.out.println("5. Consultar balance mensual.");
-        System.out.println("0. Volver al menú principal.");
-        System.out.print("Elija una opción: ");
+        System.out.println("0. Volver al menu principal.");
+        System.out.print("Elija una opcion: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         switch (option) {
@@ -471,7 +471,7 @@ public class ConsoleUI {
             case 0:
                 break;
             default:
-                System.out.println("Opción inválida.");
+                System.out.println("Opcion invalida.");
         }
     }
 
@@ -510,7 +510,7 @@ public class ConsoleUI {
             } catch (NumberFormatException e) {
                 // Se cae al mensaje de error de abajo.
             }
-            System.out.println("Error: el mes debe ser un número entre 1 y 12.");
+            System.out.println("Error: el mes debe ser un numero entre 1 y 12.");
         }
     }
 
@@ -521,7 +521,7 @@ public class ConsoleUI {
      */
     private int askYear() {
         while (true) {
-            System.out.print("Año: ");
+            System.out.print("Anio: ");
             try {
                 int year = Integer.parseInt(scanner.nextLine().trim());
                 if (year >= 2000 && year <= 2100) {
@@ -530,7 +530,7 @@ public class ConsoleUI {
             } catch (NumberFormatException e) {
                 // Se cae al mensaje de error de abajo.
             }
-            System.out.println("Error: el año debe estar entre 2000 y 2100.");
+            System.out.println("Error: el anio debe estar entre 2000 y 2100.");
         }
     }
 
@@ -545,11 +545,11 @@ public class ConsoleUI {
 
         Sale sale = findSaleById(saleId);
         if (sale == null) {
-            System.out.println("Error: no se encontró ninguna venta con el ID " + saleId + ".");
+            System.out.println("Error: no se encontro ninguna venta con el ID " + saleId + ".");
             return;
         }
         if (!sale.canBeReturned()) {
-            System.out.println("Error: la venta " + saleId + " supera los 30 días y no admite devoluciones.");
+            System.out.println("Error: la venta " + saleId + " supera los 30 dias y no admite devoluciones.");
             return;
         }
 
@@ -561,11 +561,11 @@ public class ConsoleUI {
 
         List<String> productIds = askReturnedProductIds(sale);
         if (productIds.isEmpty()) {
-            System.out.println("Devolución cancelada: no se seleccionó ningún producto.");
+            System.out.println("Devolucion cancelada: no se selecciono ningun producto.");
             return;
         }
 
-        System.out.print("Motivo de la devolución: ");
+        System.out.print("Motivo de la devolucion: ");
         String reason = scanner.nextLine().trim();
 
         Return registeredReturn;
@@ -577,12 +577,12 @@ public class ConsoleUI {
             // vez de dejar que la excepcion salga del menu y tumbe la app de
             // consola. Las validaciones de arriba ya evitan los rechazos
             // conocidos; esta red de seguridad cubre los que se agreguen.
-            System.out.println("No se pudo registrar la devolución: " + e.getMessage());
+            System.out.println("No se pudo registrar la devolucion: " + e.getMessage());
             return;
         }
 
         if (registeredReturn == null) {
-            System.out.println("Error: no fue posible registrar la devolución.");
+            System.out.println("Error: no fue posible registrar la devolucion.");
             return;
         }
         System.out.println(registeredReturn.generateReturnReceipt());
@@ -652,7 +652,7 @@ public class ConsoleUI {
         String customerId = originalSale != null && originalSale.getCustomer() != null
                 ? originalSale.getCustomer().getId() : "N/A";
         return String.format(
-                "Devolución | ID: %s | Fecha: %s | Venta: %s | Cliente: %s | Motivo: %s | Reembolso: $%.2f",
+                "Devolucion | ID: %s | Fecha: %s | Venta: %s | Cliente: %s | Motivo: %s | Reembolso: $%.2f",
                 productReturn.getId(),
                 productReturn.getDate(),
                 saleId,
@@ -699,12 +699,12 @@ public class ConsoleUI {
      * @return the description of the promotion
      */
     private String describePromotion(Promotion promotion) {
-        return String.format("Promoción | ID: %s | Nombre: %s | Vigencia: %s a %s | ¿Vigente hoy?: %s",
+        return String.format("Promocion | ID: %s | Nombre: %s | Vigencia: %s a %s | Vigente hoy?: %s",
                 promotion.getId(),
                 promotion.getName(),
                 promotion.getStartDate(),
                 promotion.getEndDate(),
-                promotion.isActive(LocalDate.now()) ? "Sí" : "No");
+                promotion.isActive(LocalDate.now()) ? "Si" : "No");
     }
 
     /**
@@ -737,7 +737,7 @@ public class ConsoleUI {
             try {
                 return LocalDate.parse(input);
             } catch (DateTimeParseException e) {
-                System.out.println("Error: fecha inválida. Use el formato yyyy-MM-dd.");
+                System.out.println("Error: fecha invalida. Use el formato yyyy-MM-dd.");
             }
         }
     }
@@ -760,7 +760,7 @@ public class ConsoleUI {
             } catch (NumberFormatException e) {
                 // Se cae al mensaje de error de abajo.
             }
-            System.out.println("Error: el porcentaje debe ser un número mayor que 0 y menor o igual que 100.");
+            System.out.println("Error: el porcentaje debe ser un numero mayor que 0 y menor o igual que 100.");
         }
     }
 
@@ -781,7 +781,7 @@ public class ConsoleUI {
             } catch (NumberFormatException e) {
                 // Se cae al mensaje de error de abajo.
             }
-            System.out.println("Error: debe ingresar un número entero mayor que 0.");
+            System.out.println("Error: debe ingresar un numero entero mayor que 0.");
         }
     }
 
@@ -793,12 +793,12 @@ public class ConsoleUI {
      */
     private String askCategory() {
         while (true) {
-            System.out.print("Categoría objetivo (VIDEOGAME/CONSOLE): ");
+            System.out.print("Categoria objetivo (VIDEOGAME/CONSOLE): ");
             String input = scanner.nextLine().trim().toUpperCase();
             if (input.equals(CATEGORY_VIDEOGAME) || input.equals(CATEGORY_CONSOLE)) {
                 return input;
             }
-            System.out.println("Error: la categoría debe ser VIDEOGAME o CONSOLE.");
+            System.out.println("Error: la categoria debe ser VIDEOGAME o CONSOLE.");
         }
     }
 
@@ -838,7 +838,7 @@ public class ConsoleUI {
 
     private List<Console> askCompatibleConsoles() {
         List<Console> consoles = new ArrayList<>();
-        System.out.print("IDs de consolas compatibles (separados por coma, o vacío si ninguna): ");
+        System.out.print("IDs de consolas compatibles (separados por coma, o vacio si ninguna): ");
         String input = scanner.nextLine();
         if (!input.isBlank()) {
             String[] ids = input.split(",");
@@ -848,7 +848,7 @@ public class ConsoleUI {
                 if (product instanceof Console consoleProduct) {
                     consoles.add(consoleProduct);
                 } else {
-                    System.out.println("Aviso: no se encontró una consola con ID " + consoleId + ", se omite.");
+                    System.out.println("Aviso: no se encontro una consola con ID " + consoleId + ", se omite.");
                 }
             }
         }
@@ -862,13 +862,13 @@ public class ConsoleUI {
      * and list the ones about to expire.
      */
     public void showWarrantyMenu() {
-        System.out.println("\n--- Gestión de garantías ---");
-        System.out.println("1. Consultar garantía de un producto en una venta.");
-        System.out.println("2. Listar todas las garantías.");
-        System.out.println("3. Listar garantías vigentes.");
-        System.out.println("4. Listar garantías próximas a vencer.");
-        System.out.println("0. Volver al menú principal.");
-        System.out.print("Elija una opción: ");
+        System.out.println("\n--- Gestion de garantias ---");
+        System.out.println("1. Consultar garantia de un producto en una venta.");
+        System.out.println("2. Listar todas las garantias.");
+        System.out.println("3. Listar garantias vigentes.");
+        System.out.println("4. Listar garantias proximas a vencer.");
+        System.out.println("0. Volver al menu principal.");
+        System.out.print("Elija una opcion: ");
         int option = Integer.parseInt(scanner.nextLine());
 
         switch (option) {
@@ -879,7 +879,7 @@ public class ConsoleUI {
                 String saleId = scanner.nextLine();
                 Warranty warranty = warrantyService.findWarrantyByProduct(productId, saleId);
                 if (warranty == null) {
-                    System.out.println("No hay garantía registrada para el producto " + productId
+                    System.out.println("No hay garantia registrada para el producto " + productId
                             + " en la venta " + saleId + ".");
                 } else {
                     System.out.println(warranty.generateWarrantyCertificate());
@@ -893,21 +893,21 @@ public class ConsoleUI {
                 showWarranties(warrantyService.listActiveWarranties());
                 break;
             case 4: {
-                int days = askPositiveInt("¿En cuántos días debe vencer una garantía para considerarse próxima? ");
+                int days = askPositiveInt("En cuantos dias debe vencer una garantia para considerarse proxima? ");
                 showWarranties(warrantyService.listWarrantiesExpiringSoon(days));
                 break;
             }
             case 0:
-                System.out.println("Volviendo al menú principal.");
+                System.out.println("Volviendo al menu principal.");
                 break;
             default:
-                System.out.println("Opción inválida.");
+                System.out.println("Opcion invalida.");
         }
     }
 
     private void showWarranties(List<Warranty> warranties) {
         if (warranties.isEmpty()) {
-            System.out.println("No hay garantías registradas.");
+            System.out.println("No hay garantias registradas.");
             return;
         }
         for (Warranty warranty : warranties) {
@@ -918,8 +918,8 @@ public class ConsoleUI {
     private String describeWarranty(Warranty warranty) {
         long daysLeft = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), warranty.getEndDate());
         String remaining = daysLeft < 0
-                ? "vencida hace " + Math.abs(daysLeft) + " días"
-                : "quedan " + daysLeft + " días";
+                ? "vencida hace " + Math.abs(daysLeft) + " dias"
+                : "quedan " + daysLeft + " dias";
         return warranty.getId() + " | " + warranty.getWarrantyType()
                 + " | Producto: " + warranty.getProduct().getId()
                 + " | Venta: " + warranty.getSale().getId()
@@ -938,8 +938,8 @@ public class ConsoleUI {
 private boolean wantsExtendedWarranty(Product product) {
     double extraCost = product.getPrice() * 0.10;
     System.out.println("  La consola " + product.getId() + " (" + product.getTitle()
-            + ") incluye garantía básica de 6 meses.");
-    System.out.println("  ¿Desea comprar la garantía extendida de 12 meses por $"
+            + ") incluye garantia basica de 6 meses.");
+    System.out.println("  Desea comprar la garantia extendida de 12 meses por $"
             + String.format("%.2f", extraCost) + "? (s/n): ");
     String answer = scanner.nextLine();
     return "s".equalsIgnoreCase(answer.trim());

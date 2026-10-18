@@ -36,11 +36,11 @@ public class BasicWarranty extends Warranty {
     /**
      * Gets the type of the basic warranty.
      * 
-     * @return "Garantía Básica"
+     * @return "Garantia Basica"
      */
     @Override
     public String getWarrantyType() {
-        return "Garantía Básica";
+        return "Garantia Basica";
     }
 
     /**

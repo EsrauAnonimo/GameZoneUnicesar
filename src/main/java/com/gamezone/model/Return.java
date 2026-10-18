@@ -138,7 +138,7 @@ public class Return {
      */
     public String generateReturnReceipt() {
     StringBuilder sb = new StringBuilder();
-    sb.append("===== COMPROBANTE DE DEVOLUCIÓN =====\n");
+    sb.append("===== COMPROBANTE DE DEVOLUCION =====\n");
     sb.append("ID: ").append(id != null ? id : "N/A").append("\n");
     sb.append("Fecha: ").append(date != null ? date : "N/A").append("\n");
     sb.append("Venta original: ").append(originalSale != null ? originalSale.getId() : "N/A").append("\n");
