@@ -5,11 +5,17 @@ import java.util.List;
 
 /**
  * Represents a category-based discount promotion.
- * Applies a percentage only to products of a specific category.
+ * Applies a percentage only to products of a specific category
+ * (VIDEOGAME, CONSOLE, or ACCESSORY).
  * 
  * @author Dev 1
  */
 public class CategoryDiscount extends Promotion {
+
+    public static final String CATEGORY_VIDEOGAME = "VIDEOGAME";
+    public static final String CATEGORY_CONSOLE = "CONSOLE";
+    public static final String CATEGORY_ACCESSORY = "ACCESSORY";
+
 
     private double percentage;
     private String targetCategory;
@@ -22,12 +28,20 @@ public class CategoryDiscount extends Promotion {
      * @param startDate Date when the promotion starts
      * @param endDate Date when the promotion ends
      * @param percentage Discount percentage (0-100)
-     * @param targetCategory Category to apply the discount to (VIDEOGAME or CONSOLE)
+     * @param targetCategory Category to apply the discount to (VIDEOGAME, CONSOLE, or ACCESSORY)
      */
-    public CategoryDiscount(String id, String name, LocalDate startDate,
-                            LocalDate endDate, double percentage, String targetCategory) {
+       public CategoryDiscount(String id, String name,
+                            LocalDate startDate, LocalDate endDate, double percentage, String targetCategory) {
         super(id, name, startDate, endDate);
         this.percentage = percentage;
+        
+        // Validación para asegurar que la categoría sea válida
+        if (!CATEGORY_VIDEOGAME.equals(targetCategory) && 
+            !CATEGORY_CONSOLE.equals(targetCategory) && 
+            !CATEGORY_ACCESSORY.equals(targetCategory)) {
+            throw new IllegalArgumentException("Categoría inválida. Debe ser VIDEOGAME, CONSOLE o ACCESSORY.");
+        }
+        
         this.targetCategory = targetCategory;
     }
 
@@ -88,11 +102,14 @@ public class CategoryDiscount extends Promotion {
 }
 
 for (Product product : products) {
-    if ("VIDEOGAME".equals(targetCategory) && product instanceof VideoGame) {
+    if (CATEGORY_VIDEOGAME.equals(targetCategory) && product instanceof VideoGame) {
         categoryTotal += product.getPrice();
-    } else if ("CONSOLE".equals(targetCategory) && product instanceof Console) {
+    } else if (CATEGORY_CONSOLE.equals(targetCategory) && product instanceof Console) {
         categoryTotal += product.getPrice();
-    }
+    } else if (CATEGORY_ACCESSORY.equals(targetCategory) && product instanceof Accessory) {
+                categoryTotal += product.getPrice();
+            }
+
 }
         
         return categoryTotal * (percentage / 100.0);
