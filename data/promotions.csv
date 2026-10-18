@@ -1,0 +1,4 @@
+type;id;name;startDate;endDate;percentage;targetCategory;minimumQuantity
+PERCENTAGE;PROM-001;Descuento general 15%;2026-09-01;2026-12-31;15;;
+CATEGORY;PROM-002;Descuento en videojuegos 20%;2026-09-01;2026-12-31;20;VIDEOGAME;
+BULK;PROM-003;Descuento por volumen 10%;2026-09-01;2026-12-31;10;;3

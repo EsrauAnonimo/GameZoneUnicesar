@@ -46,4 +46,32 @@ public class ProductService {
         
         persistence.save(products);
     }
+
+    /**
+     * Increases the stock of a product by the given quantity and persists the
+     * change. The return module uses this method to put the units of returned
+     * products back into the inventory, so it is the additive counterpart of
+     * the stock decrease performed when a sale is registered.
+     *
+     * <p>Non positive quantities are ignored, and a product id that is not
+     * registered leaves the inventory untouched.</p>
+     *
+     * @param productId id of the product whose stock must be increased
+     * @param quantity  amount of units to add back to the available stock
+     */
+    public void restoreStock(String productId, int quantity) {
+        if (quantity <= 0) {
+            return;
+        }
+
+        List<Product> products = persistence.loadAll();
+        for (Product product : products) {
+            if (product.getId().equals(productId)) {
+                product.setAvailableQuantity(product.getAvailableQuantity() + quantity);
+                break;
+            }
+        }
+
+        persistence.save(products);
+    }
 }
