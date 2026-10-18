@@ -1,6 +1,7 @@
 package com.gamezone.persistence;
 
 import com.gamezone.model.BasicWarranty;
+import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Warranty;
@@ -25,6 +26,7 @@ public class WarrantyRepository {
     private static final String DEFAULT_PATH = "data/warranties.csv";
     private static final String SEPARATOR = ";";
     private static final String TYPE_BASIC = "BASIC";
+    private static final String TYPE_EXTENDED = "EXTENDED";
     private static final int EXPECTED_FIELDS = 5;
 
     private final Path filePath;
@@ -90,7 +92,9 @@ public class WarrantyRepository {
 
     private String serialize(Warranty warranty) {
         String type;
-        if (warranty instanceof BasicWarranty) {
+        if (warranty instanceof ExtendedWarranty) {
+            type = TYPE_EXTENDED;
+        } else if (warranty instanceof BasicWarranty) {
             type = TYPE_BASIC;
         } else {
             throw new IllegalArgumentException(
@@ -125,6 +129,8 @@ public class WarrantyRepository {
 
         if (TYPE_BASIC.equals(fields[0])) {
             return new BasicWarranty(fields[1], product, sale, startDate);
+        } else if (TYPE_EXTENDED.equals(fields[0])) {
+            return new ExtendedWarranty(fields[1], product, sale, startDate);
         }
         return null;
     }
