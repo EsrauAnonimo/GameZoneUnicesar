@@ -89,4 +89,11 @@ classDiagram
     SaleService --> AccessoryService : uses
     PromotionService --> PromotionRepository : uses
 ```
+## Update A1 - Accessory Discount Support
 
+The `CategoryDiscount` class has been updated to support the `ACCESSORY` category.
+
+### Changes
+- Added `CATEGORY_ACCESSORY` constant.
+- The constructor now validates that the category is `VIDEOGAME`, `CONSOLE`, or `ACCESSORY`.
+- The `calculateDiscount` method now uses `instanceof Accessory` to sum the prices of controllers, cables, and memory products before applying the discount percentage.
