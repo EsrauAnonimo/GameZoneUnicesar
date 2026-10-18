@@ -41,6 +41,20 @@ public class WarrantyService {
         return warranty;
     }
 
+    public Warranty findWarrantyByProduct(String productId, String saleId) {
+        for (Warranty warranty : repository.loadAll()) {
+            if (warranty.getProduct().getId().equals(productId)
+                    && warranty.getSale().getId().equals(saleId)) {
+                return warranty;
+            }
+        }
+        return null;
+    }
+
+    public List<Warranty> listAllWarranties() {
+        return repository.loadAll();
+    }
+
     private void validateAssignment(Product product, Sale sale, LocalDate startDate) {
         if (product == null || sale == null || startDate == null) {
             throw new IllegalArgumentException(
