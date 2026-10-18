@@ -7,9 +7,9 @@ import java.util.List;
 /**
  * Represents a sale transaction of the store.
  * It groups the customer, the seller and the sold products, and keeps the
- * monetary result of the transaction: subtotal, applied discount and final
- * total. It implements Serializable because SalePersistence stores sales
- * using Java serialization.
+ * monetary result of the transaction: subtotal, applied discount, extended
+ * warranty cost and final total. It implements Serializable because
+ * SalePersistence stores sales using Java serialization.
  */
 public class Sale implements Serializable {
 
@@ -25,7 +25,7 @@ public class Sale implements Serializable {
     private double total;
     private String appliedPromotionName;
     private double discountAmount;
-
+    private double extendedWarrantyCost;
 
     public Sale(String id, LocalDate date, Customer customer, Seller seller, List<Product> products) {
         this.id = id;
@@ -34,13 +34,17 @@ public class Sale implements Serializable {
         this.seller = seller;
         this.products = products;
         this.total = calculateTotal();
+        this.extendedWarrantyCost = 0.0;
     }
-    
     
     public double calculateTotal() {
         double sum = 0;
-        for (Product product : products) {
-            sum += product.getPrice();
+        if (products != null) {
+            for (Product product : products) {
+                if (product != null) {
+                    sum += product.getPrice();
+                }
+            }
         }
         return sum;
     }
@@ -82,9 +86,7 @@ public class Sale implements Serializable {
     }
 
     /**
-     * Sets the final total of the sale, that is, the subtotal once the
-     * discount has been subtracted. It is called by the service layer once
-     * the best promotion for the sale has been resolved.
+     * Sets the final total of the sale.
      *
      * @param total the final total of the sale
      */
@@ -129,10 +131,27 @@ public class Sale implements Serializable {
     }
 
     /**
+     * Gets the additional cost of extended warranties for this sale.
+     *
+     * @return the extended warranty cost
+     */
+    public double getExtendedWarrantyCost() {
+        return extendedWarrantyCost;
+    }
+
+    /**
+     * Sets the additional cost of extended warranties for this sale.
+     *
+     * @param extendedWarrantyCost the extended warranty cost
+     */
+    public void setExtendedWarrantyCost(double extendedWarrantyCost) {
+        this.extendedWarrantyCost = extendedWarrantyCost;
+    }
+
+    /**
      * Builds the textual receipt of the sale, showing the subtotal, the
-     * applied discount (including the name of the promotion) and the final
-     * total. The receipt is returned as a string so that the UI layer is the
-     * only one deciding how to display it.
+     * applied discount (including the name of the promotion), the extended
+     * warranty cost and the final total.
      *
      * @return the receipt as a multi-line string
      */
@@ -143,13 +162,14 @@ public class Sale implements Serializable {
         receipt.append("Fecha: ").append(date).append('\n');
         receipt.append("Cliente: ").append(describe(customer)).append('\n');
         receipt.append("Vendedor: ").append(describe(seller)).append('\n');
-        receipt.append("Productos: ").append(products.size()).append('\n');
+        receipt.append("Productos: ").append(products != null ? products.size() : 0).append('\n');
         receipt.append(String.format("Subtotal: %.2f%n", getSubtotal()));
         if (appliedPromotionName != null) {
             receipt.append(String.format("Descuento (%s): -%.2f%n", appliedPromotionName, discountAmount));
         } else {
             receipt.append(String.format("Descuento %s: -%.2f%n", NO_PROMOTION_LABEL, discountAmount));
         }
+        receipt.append(String.format("Garantias extendidas: +%.2f%n", extendedWarrantyCost));
         receipt.append(String.format("Total: %.2f", total));
         receipt.append("\n=== Fin del recibo ===");
         return receipt.toString();
@@ -165,7 +185,8 @@ public class Sale implements Serializable {
     private String describe(Person person) {
         return person == null ? "(desconocido)" : person.getId();
     }
-        /**
+
+    /**
      * Checks if the sale can be returned.
      * A sale can be returned if the current date is within 30 calendar days
      * after the sale date.

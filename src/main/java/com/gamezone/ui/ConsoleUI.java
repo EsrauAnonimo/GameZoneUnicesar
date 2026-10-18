@@ -220,12 +220,28 @@ public class ConsoleUI {
                 more = scanner.nextLine();
             }
 
+            if (products.isEmpty()) {
+                System.out.println("Error: la venta debe tener al menos un producto.");
+                return;
+            }
+
             Sale sale = new Sale(id, LocalDate.now(), customer, seller, products);
             saleService.registerSale(sale, productIdsWithExtendedWarranty);
-            System.out.println("Venta registrada. Total: " + sale.getTotal());
-            // El recibo muestra el subtotal, el descuento aplicado (con el
-            // nombre de la promocion) y el total final.
-            System.out.println(sale.generateReceipt());
+
+            boolean registered = false;
+            for (Sale s : saleService.listAllSales()) {
+                if (s.getId().equals(sale.getId())) {
+                    registered = true;
+                    break;
+                }
+            }
+
+            if (registered) {
+                System.out.println("Venta registrada. Total: " + sale.getTotal());
+                // El recibo muestra el subtotal, el descuento aplicado (con el
+                // nombre de la promocion), el costo de garantias y el total final.
+                System.out.println(sale.generateReceipt());
+            }
 
         } else if (option == 2) {
             for (Sale s : saleService.listAllSales()) {
