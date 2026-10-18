@@ -5,7 +5,8 @@ import java.util.List;
 
 /**
  * Represents a category-based discount promotion.
- * Applies a percentage only to products of a specific category.
+ * Applies a percentage only to products of a specific category
+ * (VIDEOGAME, CONSOLE, or ACCESSORY).
  * 
  * @author Dev 1
  */
@@ -27,7 +28,7 @@ public class CategoryDiscount extends Promotion {
      * @param startDate Date when the promotion starts
      * @param endDate Date when the promotion ends
      * @param percentage Discount percentage (0-100)
-     * @param targetCategory Category to apply the discount to (VIDEOGAME or CONSOLE)
+     * @param targetCategory Category to apply the discount to (VIDEOGAME, CONSOLE, or ACCESSORY)
      */
     public CategoryDiscount(String id, String name, LocalDate startDate,
                             LocalDate endDate, double percentage, String targetCategory) {
