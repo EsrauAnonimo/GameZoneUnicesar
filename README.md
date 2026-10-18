@@ -4,17 +4,28 @@ Inventory and sales management system for a video game store, developed in Java 
 
 ## Description
 
-GameZone Unicesar is a console-based system that manages products (video games and consoles), people (customers and sellers), and sales, with data persistence between executions.
+GameZone Unicesar is a console-based system that manages products (video games and consoles), accessories (controllers, cables, memories), people (customers and sellers), sales transactions, promotional discounts, console warranties, and product returns, with complete data persistence between executions.
+
+The system represents the complete integration of four major business modules operating coherently over a unified layered architecture.
 
 ## Technologies
 
-- **Language:** Java 17
-- **Build tool:** Maven
-- **Persistence:** Java serialization (`.dat` files)
+- **Language:** Java 17 (Pure Java: strictly no external frameworks, no interfaces, no `Stream`, no `Optional`)
+- **Build tool:** Apache Maven
+- **Persistence:**
+  - Java object serialization (`.dat` binary files) for Products and Sales.
+  - CSV text persistence (`.csv` files with semicolon `;` separator) for Sellers, Accessories, Promotions, Warranties, and Returns.
 
 ## Architecture
 
-The project is organized into 4 layers within the `com.gamezone` package:
+The project strictly follows a four-layer architecture within the `com.gamezone` package:
+
+1. **UI Layer (`com.gamezone.ui`):** `ConsoleUI` manages console menus, user input validation, and result presentation in Spanish. It communicates exclusively with the Service layer.
+2. **Service Layer (`com.gamezone.service`):** Implements business rules and orchestrates domain operations (`SaleService`, `ProductService`, `AccessoryService`, `PromotionService`, `WarrantyService`, `ReturnService`, and `PersonService`).
+3. **Persistence Layer (`com.gamezone.persistence`):** Encapsulates all file I/O operations (`ProductPersistence`, `AccessoryPersistence`, `SalePersistence`, `PromotionRepository`, `WarrantyRepository`, `ReturnRepository`, and `PersonPersistence`).
+4. **Model Layer (`com.gamezone.model`):** Pure domain entities representing products, sales, warranties, promotions, returns, and people. Contains zero file I/O or console logic.
+
+See [`docs/layers-diagram.md`](./docs/layers-diagram.md) and [`docs/integrated-class-diagram.md`](./docs/integrated-class-diagram.md) for detailed structural diagrams.
 
 ## Prerequisites
 
@@ -32,8 +43,8 @@ mvn clean install
 ## How to run
 
 **Option 1 — From NetBeans:**
-1. Open the project via `File → Open Project`, selecting the `GameZoneUnicesar` root folder
-2. Right-click the project → `Run`
+1. Open the project via `File → Open Project`, selecting the `GameZoneUnicesar` root folder.
+2. Right-click the project → `Run`.
 
 **Option 2 — From terminal, with Maven:**
 ```bash
@@ -42,85 +53,105 @@ mvn exec:java -Dexec.mainClass="com.gamezone.Main"
 
 ## Preloaded data
 
-On first run, the system automatically creates 3 preloaded sellers in `data/`.
-## Accessory module
+On startup, the system loads data from the `data/` folder:
+- `data/sellers.csv`: Preloaded with 3 sellers.
+- `data/products.dat`: Preloaded with video games and consoles.
+- `data/accessories.csv`: Preloaded with controllers, cables, and memories.
+- `data/promotions.csv`: Preloaded with active percentage, category, and bulk purchase promotions.
+- `data/sales.dat`, `data/warranties.csv`, and `data/returns.csv`: Created dynamically as transactions occur.
 
-GameZone Unicesar now supports a new line of products: video game accessories.
-The system manages three types of accessories: controllers, cables and
-memories, which can be sold together with consoles and video games in the
-same transaction.
+---
+
+## Integrated System Overview
+
+The integrated GameZone Unicesar system orchestrates the four business modules seamlessly:
+
+1. **Unified Sale Registration (Ajuste A3):**
+   - A single sale transaction can include video games, consoles, and accessories simultaneously.
+   - Live inventory validation checks multi-unit availability across both `ProductService` and `AccessoryService` before accepting the sale.
+   - Queries `PromotionService.findBestPromotionFor` to automatically apply the best available discount, calculated strictly on the merchandise subtotal.
+   - Assigns an included 6-month basic warranty for every console in the sale and allows upgrading to a 12-month extended warranty (+10% of console price).
+   - Generates an itemized receipt displaying Subtotal, Applied Promotion with discount, Extended Warranties, and Final Total.
+   - Persists the sale to disk first, then creates and persists console warranties directly in `data/warranties.csv`.
+
+2. **Accessory Support & Category Discounts (Ajuste A1):**
+   - Comprehensive hierarchy for controllers, cables, and memory cards extending `Product`.
+   - N:M compatibility mapping between accessories and consoles.
+   - Category discounts can target video games, consoles, or accessories (`"ACCESSORY"`).
+
+3. **Warranty Lifecycle & Revocation (Ajuste A2, A7):**
+   - Warranties cover sold consoles with a single active warranty policy per purchase.
+   - Circular dependency between `SaleService` and `WarrantyService` is eliminated by resolving sales through leaf persistence (`SalePersistence`).
+   - If a console is returned, `WarrantyService.cancelWarranties` immediately revokes the warranty certificate and refunds the extended warranty fee.
+
+4. **Return Management & Proportional Refunds (Ajuste A4, A5, A6):**
+   - Enforces the 30-day return policy via `Sale.canBeReturned()`.
+   - Computes proportional refunds matching the effective promotional discount of the original sale: $\text{price} \times (1 - \text{discount} / \text{subtotal})$.
+   - Restores stock automatically delegating to `ProductService.restoreStock` or `AccessoryService.restoreStock` based on item type.
+   - Generates comprehensive monthly balance reports detailing total sales revenue, total returns refunded, and net balance.
+
+---
+
+## Accessory Module
+
+The system manages three types of accessories: controllers, cables, and memories, which can be sold together with consoles and video games in the same transaction.
 
 ### Features
-
-- Register controllers, cables and memories.
-- List all accessories.
-- List accessories by type (`CONTROLLER`, `CABLE`, `MEMORY`).
+- Register controllers, cables, and memories.
+- List all accessories or filter by type (`CONTROLLER`, `CABLE`, `MEMORY`).
 - Query accessories compatible with a specific console.
-- Include accessories in sales together with consoles and video games.
-- Update accessory stock automatically after each sale.
+- Automatic stock decrements upon sale and restoration upon return.
 
-### New menu options
+---
 
-The console menu now includes an **Accessory Management** submenu with the
-following options:
+## Promotion Module
 
-1. Register a new controller.
-2. Register a new cable.
-3. Register a new memory.
-4. List all accessories.
-5. List accessories by type.
-6. Query accessories compatible with a console.
-
-The **Sales Management** submenu now allows selecting accessories in addition
-to products when registering a new sale.
-
-### Data
-
-Accessories are persisted in `data/accessories.csv` using a semicolon (`;`)
-separator. The file uses a type discriminator (`CONTROLLER`, `CABLE`,
-`MEMORY`) to reconstruct the correct subclass when loading.
-
-## Warranty module
-
-GameZone Unicesar now supports warranty management for consoles sold in the store.
-The system automatically grants an included basic warranty for each console and
-allows customers to purchase an optional extended warranty.
+The system supports automatic evaluation and selection of the best promotional discount for any sale transaction.
 
 ### Features
+- Percentage discount on the total merchandise subtotal.
+- Category discount targeting Video Games, Consoles, or Accessories (Ajuste A1).
+- Bulk purchase discount applying a percentage off when purchasing at least $N$ items.
+- Dynamic evaluation of active dates via `Promotion.isActive(LocalDate)`.
+- `PromotionService.findBestPromotionFor(Sale)` automatically selects the single highest discount.
 
-- Automatically assign a basic warranty (6 months, no additional cost) to each console in a sale.
-- Optionally upgrade to an extended warranty (12 months, +10% of the console price) during sale registration.
-- Consult warranties by product and sale, emitting a formatted warranty certificate in Spanish.
-- List all registered warranties.
-- List warranties that are currently active today.
-- List active warranties expiring soon within a user-defined number of days.
-- Ensure only consoles receive warranties while video games and accessories remain unaffected.
-- Add extended warranty costs after promotional discounts to preserve discount calculations.
+---
 
-### New menu options
+## Warranty Module
 
-The main menu now includes a **Warranty Management** (`Gestión de garantías`) submenu (option 7) with the following options:
+Console purchases automatically include warranty coverage managed by `WarrantyService`.
 
-1. Consultar garantía de un producto en una venta (Query warranty by product and sale, displaying the certificate).
-2. Listar todas las garantías (List all registered warranties).
-3. Listar garantías vigentes (List currently active warranties).
-4. Listar garantías próximas a vencer (List warranties expiring soon within N days).
-0. Volver al menú principal (Return to main menu).
+### Features
+- Automatic basic warranty (6 months, included at no extra cost) for all consoles.
+- Optional extended warranty (12 months, +10% of console price) selected during sale registration.
+- Query warranties by product and sale, displaying formatted certificates.
+- Query currently active warranties and warranties expiring within $N$ days.
+- Revocation of warranties and refund of extended fees upon console return (Ajuste A7).
 
-Additionally, when registering a sale, the system prompts whether extended coverage is desired for each console added.
+---
 
-### Data
+## Return Module
 
-Warranties are persisted in `data/warranties.csv` using a semicolon (`;`) separator with the following structure:
-```csv
-type;id;productId;saleId;startDate
-```
-The first column uses a type discriminator (`BASIC`, `EXTENDED`) to reconstruct the appropriate subclass upon loading. End dates and additional costs are dynamically computed to maintain a single source of truth.
+Customers can return purchased products within 30 days of the sale date.
+
+### Features
+- 30-day validity verification via `Sale.canBeReturned()`.
+- Proportional refund calculation for purchases made with promotional discounts (Ajuste A5).
+- Automatic inventory restoration for both regular products and accessories (Ajuste A4).
+- Automatic warranty revocation and refund for returned consoles (Ajuste A7).
+- Monthly balance reports showing monthly sales, monthly returns, and net revenue (Ajuste A6).
+
+---
 
 ## Team
 
 See [`TEAM.md`](./TEAM.md) for roles, class distribution, and responsibilities.
 
-## Design documentation
+## Design Documentation
 
-See the [`docs/`](./docs) folder for the system analysis and diagrams (hierarchy, class, layers).
+See the [`docs/`](./docs) folder for detailed system analysis, design documents, and diagrams:
+- [`docs/integration-analysis.md`](./docs/integration-analysis.md): Complete analysis of adjustments A1 through A7.
+- [`docs/integrated-class-diagram.md`](./docs/integrated-class-diagram.md): Unified Mermaid class diagram for the integrated system.
+- [`docs/layers-diagram.md`](./docs/layers-diagram.md): Layered architecture diagram.
+- Individual module analysis: [`accessory-analysis.md`](./docs/accessory-analysis.md), [`promotion-analysis.md`](./docs/promotion-analysis.md), [`warranty-analysis.md`](./docs/warranty-analysis.md), [`return-analysis.md`](./docs/return-analysis.md).
+- AI usage logs: [`docs/ai-usage/`](./docs/ai-usage/).
