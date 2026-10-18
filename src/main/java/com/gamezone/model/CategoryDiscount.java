@@ -10,6 +10,11 @@ import java.util.List;
  * @author Dev 1
  */
 public class CategoryDiscount extends Promotion {
+    
+    public static final String CATEGORY_VIDEOGAME = "VIDEOGAME";
+    public static final String CATEGORY_CONSOLE = "CONSOLE";
+    public static final String CATEGORY_ACCESSORY = "ACCESSORY";
+
 
     private double percentage;
     private String targetCategory;
