@@ -1,14 +1,34 @@
-# AI Usage Log - Technical Lead (Esteban Vergara)
+# AI Usage Log — Technical Lead (Esteban Vergara)
 
-## Git and GitHub
-Used AI mainly for basic Git commands throughout the project setup: cloning the repository, creating and pushing branches (develop, feature/sale-module), branch protection configuration, and the commit/push workflow. Also used it to fix a specific issue: a teammate got a 403 error trying to push their feature branch, which AI helped diagnose as a missing-collaborator permission issue.
+This document tracks all interactions with Artificial Intelligence tools by the Technical Lead throughout the development and integration of the GameZone Unicesar system, in compliance with the course integration requirements (Requerimiento 5).
 
-## Design decisions
-No design decisions were asked directly to the AI. All architectural and business-rule decisions came from the team's own discussion in analysis.md. AI was used to translate those already-made decisions into Mermaid diagram syntax (hierarchy, class, and layers diagrams) and to review a teammate's Person class submission for consistency with the approved class-diagram.md.
+---
 
-## Java implementation
-AI explained the reasoning and structure needed for each class in the sales module (Sale, SalePersistence, SaleService, Main) — for example, why serialization was chosen for persistence, why stock validation belongs in the service layer instead of the model (based on our own answer to analysis question 8), and how try/catch works for file I/O. I wrote and adapted the actual code myself based on those explanations, and I'm able to explain the logic behind each class.
+## 1. General Workflow Summary
 
-## What I did NOT ask AI to do
-- Did not ask AI to answer the analysis.md questions — those were discussed and written by the team beforehand.
-- Did not ask AI to generate the design diagrams from scratch — they were built from our own analysis answers, and AI only helped with correct Mermaid syntax.
+### Git and GitHub
+Used AI mainly for basic Git commands throughout the project setup: cloning the repository, creating and pushing branches (`develop`, `refactor/unified-sale-registration`, `docs/integration-documentation`), branch protection configuration, and the PR merge workflow. Also used it to diagnose collaborator permission issues and review PR requirements.
+
+### Design Decisions
+Architectural rules and core business domain designs were formulated by the team. AI was consulted as a technical sounding board to evaluate edge cases (such as avoiding circular constructor injection between services, preventing in-memory stock overwrites on multi-unit sales, and ensuring financial accuracy when combining promotions with warranties).
+
+### Java Implementation
+AI explained and validated structural solutions for the sales and integration orchestration (`SaleService`, `Sale`, `ConsoleUI`, `Main`), ensuring strict adherence to project constraints: pure Java 17, no custom interfaces, no `Optional`, no `Stream`, private fields with getters/setters, English JavaDoc, and Spanish user-facing console text.
+
+---
+
+## 2. Interaction Log (Requerimiento 5 — Integración)
+
+| Fecha | Herramienta | Fase y rama | Objetivo | Consulta | Respuesta | Decisión | Commit relacionado |
+|:---|:---|:---|:---|:---|:---|:---|:---|
+| **18/10/2026** | Antigravity AI | Fase 3<br>`refactor/unified-sale-registration` | Definir el orden óptimo de los pasos de `SaleService.registerSale` para evitar inconsistencias entre promociones y garantías. | "¿En qué orden deben ejecutarse las promociones y el cálculo de garantías extendidas en `registerSale` para no aplicar descuentos comerciales sobre el costo de la garantía extendida?" | Explicó que el subtotal debe calcularse únicamente sumando los precios de los productos y accesorios. El descuento de `PromotionService` debe calcularse y restarse exclusivamente sobre ese subtotal. El costo de la garantía extendida (+10% por consola) debe sumarse después del descuento: `total = subtotal - descuento + garantiaExtendida`. | Se aprobó e implementó exactamente ese orden secuencial (pasos 3 a 6) en `SaleService`, asegurando que la garantía nunca sufra descuentos comerciales y el total final cuadre con el recibo. | `754614c`<br>(`feat(model): add extendedWarrantyCost and receipt breakdown to Sale`) |
+| **18/10/2026** | Antigravity AI | Fase 3<br>`refactor/unified-sale-registration` | Resolver el defecto de stock multi-unidad cuando una venta incluye varias unidades del mismo ítem. | "Al registrar una venta con varias unidades del mismo ID, hacer `item.getAvailableQuantity() - 1` en un bucle sobreescribe el stock o genera cantidades erróneas en memoria. ¿Cómo evitar este defecto sin agregar interfaces ni colecciones complejas?" | Sugirió agregar un contador de unidades por ID (`countUnitsInSale`), validar la cantidad acumulada contra el stock real disponible, calcular `newStock = currentStock - totalSolicitado`, invocar `updateStock` una sola vez por ID único y actualizar todas las instancias en memoria. | Se descartó decrementar de uno en uno en el bucle principal. Se adoptó agrupar por ID único en una lista de validados/actualizados y llamar a `productService.updateStock` o `accessoryService.updateStock` con el decremento total consolidado. | `24a0fd1`<br>(`Merge pull request #15 from EsrauAnonimo/refactor/unified-sale-registration`) |
+| **18/10/2026** | Antigravity AI | Fase 3<br>`refactor/unified-sale-registration` | Eliminar el descarte de garantías por clave foránea y evitar guardado doble en la persistencia (Paso 8). | "Al llamar a `warrantyService.assignBasicWarranty`, `WarrantyRepository` busca la venta en `data/sales.dat`. Si no la encuentra, la garantía se descarta. ¿Cómo ordenar la persistencia sin hacer un guardado doble?" | La venta debe persistirse primero en `persistence.save(sales)` con su total y desglose ya calculados. Luego, se itera sobre las consolas llamando directamente a `warrantyService.assignBasicWarranty` o `assignExtendedWarranty`. Como `WarrantyService` ya guarda internamente en su propio repositorio CSV, encontrará la venta en disco y no se requiere volver a guardar la venta. | Se unificó el paso 8 en un solo bloque continuo: primero `persistence.save(sales)` y de inmediato la asignación directa de garantías por consola, evitando métodos intermedios y eliminando el guardado doble. | `24a0fd1`<br>(`refactor(service): update inventory per item type and persist sale`) |
+| **18/10/2026** | Antigravity AI | Fase 5<br>`docs/integration-documentation` | Estructurar el diagrama de clases integrado y el análisis de integración de los ajustes A1 a A7. | "¿Cómo representar la orquestación de `SaleService` y `ReturnService` en el diagrama Mermaid integrado sin violar la dirección de dependencias UI -> Service -> Persistence -> Model?" | Presentó la estructura por capas en Mermaid organizando las clases por capa, destacando a `SaleService` como orquestador de ventas y a `ReturnService` como orquestador de devoluciones, y mostrando a `SalePersistence` como hoja para documentar la resolución de dependencias circulares. | Se adoptó la estructura en `docs/integrated-class-diagram.md` y la documentación técnica en `docs/integration-analysis.md`, verificando el cumplimiento estricto de Java puro. | `docs/integration-documentation` |
+
+---
+
+## 3. What I did NOT ask AI to do
+- Did not ask AI to generate arbitrary architecture or bypass established course rules.
+- Did not ask AI to generate patterns that violate the rubric (no factories, no builders, no interfaces, no streams, no lambdas).
+- Did not ask AI to perform direct commits or bypass peer review pull requests.
