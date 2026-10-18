@@ -30,10 +30,18 @@ public class CategoryDiscount extends Promotion {
      * @param percentage Discount percentage (0-100)
      * @param targetCategory Category to apply the discount to (VIDEOGAME, CONSOLE, or ACCESSORY)
      */
-    public CategoryDiscount(String id, String name, LocalDate startDate,
-                            LocalDate endDate, double percentage, String targetCategory) {
+       public CategoryDiscount(String id, String name,
+                            LocalDate startDate, LocalDate endDate, double percentage, String targetCategory) {
         super(id, name, startDate, endDate);
         this.percentage = percentage;
+        
+        // Validación para asegurar que la categoría sea válida
+        if (!CATEGORY_VIDEOGAME.equals(targetCategory) && 
+            !CATEGORY_CONSOLE.equals(targetCategory) && 
+            !CATEGORY_ACCESSORY.equals(targetCategory)) {
+            throw new IllegalArgumentException("Categoría inválida. Debe ser VIDEOGAME, CONSOLE o ACCESSORY.");
+        }
+        
         this.targetCategory = targetCategory;
     }
 
