@@ -31,7 +31,7 @@ public abstract class Warranty {
         this.product = product;
         this.sale = sale;
         this.startDate = startDate;
-        this.endDate = startDate.plusMonths(getDurationInMonths());
+        this.endDate = startDate != null ? startDate.plusMonths(getDurationInMonths()) : null;
     }
 
     /**
