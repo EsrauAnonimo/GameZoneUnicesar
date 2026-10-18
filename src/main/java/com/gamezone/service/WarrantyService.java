@@ -11,16 +11,34 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Business logic for warranties: assignment to sold products and queries by
+ * product, sale, validity and expiration.
+ */
 public class WarrantyService {
 
     private static final String ID_PREFIX = "WAR-";
 
     private final WarrantyRepository repository;
 
+    /**
+     * Creates the service.
+     *
+     * @param repository repository used to persist warranties
+     */
     public WarrantyService(WarrantyRepository repository) {
         this.repository = repository;
     }
 
+    /**
+     * Assigns a basic warranty to a product of a sale and persists it.
+     *
+     * @param product   the covered product
+     * @param sale      the sale the product belongs to
+     * @param startDate the date the warranty starts
+     * @return the created warranty
+     * @throws IllegalArgumentException if any argument is null
+     */
     public BasicWarranty assignBasicWarranty(Product product, Sale sale, LocalDate startDate) {
         validateAssignment(product, sale, startDate);
         List<Warranty> warranties = repository.loadAll();
@@ -31,6 +49,15 @@ public class WarrantyService {
         return warranty;
     }
 
+    /**
+     * Assigns an extended warranty to a product of a sale and persists it.
+     *
+     * @param product   the covered product
+     * @param sale      the sale the product belongs to
+     * @param startDate the date the warranty starts
+     * @return the created warranty
+     * @throws IllegalArgumentException if any argument is null
+     */
     public ExtendedWarranty assignExtendedWarranty(Product product, Sale sale, LocalDate startDate) {
         validateAssignment(product, sale, startDate);
         List<Warranty> warranties = repository.loadAll();
@@ -41,6 +68,13 @@ public class WarrantyService {
         return warranty;
     }
 
+    /**
+     * Finds the warranty of a product in a given sale.
+     *
+     * @param productId id of the covered product
+     * @param saleId    id of the sale
+     * @return the first matching warranty, or {@code null} if there is none
+     */
     public Warranty findWarrantyByProduct(String productId, String saleId) {
         for (Warranty warranty : repository.loadAll()) {
             if (warranty.getProduct().getId().equals(productId)
@@ -51,10 +85,20 @@ public class WarrantyService {
         return null;
     }
 
+    /**
+     * Lists every registered warranty.
+     *
+     * @return all warranties
+     */
     public List<Warranty> listAllWarranties() {
         return repository.loadAll();
     }
 
+    /**
+     * Lists the warranties that are active today.
+     *
+     * @return active warranties
+     */
     public List<Warranty> listActiveWarranties() {
         LocalDate today = LocalDate.now();
         List<Warranty> result = new ArrayList<>();
@@ -66,6 +110,13 @@ public class WarrantyService {
         return result;
     }
 
+    /**
+     * Lists the active warranties whose end date falls within the next days.
+     *
+     * @param daysAhead number of days to look ahead (zero or more)
+     * @return active warranties that expire within that period
+     * @throws IllegalArgumentException if daysAhead is negative
+     */
     public List<Warranty> listWarrantiesExpiringSoon(int daysAhead) {
         if (daysAhead < 0) {
             throw new IllegalArgumentException("Los dias de anticipacion no pueden ser negativos.");

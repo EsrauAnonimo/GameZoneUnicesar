@@ -21,6 +21,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Persists warranties in a CSV file. The first column is a type discriminator
+ * (BASIC or EXTENDED) used to rebuild the right subclass when loading.
+ * <pre>
+ * type;id;productId;saleId;startDate
+ * </pre>
+ * The end date is not stored because every warranty calculates it from its
+ * start date and duration. Sale and product references are resolved by id
+ * while loading.
+ */
 public class WarrantyRepository {
 
     private static final String DEFAULT_PATH = "data/warranties.csv";
@@ -34,11 +44,26 @@ public class WarrantyRepository {
     private final ProductService productService;
     private final AccessoryService accessoryService;
 
+    /**
+     * Creates a repository that uses the default file {@code data/warranties.csv}.
+     *
+     * @param salePersistence  persistence used to resolve sales by id
+     * @param productService   service used to resolve products by id
+     * @param accessoryService service used to resolve accessories by id
+     */
     public WarrantyRepository(SalePersistence salePersistence, ProductService productService,
                               AccessoryService accessoryService) {
         this(DEFAULT_PATH, salePersistence, productService, accessoryService);
     }
 
+    /**
+     * Creates a repository backed by the given file.
+     *
+     * @param filePath         path of the CSV file
+     * @param salePersistence  persistence used to resolve sales by id
+     * @param productService   service used to resolve products by id
+     * @param accessoryService service used to resolve accessories by id
+     */
     public WarrantyRepository(String filePath, SalePersistence salePersistence,
                               ProductService productService, AccessoryService accessoryService) {
         this.filePath = Paths.get(filePath);
@@ -47,6 +72,11 @@ public class WarrantyRepository {
         this.accessoryService = accessoryService;
     }
 
+    /**
+     * Overwrites the CSV file with the given warranties.
+     *
+     * @param warranties the warranties to persist
+     */
     public void saveAll(List<Warranty> warranties) {
         List<String> lines = new ArrayList<>();
         for (Warranty warranty : warranties) {
@@ -63,6 +93,13 @@ public class WarrantyRepository {
         }
     }
 
+    /**
+     * Loads every warranty from the CSV file, resolving the sale and the
+     * product of each one. Lines that are malformed or whose sale or product
+     * no longer exists are skipped.
+     *
+     * @return the warranties, or an empty list if the file does not exist
+     */
     public List<Warranty> loadAll() {
         List<Warranty> warranties = new ArrayList<>();
         if (!Files.exists(filePath)) {
@@ -135,6 +172,10 @@ public class WarrantyRepository {
         return null;
     }
 
+    /**
+     * Looks for the product first among the items of the sale, then in the
+     * general product inventory and finally among the accessories.
+     */
     private Product findProduct(Sale sale, String productId) {
         for (Product product : sale.getProducts()) {
             if (product.getId().equals(productId)) {
