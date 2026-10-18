@@ -55,6 +55,32 @@ public class WarrantyService {
         return repository.loadAll();
     }
 
+    public List<Warranty> listActiveWarranties() {
+        LocalDate today = LocalDate.now();
+        List<Warranty> result = new ArrayList<>();
+        for (Warranty warranty : repository.loadAll()) {
+            if (warranty.isActive(today)) {
+                result.add(warranty);
+            }
+        }
+        return result;
+    }
+
+    public List<Warranty> listWarrantiesExpiringSoon(int daysAhead) {
+        if (daysAhead < 0) {
+            throw new IllegalArgumentException("Los dias de anticipacion no pueden ser negativos.");
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate limit = today.plusDays(daysAhead);
+        List<Warranty> result = new ArrayList<>();
+        for (Warranty warranty : repository.loadAll()) {
+            if (warranty.isActive(today) && !warranty.getEndDate().isAfter(limit)) {
+                result.add(warranty);
+            }
+        }
+        return result;
+    }
+
     private void validateAssignment(Product product, Sale sale, LocalDate startDate) {
         if (product == null || sale == null || startDate == null) {
             throw new IllegalArgumentException(
