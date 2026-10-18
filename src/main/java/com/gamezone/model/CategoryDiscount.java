@@ -10,7 +10,7 @@ import java.util.List;
  * @author Dev 1
  */
 public class CategoryDiscount extends Promotion {
-    
+
     public static final String CATEGORY_VIDEOGAME = "VIDEOGAME";
     public static final String CATEGORY_CONSOLE = "CONSOLE";
     public static final String CATEGORY_ACCESSORY = "ACCESSORY";
@@ -93,11 +93,14 @@ public class CategoryDiscount extends Promotion {
 }
 
 for (Product product : products) {
-    if ("VIDEOGAME".equals(targetCategory) && product instanceof VideoGame) {
+    if (CATEGORY_VIDEOGAME.equals(targetCategory) && product instanceof VideoGame) {
         categoryTotal += product.getPrice();
-    } else if ("CONSOLE".equals(targetCategory) && product instanceof Console) {
+    } else if (CATEGORY_CONSOLE.equals(targetCategory) && product instanceof Console) {
         categoryTotal += product.getPrice();
-    }
+    } else if (CATEGORY_ACCESSORY.equals(targetCategory) && product instanceof Accessory) {
+                categoryTotal += product.getPrice();
+            }
+
 }
         
         return categoryTotal * (percentage / 100.0);
