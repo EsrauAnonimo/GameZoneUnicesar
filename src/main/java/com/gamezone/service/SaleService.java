@@ -94,7 +94,12 @@ public class SaleService {
 
         applyBestPromotion(sale);
 
-        assignWarranties(sale, productIdsWithExtendedWarranty);
+        // Se calcula el costo de garantías extendidas antes de persistir la venta
+        // para que el total guardado en disco incluya el valor de las garantías.
+        double warrantyTotal = calculateWarrantyCost(sale, productIdsWithExtendedWarranty);
+        if (warrantyTotal > 0) {
+            sale.setTotal(roundToCents(sale.getTotal() + warrantyTotal));
+        }
 
         for (Product product : products) {
             int newQuantity = product.getAvailableQuantity() - 1;
@@ -108,17 +113,39 @@ public class SaleService {
         List<Sale> sales = persistence.loadAll();
         sales.add(sale);
         persistence.save(sales);
+
+        // Se asignan y persisten las garantías una vez la venta ya existe en
+        // persistencia, evitando que WarrantyRepository descarte las garantías
+        // al no encontrar la venta asociada en sales.dat.
+        assignWarranties(sale, productIdsWithExtendedWarranty);
     }
 
     /**
-     * Grants a warranty for every console in the sale and adds the cost of the
-     * extended ones to the total of the sale. Consoles get the included basic
-     * warranty, except those the customer paid to extend, which get the
-     * extended warranty instead.
-     * <p>
-     * The extra amount is added after the promotion discount was applied, so a
-     * discount can never be used to pay for the warranty itself. The included
-     * basic warranty adds nothing to the total.
+     * Calculates the additional cost of extended warranties for eligible consoles
+     * in the sale.
+     *
+     * @param sale                          the sale being registered
+     * @param productIdsWithExtendedWarranty identifiers of the products that
+     *                                       need the extended warranty
+     * @return the total extra cost for extended warranties
+     */
+    private double calculateWarrantyCost(Sale sale, List<String> productIdsWithExtendedWarranty) {
+        if (warrantyService == null) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (Product product : sale.getProducts()) {
+            if (product instanceof Console && wantsExtendedWarranty(product, productIdsWithExtendedWarranty)) {
+                total += product.getPrice() * 0.10;
+            }
+        }
+        return total;
+    }
+
+    /**
+     * Grants a warranty for every console in the sale and persists it through
+     * WarrantyService. Consoles get the included basic warranty, except those
+     * the customer paid to extend, which get the extended warranty instead.
      *
      * @param sale                          the sale being registered
      * @param productIdsWithExtendedWarranty identifiers of the products that
@@ -128,7 +155,6 @@ public class SaleService {
         if (warrantyService == null) {
             return;
         }
-        double warrantyTotal = 0;
         for (Product product : sale.getProducts()) {
             if (!(product instanceof Console)) {
                 continue;
@@ -138,15 +164,11 @@ public class SaleService {
             if (warrantyService.findWarrantyByProduct(product.getId(), sale.getId()) != null) {
                 continue;
             }
-            Warranty warranty = wantsExtendedWarranty(product, productIdsWithExtendedWarranty)
-                    ? warrantyService.assignExtendedWarranty(product, sale, sale.getDate())
-                    : warrantyService.assignBasicWarranty(product, sale, sale.getDate());
-            if (warranty != null) {
-                warrantyTotal += warranty.getAdditionalCost();
+            if (wantsExtendedWarranty(product, productIdsWithExtendedWarranty)) {
+                warrantyService.assignExtendedWarranty(product, sale, sale.getDate());
+            } else {
+                warrantyService.assignBasicWarranty(product, sale, sale.getDate());
             }
-        }
-        if (warrantyTotal > 0) {
-            sale.setTotal(roundToCents(sale.getTotal() + warrantyTotal));
         }
     }
 
