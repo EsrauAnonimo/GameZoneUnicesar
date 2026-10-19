@@ -34,12 +34,10 @@ public class Main {
 
         SalePersistence salePersistence = new SalePersistence();
 
-        // Taller 4: modulo de garantias. El repositorio resuelve la venta a
-        // traves de SalePersistence y no de SaleService, porque SaleService ya
-        // depende de WarrantyService y eso cerraria un ciclo de constructores.
-        WarrantyRepository warrantyRepository = new WarrantyRepository(salePersistence, productService,
-                accessoryService);
-        WarrantyService warrantyService = new WarrantyService(warrantyRepository);
+        // Taller 4: modulo de garantias. El repositorio solo guarda ids; el servicio
+        // resuelve ventas y productos a traves de SalePersistence y ProductService.
+        WarrantyRepository warrantyRepository = new WarrantyRepository();
+        WarrantyService warrantyService = new WarrantyService(warrantyRepository, salePersistence, productService);
 
         // Taller 2: modulo de promociones. El repositorio es la unica capa
         // que toca el archivo data/promotions.csv.
@@ -64,8 +62,8 @@ public class Main {
     }
 
     /**
-     * Extracts the consoles currently registered as products, so the
-     * accessory module can resolve accessory compatibility against them.
+     * Extracts the consoles currently registered as products, so the accessory
+     * module can resolve accessory compatibility against them.
      *
      * @param productService service holding the registered products
      * @return list of registered consoles (empty on the very first run)
