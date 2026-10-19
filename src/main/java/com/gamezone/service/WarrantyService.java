@@ -5,29 +5,43 @@ import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Warranty;
+import com.gamezone.persistence.SalePersistence;
 import com.gamezone.persistence.WarrantyRepository;
+import com.gamezone.persistence.WarrantyRepository.WarrantyRecord;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Business logic for warranties: assignment to sold products and queries by
- * product, sale, validity and expiration.
+ * product, sale, validity and expiration. The repository only stores ids, so
+ * this service resolves the sale and product references when it needs full
+ * warranty objects.
  */
 public class WarrantyService {
 
     private static final String ID_PREFIX = "WAR-";
 
     private final WarrantyRepository repository;
+    private final SalePersistence salePersistence;
+    private final ProductService productService;
 
     /**
      * Creates the service.
      *
-     * @param repository repository used to persist warranties
+     * @param repository      repository that stores warranty ids
+     * @param salePersistence persistence used to resolve sales by id (it is used
+     *                        instead of SaleService to avoid a constructor cycle)
+     * @param productService  service used to resolve products by id
      */
-    public WarrantyService(WarrantyRepository repository) {
+    public WarrantyService(WarrantyRepository repository, SalePersistence salePersistence,
+                           ProductService productService) {
         this.repository = repository;
+        this.salePersistence = salePersistence;
+        this.productService = productService;
     }
 
     /**
@@ -41,12 +55,12 @@ public class WarrantyService {
      */
     public BasicWarranty assignBasicWarranty(Product product, Sale sale, LocalDate startDate) {
         validateAssignment(product, sale, startDate);
-        List<Warranty> warranties = repository.loadAll();
-        BasicWarranty warranty =
-                new BasicWarranty(generateNextId(warranties), product, sale, startDate);
-        warranties.add(warranty);
-        repository.saveAll(warranties);
-        return warranty;
+        List<WarrantyRecord> records = repository.loadAll();
+        String id = generateNextId(records);
+        records.add(new WarrantyRecord(WarrantyRepository.TYPE_BASIC, id,
+                product.getId(), sale.getId(), startDate));
+        repository.saveAll(records);
+        return new BasicWarranty(id, product, sale, startDate);
     }
 
     /**
@@ -60,12 +74,12 @@ public class WarrantyService {
      */
     public ExtendedWarranty assignExtendedWarranty(Product product, Sale sale, LocalDate startDate) {
         validateAssignment(product, sale, startDate);
-        List<Warranty> warranties = repository.loadAll();
-        ExtendedWarranty warranty =
-                new ExtendedWarranty(generateNextId(warranties), product, sale, startDate);
-        warranties.add(warranty);
-        repository.saveAll(warranties);
-        return warranty;
+        List<WarrantyRecord> records = repository.loadAll();
+        String id = generateNextId(records);
+        records.add(new WarrantyRecord(WarrantyRepository.TYPE_EXTENDED, id,
+                product.getId(), sale.getId(), startDate));
+        repository.saveAll(records);
+        return new ExtendedWarranty(id, product, sale, startDate);
     }
 
     /**
@@ -76,22 +90,33 @@ public class WarrantyService {
      * @return the first matching warranty, or {@code null} if there is none
      */
     public Warranty findWarrantyByProduct(String productId, String saleId) {
-        for (Warranty warranty : repository.loadAll()) {
-            if (warranty.getProduct().getId().equals(productId)
-                    && warranty.getSale().getId().equals(saleId)) {
-                return warranty;
+        Map<String, Sale> salesById = loadSalesById();
+        for (WarrantyRecord record : repository.loadAll()) {
+            if (record.getProductId().equals(productId) && record.getSaleId().equals(saleId)) {
+                Warranty warranty = resolve(record, salesById);
+                if (warranty != null) {
+                    return warranty;
+                }
             }
         }
         return null;
     }
 
     /**
-     * Lists every registered warranty.
+     * Lists every registered warranty whose sale and product still exist.
      *
      * @return all warranties
      */
     public List<Warranty> listAllWarranties() {
-        return repository.loadAll();
+        Map<String, Sale> salesById = loadSalesById();
+        List<Warranty> result = new ArrayList<>();
+        for (WarrantyRecord record : repository.loadAll()) {
+            Warranty warranty = resolve(record, salesById);
+            if (warranty != null) {
+                result.add(warranty);
+            }
+        }
+        return result;
     }
 
     /**
@@ -102,7 +127,7 @@ public class WarrantyService {
     public List<Warranty> listActiveWarranties() {
         LocalDate today = LocalDate.now();
         List<Warranty> result = new ArrayList<>();
-        for (Warranty warranty : repository.loadAll()) {
+        for (Warranty warranty : listAllWarranties()) {
             if (warranty.isActive(today)) {
                 result.add(warranty);
             }
@@ -124,7 +149,7 @@ public class WarrantyService {
         LocalDate today = LocalDate.now();
         LocalDate limit = today.plusDays(daysAhead);
         List<Warranty> result = new ArrayList<>();
-        for (Warranty warranty : repository.loadAll()) {
+        for (Warranty warranty : listAllWarranties()) {
             if (warranty.isActive(today) && !warranty.getEndDate().isAfter(limit)) {
                 result.add(warranty);
             }
@@ -139,10 +164,58 @@ public class WarrantyService {
         }
     }
 
-    private String generateNextId(List<Warranty> warranties) {
+    private Map<String, Sale> loadSalesById() {
+        Map<String, Sale> salesById = new HashMap<>();
+        for (Sale sale : salePersistence.loadAll()) {
+            salesById.put(sale.getId(), sale);
+        }
+        return salesById;
+    }
+
+    /**
+     * Rebuilds a full warranty from its record, or returns null when the sale
+     * or the product no longer exists.
+     */
+    private Warranty resolve(WarrantyRecord record, Map<String, Sale> salesById) {
+        Sale sale = salesById.get(record.getSaleId());
+        if (sale == null) {
+            return null;
+        }
+        Product product = findProduct(sale, record.getProductId());
+        if (product == null) {
+            return null;
+        }
+        if (WarrantyRepository.TYPE_BASIC.equals(record.getType())) {
+            return new BasicWarranty(record.getId(), product, sale, record.getStartDate());
+        }
+        if (WarrantyRepository.TYPE_EXTENDED.equals(record.getType())) {
+            return new ExtendedWarranty(record.getId(), product, sale, record.getStartDate());
+        }
+        return null;
+    }
+
+    /**
+     * Looks for the product first among the items of the sale (which also
+     * covers accessories) and then in the product inventory.
+     */
+    private Product findProduct(Sale sale, String productId) {
+        for (Product product : sale.getProducts()) {
+            if (product.getId().equals(productId)) {
+                return product;
+            }
+        }
+        for (Product product : productService.listAllProducts()) {
+            if (product.getId().equals(productId)) {
+                return product;
+            }
+        }
+        return null;
+    }
+
+    private String generateNextId(List<WarrantyRecord> records) {
         int max = 0;
-        for (Warranty warranty : warranties) {
-            String id = warranty.getId();
+        for (WarrantyRecord record : records) {
+            String id = record.getId();
             if (id != null && id.startsWith(ID_PREFIX)) {
                 try {
                     max = Math.max(max, Integer.parseInt(id.substring(ID_PREFIX.length())));
