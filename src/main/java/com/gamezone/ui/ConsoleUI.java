@@ -1001,12 +1001,22 @@ public class ConsoleUI {
                 String productId = scanner.nextLine();
                 System.out.print("ID de la venta: ");
                 String saleId = scanner.nextLine();
-                Warranty warranty = warrantyService.findWarrantyByProduct(productId, saleId);
-                if (warranty == null) {
-                    System.out.println("No hay garantia registrada para el producto " + productId
-                            + " en la venta " + saleId + ".");
-                } else {
-                    System.out.println(warranty.generateWarrantyCertificate());
+                try {
+                    Warranty warranty = warrantyService.findWarrantyByProduct(productId, saleId);
+                    if (warranty == null) {
+                        System.out.println("No hay garantia registrada para el producto " + productId
+                                + " en la venta " + saleId + ".");
+                    } else {
+                        System.out.println(warranty.generateWarrantyCertificate());
+                    }
+                } catch (ResourceNotFoundException e) {
+                    System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+                } catch (BusinessRuleException e) {
+                    System.out.println("No se puede completar la operación: " + e.getMessage());
+                } catch (InvalidDataException e) {
+                    System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+                } catch (PersistenceException e) {
+                    System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
                 }
                 break;
             }
@@ -1018,7 +1028,17 @@ public class ConsoleUI {
                 break;
             case 4: {
                 int days = askPositiveInt("En cuantos dias debe vencer una garantia para considerarse proxima? ");
-                showWarranties(warrantyService.listWarrantiesExpiringSoon(days));
+                try {
+                    showWarranties(warrantyService.listWarrantiesExpiringSoon(days));
+                } catch (ResourceNotFoundException e) {
+                    System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+                } catch (BusinessRuleException e) {
+                    System.out.println("No se puede completar la operación: " + e.getMessage());
+                } catch (InvalidDataException e) {
+                    System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+                } catch (PersistenceException e) {
+                    System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+                }
                 break;
             }
             case 0:
