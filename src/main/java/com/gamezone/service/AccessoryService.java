@@ -1,11 +1,15 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Accessory;
 import com.gamezone.model.Cable;
 import com.gamezone.model.Console;
 import com.gamezone.model.Controller;
 import com.gamezone.model.Memory;
 import com.gamezone.persistence.AccessoryPersistence;
+import com.gamezone.validation.ProductValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +63,12 @@ public class AccessoryService {
      * @param controller the controller to register
      */
     public void registerController(Controller controller) {
+        ProductValidator.validate(controller);
+        for (Accessory a : accessories) {
+            if (a.getId().equals(controller.getId())) {
+                throw new BusinessRuleException("Ya existe un accesorio registrado con el ID: " + controller.getId());
+            }
+        }
         accessories.add(controller);
         saveAll(); // Guardado automático tras la operación.
     }
@@ -70,6 +80,12 @@ public class AccessoryService {
      * @param cable the cable to register
      */
     public void registerCable(Cable cable) {
+        ProductValidator.validate(cable);
+        for (Accessory a : accessories) {
+            if (a.getId().equals(cable.getId())) {
+                throw new BusinessRuleException("Ya existe un accesorio registrado con el ID: " + cable.getId());
+            }
+        }
         accessories.add(cable);
         saveAll(); // Guardado automático tras la operación.
     }
@@ -81,6 +97,12 @@ public class AccessoryService {
      * @param memory the memory to register
      */
     public void registerMemory(Memory memory) {
+        ProductValidator.validate(memory);
+        for (Accessory a : accessories) {
+            if (a.getId().equals(memory.getId())) {
+                throw new BusinessRuleException("Ya existe un accesorio registrado con el ID: " + memory.getId());
+            }
+        }
         accessories.add(memory);
         saveAll(); // Guardado automático tras la operación.
     }
@@ -163,11 +185,22 @@ public class AccessoryService {
      * @param newQuantity  new available quantity
      */
     public void updateStock(String accessoryId, int newQuantity) {
+        if (accessoryId == null || accessoryId.trim().isEmpty()) {
+            throw new InvalidDataException("El ID del accesorio no puede estar vacío.");
+        }
+        if (newQuantity < 0) {
+            throw new InvalidDataException("La cantidad disponible no puede ser negativa.");
+        }
+        Accessory target = null;
         for (Accessory accessory : accessories) {
             if (accessory.getId().equals(accessoryId)) {
                 accessory.setAvailableQuantity(newQuantity);
+                target = accessory;
                 break;
             }
+        }
+        if (target == null) {
+            throw new ResourceNotFoundException("Accesorio con ID " + accessoryId + " no encontrado.");
         }
         saveAll();
     }

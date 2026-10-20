@@ -1,5 +1,6 @@
 package com.gamezone.persistence;
 
+import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.model.BulkPurchaseDiscount;
 import com.gamezone.model.CategoryDiscount;
 import com.gamezone.model.PercentageDiscount;
@@ -42,7 +43,8 @@ public class PromotionRepository {
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.out.println("Error saving promotions: " + e.getMessage());
+            throw new PersistenceException("No se pudo guardar el archivo " + FILE_NAME
+                    + " (operacion: guardar promociones): " + e.getMessage(), e);
         }
     }
 
@@ -73,7 +75,8 @@ public class PromotionRepository {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error loading promotions: " + e.getMessage());
+            throw new PersistenceException("No se pudo leer el archivo " + FILE_NAME
+                    + " (operacion: cargar promociones): " + e.getMessage(), e);
         }
 
         return promotions;

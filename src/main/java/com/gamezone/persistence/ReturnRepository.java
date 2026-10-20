@@ -1,5 +1,6 @@
 package com.gamezone.persistence;
 
+import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
@@ -68,7 +69,8 @@ public class ReturnRepository {
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.out.println("Error saving returns: " + e.getMessage());
+            throw new PersistenceException("No se pudo guardar el archivo " + RETURNS_FILE
+                    + " (operacion: guardar devoluciones): " + e.getMessage(), e);
         }
     }
 
@@ -98,7 +100,8 @@ public class ReturnRepository {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error loading returns: " + e.getMessage());
+            throw new PersistenceException("No se pudo leer el archivo " + RETURNS_FILE
+                    + " (operacion: cargar devoluciones): " + e.getMessage(), e);
         }
         return returns;
     }

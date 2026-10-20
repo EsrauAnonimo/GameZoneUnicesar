@@ -1,5 +1,6 @@
 package com.gamezone.model;
 
+import com.gamezone.exceptions.InvalidDataException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class CategoryDiscount extends Promotion {
         if (!CATEGORY_VIDEOGAME.equals(targetCategory) && 
             !CATEGORY_CONSOLE.equals(targetCategory) && 
             !CATEGORY_ACCESSORY.equals(targetCategory)) {
-            throw new IllegalArgumentException("Categoría inválida. Debe ser VIDEOGAME, CONSOLE o ACCESSORY.");
+            throw new InvalidDataException("Categoría inválida. Debe ser VIDEOGAME, CONSOLE o ACCESSORY.");
         }
         
         this.targetCategory = targetCategory;
