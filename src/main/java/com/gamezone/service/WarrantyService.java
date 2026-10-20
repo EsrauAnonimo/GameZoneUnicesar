@@ -148,6 +148,54 @@ public class WarrantyService {
     }
 
     /**
+     * Cancels any warranty associated with the given product and sale, removes
+     * the record from persistence, and returns the refunded cost (0.0 for basic
+     * warranty, 10% of product price for extended warranty).
+     *
+     * @param productId id of the product whose warranty is cancelled
+     * @param saleId    id of the sale
+     * @return the refund amount for the cancelled warranty
+     */
+    public double cancelWarranties(String productId, String saleId) {
+        if (productId == null || saleId == null) {
+            return 0.0;
+        }
+
+        List<WarrantyRecord> records = repository.loadAll();
+        List<WarrantyRecord> remaining = new ArrayList<>();
+        double refund = 0.0;
+        Map<String, Sale> salesById = loadSalesById();
+
+        for (WarrantyRecord record : records) {
+            if (record.getProductId().equals(productId) && record.getSaleId().equals(saleId)) {
+                if (WarrantyRepository.TYPE_EXTENDED.equals(record.getType())) {
+                    Sale sale = salesById.get(saleId);
+                    Product product = sale != null ? findProduct(sale, productId) : null;
+                    if (product == null) {
+                        for (Product p : productService.listAllProducts()) {
+                            if (p.getId().equals(productId)) {
+                                product = p;
+                                break;
+                            }
+                        }
+                    }
+                    if (product != null) {
+                        refund += product.getPrice() * 0.10;
+                    }
+                }
+            } else {
+                remaining.add(record);
+            }
+        }
+
+        if (remaining.size() != records.size()) {
+            repository.saveAll(remaining);
+        }
+
+        return Math.round(refund * 100.0) / 100.0;
+    }
+
+    /**
      * Validates the arguments, stores a new warranty record and returns its id.
      */
     private String saveRecord(String type, Product product, Sale sale, LocalDate startDate) {

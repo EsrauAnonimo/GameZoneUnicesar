@@ -1,6 +1,7 @@
 package com.gamezone.service;
 
 import com.gamezone.model.Accessory;
+import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
@@ -23,7 +24,16 @@ public class ReturnService {
     private final SaleService saleService;
     private final ProductService productService;
     private final AccessoryService accessoryService;
+    private final WarrantyService warrantyService;
     private List<Return> returns;
+
+    /**
+     * Creates the service with default null WarrantyService.
+     */
+    public ReturnService(ReturnRepository returnRepository, SaleService saleService,
+                          ProductService productService, AccessoryService accessoryService) {
+        this(returnRepository, saleService, productService, accessoryService, null);
+    }
 
     /**
      * Creates the service and immediately loads the previously stored
@@ -34,15 +44,17 @@ public class ReturnService {
      * @param productService   service used to restore stock of returned
      *                         videogames and consoles
      * @param accessoryService service used to restore stock of returned
-     *                         accessories, which are not part of the product
-     *                         list
+     *                         accessories
+     * @param warrantyService  service used to cancel warranties on console returns
      */
     public ReturnService(ReturnRepository returnRepository, SaleService saleService,
-                          ProductService productService, AccessoryService accessoryService) {
+                          ProductService productService, AccessoryService accessoryService,
+                          WarrantyService warrantyService) {
         this.returnRepository = returnRepository;
         this.saleService = saleService;
         this.productService = productService;
         this.accessoryService = accessoryService;
+        this.warrantyService = warrantyService;
         this.returns = returnRepository.loadAll();
     }
 
@@ -91,6 +103,19 @@ public class ReturnService {
             newReturn.addReturnedProduct(product);
         }
         newReturn.calculateRefundAmount();
+
+        if (warrantyService != null) {
+            double warrantyRefund = 0.0;
+            for (Product product : productsToReturn) {
+                if (product instanceof Console) {
+                    warrantyRefund += warrantyService.cancelWarranties(product.getId(), sale.getId());
+                }
+            }
+            if (warrantyRefund > 0) {
+                double newRefund = Math.round((newReturn.getRefundAmount() + warrantyRefund) * 100.0) / 100.0;
+                newReturn.setRefundAmount(newRefund);
+            }
+        }
 
         for (Product product : productsToReturn) {
             restoreStock(product);
@@ -293,10 +318,7 @@ public class ReturnService {
      */
     private void restoreStock(Product product) {
         if (product instanceof Accessory) {
-            Accessory registered = accessoryService.findById(product.getId());
-            if (registered != null) {
-                accessoryService.updateStock(registered.getId(), registered.getAvailableQuantity() + 1);
-            }
+            accessoryService.restoreStock(product.getId(), 1);
             return;
         }
         productService.restoreStock(product.getId(), 1);

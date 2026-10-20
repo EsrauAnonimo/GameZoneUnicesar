@@ -173,6 +173,25 @@ public class AccessoryService {
     }
 
     /**
+     * Restores stock for a returned accessory by incrementing its available quantity.
+     *
+     * @param accessoryId id of the accessory to restore stock for
+     * @param quantity    number of units to restore
+     */
+    public void restoreStock(String accessoryId, int quantity) {
+        if (accessoryId == null || quantity <= 0) {
+            return;
+        }
+        for (Accessory accessory : accessories) {
+            if (accessory.getId().equals(accessoryId)) {
+                accessory.setAvailableQuantity(accessory.getAvailableQuantity() + quantity);
+                break;
+            }
+        }
+        saveAll();
+    }
+
+    /**
      * Delegates the save of the whole accessory list to the persistence layer.
      */
     private void saveAll() {

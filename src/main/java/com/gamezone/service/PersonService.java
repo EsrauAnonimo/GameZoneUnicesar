@@ -82,10 +82,15 @@ public class PersonService {
      * @return the matching customer, or null if none is found
      */
     public Customer findCustomerById(String id) {
-        return customers.stream()
-                .filter(customer -> customer.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        if (id == null) {
+            return null;
+        }
+        for (Customer customer : customers) {
+            if (customer.getId().equals(id)) {
+                return customer;
+            }
+        }
+        return null;
     }
 
     /**
@@ -96,10 +101,15 @@ public class PersonService {
      * @return the matching seller, or null if none is found
      */
     public Seller findSellerById(String id) {
-        return sellers.stream()
-                .filter(seller -> seller.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        if (id == null) {
+            return null;
+        }
+        for (Seller seller : sellers) {
+            if (seller.getId().equals(id)) {
+                return seller;
+            }
+        }
+        return null;
     }
 
     /**

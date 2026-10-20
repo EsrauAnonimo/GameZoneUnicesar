@@ -108,28 +108,53 @@ public class Return {
     public double getRefundAmount() {
         return refundAmount;
     }
-       /**
- * Calculates the refund amount by summing the prices of all returned products.
- * Assigns the calculated value to the refundAmount attribute.
- * If the list of returned products is empty, the refund amount will be 0.0.
- * 
- * @return The calculated refund amount
- */
+    /**
+     * Sets the refund amount.
+     * 
+     * @param refundAmount The new refund amount
+     */
+    public void setRefundAmount(double refundAmount) {
+        this.refundAmount = refundAmount;
+    }
+
+    /**
+     * Calculates the refund amount proportionally according to the discount of the original sale.
+     * Assigns the calculated value to the refundAmount attribute.
+     * If the list of returned products is empty, the refund amount will be 0.0.
+     * 
+     * @return The calculated refund amount
+     */
     public double calculateRefundAmount() {
-    if (returnedProducts == null || returnedProducts.isEmpty()) {
-        this.refundAmount = 0.0;
-        return 0.0;
-    }
-    
-    double total = 0.0;
-    for (Product product : returnedProducts) {
-        if (product != null) {
-            total += product.getPrice();
+        if (returnedProducts == null || returnedProducts.isEmpty()) {
+            this.refundAmount = 0.0;
+            return 0.0;
         }
+
+        double subtotal = 0.0;
+        double discount = 0.0;
+        if (originalSale != null) {
+            subtotal = originalSale.getSubtotal();
+            discount = originalSale.getDiscountAmount();
+        }
+
+        double refundRatio = 1.0;
+        if (subtotal > 0 && discount > 0) {
+            refundRatio = 1.0 - (discount / subtotal);
+            if (refundRatio < 0.0) {
+                refundRatio = 0.0;
+            }
+        }
+
+        double total = 0.0;
+        for (Product product : returnedProducts) {
+            if (product != null) {
+                total += product.getPrice() * refundRatio;
+            }
+        }
+        total = Math.round(total * 100.0) / 100.0;
+        this.refundAmount = total;
+        return total;
     }
-    this.refundAmount = total;
-    return total;
-}
         /**
      * Generates a formatted receipt for the return.
      * The receipt is written in Spanish and includes all return details.

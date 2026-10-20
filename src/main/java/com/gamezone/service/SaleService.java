@@ -7,6 +7,7 @@ import com.gamezone.model.Promotion;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Warranty;
 import com.gamezone.persistence.SalePersistence;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -85,9 +86,23 @@ public class SaleService {
             return;
         }
 
+        List<String> checkedIds = new ArrayList<>();
         for (Product product : products) {
-            if (product.getAvailableQuantity() < 1) {
-                System.out.println("Error: not enough stock for " + product.getId());
+            String id = product.getId();
+            if (checkedIds.contains(id)) {
+                continue;
+            }
+            checkedIds.add(id);
+
+            int count = 0;
+            for (Product p : products) {
+                if (p.getId().equals(id)) {
+                    count++;
+                }
+            }
+
+            if (product.getAvailableQuantity() < count) {
+                System.out.println("Error: not enough stock for " + id);
                 return;
             }
         }
@@ -98,15 +113,30 @@ public class SaleService {
         // para que el total guardado en disco incluya el valor de las garantias.
         double warrantyTotal = calculateWarrantyCost(sale, productIdsWithExtendedWarranty);
         if (warrantyTotal > 0) {
+            sale.setExtendedWarrantyCost(warrantyTotal);
             sale.setTotal(roundToCents(sale.getTotal() + warrantyTotal));
         }
 
+        List<String> updatedIds = new ArrayList<>();
         for (Product product : products) {
-            int newQuantity = product.getAvailableQuantity() - 1;
+            String id = product.getId();
+            if (updatedIds.contains(id)) {
+                continue;
+            }
+            updatedIds.add(id);
+
+            int count = 0;
+            for (Product p : products) {
+                if (p.getId().equals(id)) {
+                    count++;
+                }
+            }
+
+            int newQuantity = product.getAvailableQuantity() - count;
             if (product instanceof Accessory) {
-                accessoryService.updateStock(product.getId(), newQuantity);
+                accessoryService.updateStock(id, newQuantity);
             } else {
-                productService.updateStock(product.getId(), newQuantity);
+                productService.updateStock(id, newQuantity);
             }
         }
 

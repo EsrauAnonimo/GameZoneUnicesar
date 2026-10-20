@@ -52,7 +52,7 @@ public class Main {
         // resolver la venta original y los productos devueltos al leer.
         ReturnRepository returnRepository = new ReturnRepository(saleService, productService, accessoryService);
         ReturnService returnService = new ReturnService(returnRepository, saleService, productService,
-                accessoryService);
+                accessoryService, warrantyService);
 
         personService.preloadVendorsIfEmpty();
 
