@@ -1,13 +1,5 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.BasicWarranty;
-import com.gamezone.model.ExtendedWarranty;
-import com.gamezone.model.Product;
-import com.gamezone.model.Sale;
-import com.gamezone.model.Warranty;
-import com.gamezone.service.AccessoryService;
-import com.gamezone.service.ProductService;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -17,70 +9,56 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Persists warranties in a CSV file. The first column is a type discriminator
- * (BASIC or EXTENDED) used to rebuild the right subclass when loading.
+ * Persists warranties in a CSV file. It only stores and loads identifiers
+ * (warranty, product and sale ids) and never depends on sales or products:
+ * the service layer is the one that resolves those references.
+ * <p>
+ * The first column is a type discriminator (BASIC or EXTENDED):
  * <pre>
  * type;id;productId;saleId;startDate
  * </pre>
- * The end date is not stored because every warranty calculates it from its
- * start date and duration. Sale and product references are resolved by id
- * while loading.
  */
 public class WarrantyRepository {
 
+    /** Discriminator used for basic warranties. */
+    public static final String TYPE_BASIC = "BASIC";
+
+    /** Discriminator used for extended warranties. */
+    public static final String TYPE_EXTENDED = "EXTENDED";
+
     private static final String DEFAULT_PATH = "data/warranties.csv";
     private static final String SEPARATOR = ";";
-    private static final String TYPE_BASIC = "BASIC";
-    private static final String TYPE_EXTENDED = "EXTENDED";
     private static final int EXPECTED_FIELDS = 5;
 
     private final Path filePath;
-    private final SalePersistence salePersistence;
-    private final ProductService productService;
-    private final AccessoryService accessoryService;
 
-    /**
-     * Creates a repository that uses the default file {@code data/warranties.csv}.
-     *
-     * @param salePersistence  persistence used to resolve sales by id
-     * @param productService   service used to resolve products by id
-     * @param accessoryService service used to resolve accessories by id
-     */
-    public WarrantyRepository(SalePersistence salePersistence, ProductService productService,
-                              AccessoryService accessoryService) {
-        this(DEFAULT_PATH, salePersistence, productService, accessoryService);
+    /** Creates a repository that uses the default file {@code data/warranties.csv}. */
+    public WarrantyRepository() {
+        this(DEFAULT_PATH);
     }
 
     /**
      * Creates a repository backed by the given file.
      *
-     * @param filePath         path of the CSV file
-     * @param salePersistence  persistence used to resolve sales by id
-     * @param productService   service used to resolve products by id
-     * @param accessoryService service used to resolve accessories by id
+     * @param filePath path of the CSV file
      */
-    public WarrantyRepository(String filePath, SalePersistence salePersistence,
-                              ProductService productService, AccessoryService accessoryService) {
+    public WarrantyRepository(String filePath) {
         this.filePath = Paths.get(filePath);
-        this.salePersistence = salePersistence;
-        this.productService = productService;
-        this.accessoryService = accessoryService;
     }
 
     /**
-     * Overwrites the CSV file with the given warranties.
+     * Overwrites the CSV file with the given records.
      *
-     * @param warranties the warranties to persist
+     * @param records the warranty records to persist
      */
-    public void saveAll(List<Warranty> warranties) {
+    public void saveAll(List<WarrantyRecord> records) {
         List<String> lines = new ArrayList<>();
-        for (Warranty warranty : warranties) {
-            lines.add(serialize(warranty));
+        for (WarrantyRecord record : records) {
+            lines.add(String.join(SEPARATOR, record.getType(), record.getId(),
+                    record.getProductId(), record.getSaleId(), record.getStartDate().toString()));
         }
         try {
             Path parent = filePath.getParent();
@@ -94,113 +72,100 @@ public class WarrantyRepository {
     }
 
     /**
-     * Loads every warranty from the CSV file, resolving the sale and the
-     * product of each one. Lines that are malformed or whose sale or product
-     * no longer exists are skipped.
+     * Loads every warranty record from the CSV file. Malformed lines are
+     * skipped.
      *
-     * @return the warranties, or an empty list if the file does not exist
+     * @return the records, or an empty list if the file does not exist
      */
-    public List<Warranty> loadAll() {
-        List<Warranty> warranties = new ArrayList<>();
+    public List<WarrantyRecord> loadAll() {
+        List<WarrantyRecord> records = new ArrayList<>();
         if (!Files.exists(filePath)) {
-            return warranties;
+            return records;
         }
-
-        Map<String, Sale> salesById = new HashMap<>();
-        for (Sale sale : salePersistence.loadAll()) {
-            salesById.put(sale.getId(), sale);
-        }
-
         try {
             for (String line : Files.readAllLines(filePath, StandardCharsets.UTF_8)) {
                 if (line.isBlank()) {
                     continue;
                 }
-                Warranty warranty = deserialize(line, salesById);
-                if (warranty != null) {
-                    warranties.add(warranty);
+                WarrantyRecord record = parse(line);
+                if (record != null) {
+                    records.add(record);
                 }
             }
         } catch (IOException e) {
             throw new UncheckedIOException("Could not load warranties", e);
         }
-        return warranties;
+        return records;
     }
 
-    private String serialize(Warranty warranty) {
-        String type;
-        if (warranty instanceof ExtendedWarranty) {
-            type = TYPE_EXTENDED;
-        } else if (warranty instanceof BasicWarranty) {
-            type = TYPE_BASIC;
-        } else {
-            throw new IllegalArgumentException(
-                    "Unknown warranty type: " + warranty.getClass().getSimpleName());
-        }
-        return String.join(SEPARATOR, type, warranty.getId(),
-                warranty.getProduct().getId(), warranty.getSale().getId(),
-                warranty.getStartDate().toString());
-    }
-
-    private Warranty deserialize(String line, Map<String, Sale> salesById) {
+    private WarrantyRecord parse(String line) {
         String[] fields = line.split(SEPARATOR, -1);
         if (fields.length != EXPECTED_FIELDS) {
             return null;
         }
-
-        Sale sale = salesById.get(fields[3]);
-        if (sale == null) {
+        if (!TYPE_BASIC.equals(fields[0]) && !TYPE_EXTENDED.equals(fields[0])) {
             return null;
         }
-        Product product = findProduct(sale, fields[2]);
-        if (product == null) {
-            return null;
-        }
-
-        LocalDate startDate;
         try {
-            startDate = LocalDate.parse(fields[4]);
+            return new WarrantyRecord(fields[0], fields[1], fields[2], fields[3],
+                    LocalDate.parse(fields[4]));
         } catch (DateTimeParseException e) {
             return null;
         }
-
-        if (TYPE_BASIC.equals(fields[0])) {
-            return new BasicWarranty(fields[1], product, sale, startDate);
-        } else if (TYPE_EXTENDED.equals(fields[0])) {
-            return new ExtendedWarranty(fields[1], product, sale, startDate);
-        }
-        return null;
     }
 
     /**
-     * Looks for the product first among the items of the sale, then in the
-     * general product inventory and finally among the accessories.
+     * Identifier-only representation of a warranty, as stored in the CSV file.
      */
-    private Product findProduct(Sale sale, String productId) {
-        if (productId == null) {
-            return null;
+    public static class WarrantyRecord {
+
+        private final String type;
+        private final String id;
+        private final String productId;
+        private final String saleId;
+        private final LocalDate startDate;
+
+        /**
+         * Creates a record.
+         *
+         * @param type      TYPE_BASIC or TYPE_EXTENDED
+         * @param id        warranty id
+         * @param productId id of the covered product
+         * @param saleId    id of the sale the product belongs to
+         * @param startDate date the warranty starts
+         */
+        public WarrantyRecord(String type, String id, String productId, String saleId,
+                              LocalDate startDate) {
+            this.type = type;
+            this.id = id;
+            this.productId = productId;
+            this.saleId = saleId;
+            this.startDate = startDate;
         }
-        if (sale != null && sale.getProducts() != null) {
-            for (Product product : sale.getProducts()) {
-                if (product != null && productId.equals(product.getId())) {
-                    return product;
-                }
-            }
+
+        /** @return the type discriminator */
+        public String getType() {
+            return type;
         }
-        if (productService != null) {
-            for (Product product : productService.listAllProducts()) {
-                if (product != null && productId.equals(product.getId())) {
-                    return product;
-                }
-            }
+
+        /** @return the warranty id */
+        public String getId() {
+            return id;
         }
-        if (accessoryService != null) {
-            for (Product accessory : accessoryService.listAllAccessories()) {
-                if (accessory != null && productId.equals(accessory.getId())) {
-                    return accessory;
-                }
-            }
+
+        /** @return the id of the covered product */
+        public String getProductId() {
+            return productId;
         }
-        return null;
+
+        /** @return the id of the sale */
+        public String getSaleId() {
+            return saleId;
+        }
+
+        /** @return the start date */
+        public LocalDate getStartDate() {
+            return startDate;
+        }
     }
 }

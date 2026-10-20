@@ -63,12 +63,28 @@ classDiagram
     }
 
     class WarrantyRepository {
-        +saveAll(List~Warranty~) void
-        +loadAll() List~Warranty~
+        +String TYPE_BASIC
+        +String TYPE_EXTENDED
+        +saveAll(List~WarrantyRecord~) void
+        +loadAll() List~WarrantyRecord~
+    }
+
+    class WarrantyRecord {
+        -String type
+        -String id
+        -String productId
+        -String saleId
+        -LocalDate startDate
+    }
+
+    class SalePersistence {
+        +loadAll() List~Sale~
     }
 
     class WarrantyService {
         -WarrantyRepository repository
+        -SalePersistence salePersistence
+        -ProductService productService
         +assignBasicWarranty(Product, Sale, LocalDate) BasicWarranty
         +assignExtendedWarranty(Product, Sale, LocalDate) ExtendedWarranty
         +findWarrantyByProduct(String, String) Warranty
@@ -115,5 +131,8 @@ classDiagram
     SaleService --> PromotionService : uses
     SaleService --> WarrantyService : uses
 
-    WarrantyService --> WarrantyRepository : uses
+    WarrantyService --> WarrantyRepository : stores ids
+    WarrantyService --> SalePersistence : resolves sales
+    WarrantyService --> ProductService : resolves products
+    WarrantyRepository *-- WarrantyRecord : holds ids only
 ```
