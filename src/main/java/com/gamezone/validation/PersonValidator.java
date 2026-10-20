@@ -5,9 +5,11 @@ import com.gamezone.model.Person;
 
 /**
  * Validator class for Person objects.
- * Contains static methods to ensure person data is complete.
+ * Ensures that all customers and sellers have complete and valid personal
+ * information before being registered.
  * 
  * @author Dev 1
+ * @version 1.0
  */
 public class PersonValidator {
 

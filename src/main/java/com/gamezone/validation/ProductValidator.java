@@ -5,9 +5,11 @@ import com.gamezone.model.Product;
 
 /**
  * Validator class for Product objects.
- * Contains static methods to ensure product data meets business rules.
+ * Ensures that all products have valid IDs, titles, prices, and quantities
+ * before they are processed or stored in the system.
  * 
  * @author Dev 1
+ * @version 1.0
  */
 public class ProductValidator {
 

@@ -5,10 +5,13 @@ import com.gamezone.model.Sale;
 
 /**
  * Validator class for Sale objects.
- * Contains static methods to ensure a sale has all required data.
+ * Ensures that every sale is properly formed, having a valid customer,
+ * a seller, and at least one product in the cart.
  * 
  * @author Dev 1
+ * @version 1.0
  */
+
 public class SaleValidator {
 
     /**
