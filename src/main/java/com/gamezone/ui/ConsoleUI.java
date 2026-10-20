@@ -98,9 +98,19 @@ public class ConsoleUI {
             System.out.print("Clasificacion por edad: ");
             String ageRating = scanner.nextLine();
 
-            VideoGame game = new VideoGame(id, title, price, quantity, platform, genre, ageRating);
-            productService.registerVideoGame(game);
-            System.out.println("Videojuego registrado.");
+            try {
+                VideoGame game = new VideoGame(id, title, price, quantity, platform, genre, ageRating);
+                productService.registerVideoGame(game);
+                System.out.println("Videojuego registrado.");
+            } catch (ResourceNotFoundException e) {
+                System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+            } catch (BusinessRuleException e) {
+                System.out.println("No se puede completar la operación: " + e.getMessage());
+            } catch (InvalidDataException e) {
+                System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+            } catch (PersistenceException e) {
+                System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+            }
 
         } else if (option == 2) {
             System.out.print("ID: ");
@@ -118,12 +128,22 @@ public class ConsoleUI {
             System.out.print("Generacion: ");
             String generation = scanner.nextLine();
 
-            Console console = new Console(id, title, price, quantity, brand, model, generation);
-            productService.registerConsole(console);
-            // La consola recien registrada debe poder referenciarse desde los
-            // accesorios, asi que se refresca la lista de consolas conocidas.
-            accessoryService.setAvailableConsoles(listConsoles());
-            System.out.println("Consola registrada.");
+            try {
+                Console console = new Console(id, title, price, quantity, brand, model, generation);
+                productService.registerConsole(console);
+                // La consola recien registrada debe poder referenciarse desde los
+                // accesorios, asi que se refresca la lista de consolas conocidas.
+                accessoryService.setAvailableConsoles(listConsoles());
+                System.out.println("Consola registrada.");
+            } catch (ResourceNotFoundException e) {
+                System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+            } catch (BusinessRuleException e) {
+                System.out.println("No se puede completar la operación: " + e.getMessage());
+            } catch (InvalidDataException e) {
+                System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+            } catch (PersistenceException e) {
+                System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+            }
 
         } else if (option == 3) {
             List<Product> products = productService.listAllProducts();
@@ -153,9 +173,19 @@ public class ConsoleUI {
             System.out.print("Correo electronico: ");
             String email = scanner.nextLine();
 
-            Customer customer = new Customer(id, name, identification, phone, email);
-            personService.registerCustomer(customer);
-            System.out.println("Cliente registrado.");
+            try {
+                Customer customer = new Customer(id, name, identification, phone, email);
+                personService.registerCustomer(customer);
+                System.out.println("Cliente registrado.");
+            } catch (ResourceNotFoundException e) {
+                System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+            } catch (BusinessRuleException e) {
+                System.out.println("No se puede completar la operación: " + e.getMessage());
+            } catch (InvalidDataException e) {
+                System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+            } catch (PersistenceException e) {
+                System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+            }
 
         } else if (option == 2) {
             for (Customer c : personService.listCustomers()) {
