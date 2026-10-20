@@ -28,7 +28,18 @@ AI explained and validated structural solutions for the sales and integration or
 
 ---
 
-## 3. What I did NOT ask AI to do
+## 3. Interaction Log (Requerimiento 6 — Validaciones y Excepciones)
+
+| Fecha | Herramienta | Fase y rama | Objetivo | Consulta | Respuesta | Decisión | Commit relacionado |
+|:---|:---|:---|:---|:---|:---|:---|:---|
+| **19/10/2026** | Antigravity AI | Fase 1<br>`feature/exception-handling` | Determinar si `GameZoneException` debe ser checked o unchecked, y analizar impacto en la arquitectura. | "¿`GameZoneException` debe extender `Exception` o `RuntimeException`? ¿Qué consecuencias arquitectónicas tiene sobre las firmas en servicios y repositorios?" | Explicó que extender `RuntimeException` evita ensuciar las firmas de métodos con `throws` a lo largo de las capas intermedias, desacoplando los servicios y permitiendo que los errores de validación fluyan de forma limpia hasta la frontera de presentación (`ConsoleUI`). | Se decidió extender `RuntimeException`, garantizando compatibilidad con las firmas existentes, código simple (KISS) y captura centralizada en la UI. | `bc55081`<br>(`docs: add exception handling and validation architectural analysis`) |
+| **19/10/2026** | Antigravity AI | Fase 1<br>`feature/exception-handling` | Diseñar la estructura de captura de excepciones diferenciadas en `ConsoleUI` sin violar el principio KISS. | "¿Cómo estructurar la captura de cuatro excepciones personalizadas en `ConsoleUI` sin caer en antipatrones como `instanceof` anidados ni sobre-ingeniería?" | Recomendó implementar bloques `catch` múltiples específicos en el orden adecuado de especificidad. Esto permite asignar mensajes en español claros para cada categoría sin condicionales internos complejos ni reflexión. | Se adoptaron bloques `try/catch` específicos en `ConsoleUI`, garantizando mensajes diferenciados para no encontrado, regla de negocio, datos inválidos y persistencia. | `3f46be2`<br>(`docs: add Mermaid class diagram for exception and validation layers`) |
+| **19/10/2026** | Antigravity AI | Fase 2<br>`feature/exception-handling` | Refactorizar `ConsoleUI` aplicando captura diferenciada de excepciones en todos los flujos interactivos. | "¿Cómo aplicar de forma consistente los cuatro bloques `catch` de `ResourceNotFoundException`, `BusinessRuleException`, `InvalidDataException` y `PersistenceException` en los menús de productos, personas, ventas, accesorios, promociones, devoluciones y garantías de `ConsoleUI`?" | Proporcionó el desglose de los puntos de interacción en `ConsoleUI` donde se invocan servicios de dominio, estructurando los bloques `try/catch` con los mensajes exactos especificados en la rúbrica y preservando el control de flujo en consola. | Se integraron bloques `try/catch` específicos en cada flujo de registro y consulta de `ConsoleUI`, garantizando mensajes exactos para el usuario y manteniendo el código simple sin frameworks ni abstracciones complejas. | `refactor(ui)` |
+
+---
+
+## 4. What I did NOT ask AI to do
 - Did not ask AI to generate arbitrary architecture or bypass established course rules.
 - Did not ask AI to generate patterns that violate the rubric (no factories, no builders, no interfaces, no streams, no lambdas).
 - Did not ask AI to perform direct commits or bypass peer review pull requests.
+
