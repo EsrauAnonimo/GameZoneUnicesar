@@ -54,12 +54,7 @@ public class WarrantyService {
      * @throws IllegalArgumentException if any argument is null
      */
     public BasicWarranty assignBasicWarranty(Product product, Sale sale, LocalDate startDate) {
-        validateAssignment(product, sale, startDate);
-        List<WarrantyRecord> records = repository.loadAll();
-        String id = generateNextId(records);
-        records.add(new WarrantyRecord(WarrantyRepository.TYPE_BASIC, id,
-                product.getId(), sale.getId(), startDate));
-        repository.saveAll(records);
+        String id = saveRecord(WarrantyRepository.TYPE_BASIC, product, sale, startDate);
         return new BasicWarranty(id, product, sale, startDate);
     }
 
@@ -73,12 +68,7 @@ public class WarrantyService {
      * @throws IllegalArgumentException if any argument is null
      */
     public ExtendedWarranty assignExtendedWarranty(Product product, Sale sale, LocalDate startDate) {
-        validateAssignment(product, sale, startDate);
-        List<WarrantyRecord> records = repository.loadAll();
-        String id = generateNextId(records);
-        records.add(new WarrantyRecord(WarrantyRepository.TYPE_EXTENDED, id,
-                product.getId(), sale.getId(), startDate));
-        repository.saveAll(records);
+        String id = saveRecord(WarrantyRepository.TYPE_EXTENDED, product, sale, startDate);
         return new ExtendedWarranty(id, product, sale, startDate);
     }
 
@@ -155,6 +145,18 @@ public class WarrantyService {
             }
         }
         return result;
+    }
+
+    /**
+     * Validates the arguments, stores a new warranty record and returns its id.
+     */
+    private String saveRecord(String type, Product product, Sale sale, LocalDate startDate) {
+        validateAssignment(product, sale, startDate);
+        List<WarrantyRecord> records = repository.loadAll();
+        String id = generateNextId(records);
+        records.add(new WarrantyRecord(type, id, product.getId(), sale.getId(), startDate));
+        repository.saveAll(records);
+        return id;
     }
 
     private void validateAssignment(Product product, Sale sale, LocalDate startDate) {
