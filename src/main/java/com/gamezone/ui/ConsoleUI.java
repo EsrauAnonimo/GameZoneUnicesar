@@ -469,9 +469,19 @@ public class ConsoleUI {
                 }
                 double percentage = askPercentage("Porcentaje de descuento: ");
 
-                promotionService.registerPercentageDiscount(
-                        id, name, period.getStartDate(), period.getEndDate(), percentage);
-                System.out.println("Promocion por porcentaje registrada.");
+                try {
+                    promotionService.registerPercentageDiscount(
+                            id, name, period.getStartDate(), period.getEndDate(), percentage);
+                    System.out.println("Promocion por porcentaje registrada.");
+                } catch (ResourceNotFoundException e) {
+                    System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+                } catch (BusinessRuleException e) {
+                    System.out.println("No se puede completar la operación: " + e.getMessage());
+                } catch (InvalidDataException e) {
+                    System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+                } catch (PersistenceException e) {
+                    System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+                }
                 break;
             }
             case 2: {
@@ -486,9 +496,19 @@ public class ConsoleUI {
                 double percentage = askPercentage("Porcentaje de descuento: ");
                 String category = askCategory();
 
-                promotionService.registerCategoryDiscount(
-                        id, name, period.getStartDate(), period.getEndDate(), percentage, category);
-                System.out.println("Promocion por categoria registrada.");
+                try {
+                    promotionService.registerCategoryDiscount(
+                            id, name, period.getStartDate(), period.getEndDate(), percentage, category);
+                    System.out.println("Promocion por categoria registrada.");
+                } catch (ResourceNotFoundException e) {
+                    System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+                } catch (BusinessRuleException e) {
+                    System.out.println("No se puede completar la operación: " + e.getMessage());
+                } catch (InvalidDataException e) {
+                    System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+                } catch (PersistenceException e) {
+                    System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+                }
                 break;
             }
             case 3: {
@@ -503,9 +523,19 @@ public class ConsoleUI {
                 int minimumQuantity = askPositiveInt("Cantidad minima de productos: ");
                 double percentage = askPercentage("Porcentaje de descuento: ");
 
-                promotionService.registerBulkPurchaseDiscount(
-                        id, name, period.getStartDate(), period.getEndDate(), minimumQuantity, percentage);
-                System.out.println("Promocion por volumen registrada.");
+                try {
+                    promotionService.registerBulkPurchaseDiscount(
+                            id, name, period.getStartDate(), period.getEndDate(), minimumQuantity, percentage);
+                    System.out.println("Promocion por volumen registrada.");
+                } catch (ResourceNotFoundException e) {
+                    System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+                } catch (BusinessRuleException e) {
+                    System.out.println("No se puede completar la operación: " + e.getMessage());
+                } catch (InvalidDataException e) {
+                    System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+                } catch (PersistenceException e) {
+                    System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+                }
                 break;
             }
             case 4:
