@@ -1,5 +1,6 @@
 package com.gamezone.persistence;
 
+import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.model.Accessory;
 import com.gamezone.model.Cable;
 import com.gamezone.model.Console;
@@ -43,7 +44,8 @@ public class AccessoryPersistence {
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.out.println("Error saving accessories: " + e.getMessage());
+            throw new PersistenceException("No se pudo guardar el archivo " + ACCESSORIES_FILE
+                    + " (operacion: guardar accesorios): " + e.getMessage(), e);
         }
     }
 
@@ -77,7 +79,8 @@ public class AccessoryPersistence {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error loading accessories: " + e.getMessage());
+            throw new PersistenceException("No se pudo leer el archivo " + ACCESSORIES_FILE
+                    + " (operacion: cargar accesorios): " + e.getMessage(), e);
         }
         return accessories;
     }
