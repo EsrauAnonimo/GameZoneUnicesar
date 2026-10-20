@@ -148,7 +148,6 @@ public class SaleService {
             }
         }
 
-        List<Sale> sales = persistence.loadAll();
         sales.add(sale);
         persistence.save(sales);
 
