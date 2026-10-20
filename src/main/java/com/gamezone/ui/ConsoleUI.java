@@ -1,5 +1,9 @@
 package com.gamezone.ui;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.PersistenceException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.*;
 import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
@@ -587,13 +591,17 @@ public class ConsoleUI {
         Return registeredReturn;
         try {
             registeredReturn = returnService.registerReturn(saleId, productIds, reason);
-        } catch (IllegalArgumentException e) {
-            // El servicio comunica los rechazos lanzando IllegalArgumentException
-            // y ese mensaje ya viene en espanol, asi que se muestra tal cual en
-            // vez de dejar que la excepcion salga del menu y tumbe la app de
-            // consola. Las validaciones de arriba ya evitan los rechazos
-            // conocidos; esta red de seguridad cubre los que se agreguen.
-            System.out.println("No se pudo registrar la devolucion: " + e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+            return;
+        } catch (BusinessRuleException e) {
+            System.out.println("No se puede completar la operación: " + e.getMessage());
+            return;
+        } catch (InvalidDataException e) {
+            System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+            return;
+        } catch (PersistenceException e) {
+            System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
             return;
         }
 
