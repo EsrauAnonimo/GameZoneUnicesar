@@ -336,10 +336,20 @@ public class ConsoleUI {
                 System.out.print("Tipo de conexion: ");
                 String connectionType = scanner.nextLine();
 
-                Controller controller = new Controller(id, title, price, quantity, connectionType);
-                controller.setCompatibleConsoles(askCompatibleConsoles());
-                accessoryService.registerController(controller);
-                System.out.println("Control registrado.");
+                try {
+                    Controller controller = new Controller(id, title, price, quantity, connectionType);
+                    controller.setCompatibleConsoles(askCompatibleConsoles());
+                    accessoryService.registerController(controller);
+                    System.out.println("Control registrado.");
+                } catch (ResourceNotFoundException e) {
+                    System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+                } catch (BusinessRuleException e) {
+                    System.out.println("No se puede completar la operación: " + e.getMessage());
+                } catch (InvalidDataException e) {
+                    System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+                } catch (PersistenceException e) {
+                    System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+                }
                 break;
             }
             case 2: {
@@ -356,10 +366,20 @@ public class ConsoleUI {
                 System.out.print("Tipo de conector: ");
                 String connectorType = scanner.nextLine();
 
-                Cable cable = new Cable(id, title, price, quantity, lengthMeters, connectorType);
-                cable.setCompatibleConsoles(askCompatibleConsoles());
-                accessoryService.registerCable(cable);
-                System.out.println("Cable registrado.");
+                try {
+                    Cable cable = new Cable(id, title, price, quantity, lengthMeters, connectorType);
+                    cable.setCompatibleConsoles(askCompatibleConsoles());
+                    accessoryService.registerCable(cable);
+                    System.out.println("Cable registrado.");
+                } catch (ResourceNotFoundException e) {
+                    System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+                } catch (BusinessRuleException e) {
+                    System.out.println("No se puede completar la operación: " + e.getMessage());
+                } catch (InvalidDataException e) {
+                    System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+                } catch (PersistenceException e) {
+                    System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+                }
                 break;
             }
             case 3: {
@@ -376,10 +396,20 @@ public class ConsoleUI {
                 System.out.print("Tipo de memoria: ");
                 String memoryType = scanner.nextLine();
 
-                Memory memory = new Memory(id, title, price, quantity, capacityGb, memoryType);
-                memory.setCompatibleConsoles(askCompatibleConsoles());
-                accessoryService.registerMemory(memory);
-                System.out.println("Memoria registrada.");
+                try {
+                    Memory memory = new Memory(id, title, price, quantity, capacityGb, memoryType);
+                    memory.setCompatibleConsoles(askCompatibleConsoles());
+                    accessoryService.registerMemory(memory);
+                    System.out.println("Memoria registrada.");
+                } catch (ResourceNotFoundException e) {
+                    System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+                } catch (BusinessRuleException e) {
+                    System.out.println("No se puede completar la operación: " + e.getMessage());
+                } catch (InvalidDataException e) {
+                    System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+                } catch (PersistenceException e) {
+                    System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+                }
                 break;
             }
             case 4: {
