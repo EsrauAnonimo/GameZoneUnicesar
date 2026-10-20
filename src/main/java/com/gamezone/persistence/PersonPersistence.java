@@ -1,5 +1,6 @@
 package com.gamezone.persistence;
 
+import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Person;
 import com.gamezone.model.Seller;
@@ -61,7 +62,8 @@ public class PersonPersistence {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error saving people: " + e.getMessage());
+            throw new PersistenceException("No se pudo guardar el archivo " + PEOPLE_FILE
+                    + " (operacion: guardar personas): " + e.getMessage());
         }
     }
 
@@ -93,7 +95,8 @@ public class PersonPersistence {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error loading people: " + e.getMessage());
+            throw new PersistenceException("No se pudo leer el archivo " + PEOPLE_FILE
+                    + " (operacion: cargar personas): " + e.getMessage());
         }
         return people;
     }
