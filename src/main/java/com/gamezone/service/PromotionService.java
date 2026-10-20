@@ -1,5 +1,7 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.model.BulkPurchaseDiscount;
 import com.gamezone.model.CategoryDiscount;
 import com.gamezone.model.PercentageDiscount;
@@ -32,6 +34,29 @@ public class PromotionService {
         this.promotions.addAll(repository.loadAll());
     }
 
+    private void validateCommonPromotionData(String id, String name, LocalDate startDate, LocalDate endDate, double percentage) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new InvalidDataException("El ID de la promoción no puede estar vacío.");
+        }
+        if (name == null || name.trim().isEmpty()) {
+            throw new InvalidDataException("El nombre de la promoción no puede estar vacío.");
+        }
+        if (startDate == null || endDate == null) {
+            throw new InvalidDataException("Las fechas de inicio y fin son obligatorias.");
+        }
+        if (endDate.isBefore(startDate)) {
+            throw new BusinessRuleException("La fecha de fin no puede ser anterior a la fecha de inicio.");
+        }
+        if (percentage <= 0 || percentage > 100) {
+            throw new InvalidDataException("El porcentaje de descuento debe estar entre 0 y 100.");
+        }
+        for (Promotion p : promotions) {
+            if (p.getId().equals(id)) {
+                throw new BusinessRuleException("Ya existe una promoción con el ID: " + id);
+            }
+        }
+    }
+
     /**
      * Registers a percentage discount promotion and persists it.
      *
@@ -43,6 +68,7 @@ public class PromotionService {
      */
     public void registerPercentageDiscount(String id, String name, LocalDate startDate,
                                            LocalDate endDate, double percentage) {
+        validateCommonPromotionData(id, name, startDate, endDate, percentage);
         PercentageDiscount promotion = new PercentageDiscount(id, name, startDate, endDate, percentage);
         promotions.add(promotion);
         repository.saveAll(promotions);
@@ -60,6 +86,7 @@ public class PromotionService {
      */
     public void registerCategoryDiscount(String id, String name, LocalDate startDate,
                                          LocalDate endDate, double percentage, String targetCategory) {
+        validateCommonPromotionData(id, name, startDate, endDate, percentage);
         CategoryDiscount promotion = new CategoryDiscount(id, name, startDate, endDate, percentage, targetCategory);
         promotions.add(promotion);
         repository.saveAll(promotions);
@@ -77,6 +104,10 @@ public class PromotionService {
      */
     public void registerBulkPurchaseDiscount(String id, String name, LocalDate startDate,
                                              LocalDate endDate, int minimumQuantity, double percentage) {
+        validateCommonPromotionData(id, name, startDate, endDate, percentage);
+        if (minimumQuantity <= 0) {
+            throw new InvalidDataException("La cantidad mínima debe ser mayor a cero.");
+        }
         BulkPurchaseDiscount promotion = new BulkPurchaseDiscount(id, name, startDate, endDate, minimumQuantity, percentage);
         promotions.add(promotion);
         repository.saveAll(promotions);

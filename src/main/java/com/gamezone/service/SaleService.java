@@ -1,5 +1,8 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Accessory;
 import com.gamezone.model.Console;
 import com.gamezone.model.Product;
@@ -7,6 +10,8 @@ import com.gamezone.model.Promotion;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Warranty;
 import com.gamezone.persistence.SalePersistence;
+import com.gamezone.validation.ProductValidator;
+import com.gamezone.validation.SaleValidator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,14 +82,13 @@ public class SaleService {
      *                                       warranty for. May be null or
      *                                       empty, in which case no extended
      *                                       warranty is granted.
+     * @throws InvalidDataException      if sale or any required field is invalid
+     * @throws BusinessRuleException     if stock is insufficient or sale ID exists
      */
     public void registerSale(Sale sale, List<String> productIdsWithExtendedWarranty) {
-        List<Product> products = sale.getProducts();
+        SaleValidator.validate(sale);
 
-        if (products == null || products.isEmpty()) {
-            System.out.println("Error: a sale must have at least one product.");
-            return;
-        }
+        List<Product> products = sale.getProducts();
 
         List<String> checkedIds = new ArrayList<>();
         for (Product product : products) {
@@ -101,9 +105,13 @@ public class SaleService {
                 }
             }
 
-            if (product.getAvailableQuantity() < count) {
-                System.out.println("Error: not enough stock for " + id);
-                return;
+            ProductValidator.validateStockAvailability(product, count);
+        }
+
+        List<Sale> sales = persistence.loadAll();
+        for (Sale existingSale : sales) {
+            if (existingSale.getId().equals(sale.getId())) {
+                throw new BusinessRuleException("Ya existe una venta registrada con el ID: " + sale.getId());
             }
         }
 
@@ -209,6 +217,24 @@ public class SaleService {
 
     public List<Sale> listAllSales() {
         return persistence.loadAll();
+    }
+
+    public Sale findById(String saleId) {
+        if (saleId == null) {
+            return null;
+        }
+        for (Sale sale : persistence.loadAll()) {
+            if (sale.getId().equals(saleId)) {
+                return sale;
+            }
+        }
+        return null;
+    }
+
+    public Sale getSaleById(String saleId) {
+        Sale sale = findById(saleId);
+        SaleValidator.validateSaleExists(sale, saleId);
+        return sale;
     }
 
 
