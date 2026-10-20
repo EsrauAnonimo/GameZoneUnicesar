@@ -259,22 +259,32 @@ public class ConsoleUI {
                 return;
             }
 
-            Sale sale = new Sale(id, LocalDate.now(), customer, seller, products);
-            saleService.registerSale(sale, productIdsWithExtendedWarranty);
+            try {
+                Sale sale = new Sale(id, LocalDate.now(), customer, seller, products);
+                saleService.registerSale(sale, productIdsWithExtendedWarranty);
 
-            boolean registered = false;
-            for (Sale s : saleService.listAllSales()) {
-                if (s.getId().equals(sale.getId())) {
-                    registered = true;
-                    break;
+                boolean registered = false;
+                for (Sale s : saleService.listAllSales()) {
+                    if (s.getId().equals(sale.getId())) {
+                        registered = true;
+                        break;
+                    }
                 }
-            }
 
-            if (registered) {
-                System.out.println("Venta registrada. Total: " + sale.getTotal());
-                // El recibo muestra el subtotal, el descuento aplicado (con el
-                // nombre de la promocion), el costo de garantias y el total final.
-                System.out.println(sale.generateReceipt());
+                if (registered) {
+                    System.out.println("Venta registrada. Total: " + sale.getTotal());
+                    // El recibo muestra el subtotal, el descuento aplicado (con el
+                    // nombre de la promocion), el costo de garantias y el total final.
+                    System.out.println(sale.generateReceipt());
+                }
+            } catch (ResourceNotFoundException e) {
+                System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+            } catch (BusinessRuleException e) {
+                System.out.println("No se puede completar la operación: " + e.getMessage());
+            } catch (InvalidDataException e) {
+                System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+            } catch (PersistenceException e) {
+                System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
             }
 
         } else if (option == 2) {
