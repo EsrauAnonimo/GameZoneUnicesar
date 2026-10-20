@@ -1,5 +1,6 @@
 package com.gamezone.persistence;
 
+import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.model.Sale;
 import java.io.*;
 import java.util.ArrayList;
@@ -9,16 +10,28 @@ public class SalePersistence {
 
     private static final String FILE_PATH = "data/sales.dat";
 
+    /**
+     * Saves all sales to the file.
+     *
+     * @param sales the sales to save
+     * @throws PersistenceException if the file cannot be written
+     */
     public void save(List<Sale> sales) {
-        try {
-            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_PATH));
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
             out.writeObject(sales);
-            out.close();
         } catch (IOException e) {
-            System.out.println("Error saving sales: " + e.getMessage());
+            throw new PersistenceException("No se pudo guardar el archivo " + FILE_PATH
+                    + " (operacion: guardar ventas): " + e.getMessage());
         }
     }
 
+    /**
+     * Loads all sales from the file.
+     *
+     * @return the sales stored in the file, or an empty list if the file does
+     *         not exist
+     * @throws PersistenceException if the file exists but cannot be read
+     */
     public List<Sale> loadAll() {
         File file = new File(FILE_PATH);
 
@@ -26,14 +39,11 @@ public class SalePersistence {
             return new ArrayList<>();
         }
 
-        try {
-            ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
-            List<Sale> sales = (List<Sale>) in.readObject();
-            in.close();
-            return sales;
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+            return (List<Sale>) in.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Error loading sales: " + e.getMessage());
-            return new ArrayList<>();
+            throw new PersistenceException("No se pudo leer el archivo " + FILE_PATH
+                    + " (operacion: cargar ventas): " + e.getMessage());
         }
     }
 }
