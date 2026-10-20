@@ -1,9 +1,13 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Person;
 import com.gamezone.model.Seller;
 import com.gamezone.persistence.PersonPersistence;
+import com.gamezone.validation.PersonValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +54,17 @@ public class PersonService {
      * immediately persists the updated combined list.
      *
      * @param customer the customer to register
+     * @throws InvalidDataException  if customer data is invalid
+     * @throws BusinessRuleException if customer ID is already registered
      */
     public void registerCustomer(Customer customer) {
+        PersonValidator.validate(customer);
+
+        List<Person> allPeople = new ArrayList<>();
+        allPeople.addAll(customers);
+        allPeople.addAll(sellers);
+        PersonValidator.validateUniquePerson(allPeople, customer.getId());
+
         customers.add(customer);
         saveAll(); // Guardado automático tras la operación.
     }
@@ -94,6 +107,19 @@ public class PersonService {
     }
 
     /**
+     * Gets a customer by id or throws ResourceNotFoundException if not found.
+     *
+     * @param id customer id
+     * @return the matching customer
+     * @throws ResourceNotFoundException if customer is not found
+     */
+    public Customer getCustomerById(String id) {
+        Customer customer = findCustomerById(id);
+        PersonValidator.validatePersonExists(customer, id);
+        return customer;
+    }
+
+    /**
      * Finds a seller by id. Used by the sale service/UI to validate that a
      * seller exists before registering a sale.
      *
@@ -110,6 +136,19 @@ public class PersonService {
             }
         }
         return null;
+    }
+
+    /**
+     * Gets a seller by id or throws ResourceNotFoundException if not found.
+     *
+     * @param id seller id
+     * @return the matching seller
+     * @throws ResourceNotFoundException if seller is not found
+     */
+    public Seller getSellerById(String id) {
+        Seller seller = findSellerById(id);
+        PersonValidator.validatePersonExists(seller, id);
+        return seller;
     }
 
     /**
