@@ -1,9 +1,13 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.VideoGame;
 import com.gamezone.persistence.ProductPersistence;
+import com.gamezone.validation.ProductValidator;
 import java.util.List;
 
 /**
@@ -19,13 +23,29 @@ public class ProductService {
     }
 
     public void registerVideoGame(VideoGame videoGame) {
+        ProductValidator.validate(videoGame);
+
         List<Product> products = persistence.loadAll();
+        for (Product product : products) {
+            if (product.getId().equals(videoGame.getId())) {
+                throw new BusinessRuleException("Ya existe un producto registrado con el ID: " + videoGame.getId());
+            }
+        }
+
         products.add(videoGame);
         persistence.save(products);
     }
 
     public void registerConsole(Console console) {
+        ProductValidator.validate(console);
+
         List<Product> products = persistence.loadAll();
+        for (Product product : products) {
+            if (product.getId().equals(console.getId())) {
+                throw new BusinessRuleException("Ya existe un producto registrado con el ID: " + console.getId());
+            }
+        }
+
         products.add(console);
         persistence.save(products);
     }
@@ -34,16 +54,38 @@ public class ProductService {
         return persistence.loadAll();
     }
 
+    public Product findById(String productId) {
+        if (productId == null) {
+            return null;
+        }
+        for (Product product : persistence.loadAll()) {
+            if (product.getId().equals(productId)) {
+                return product;
+            }
+        }
+        return null;
+    }
+
     public void updateStock(String productId, int quantity) {
+        if (productId == null || productId.trim().isEmpty()) {
+            throw new InvalidDataException("El ID del producto no puede estar vacío.");
+        }
+        if (quantity < 0) {
+            throw new InvalidDataException("La cantidad disponible no puede ser negativa.");
+        }
+
         List<Product> products = persistence.loadAll();
+        Product target = null;
         
         for (Product product : products) {
             if (product.getId().equals(productId)) {
                 product.setAvailableQuantity(quantity);
+                target = product;
                 break;
             }
         }
-        
+
+        ProductValidator.validateProductExists(target, productId);
         persistence.save(products);
     }
 
