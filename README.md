@@ -143,6 +143,31 @@ Customers can return purchased products within 30 days of the sale date.
 
 ---
 
+## Exception Handling & Validation Layer (Requerimiento 6)
+
+The system incorporates a cross-cutting validation and typed exception hierarchy that eliminates generic runtime errors and provides differentiated feedback to the user:
+
+### Exception Hierarchy (`com.gamezone.exceptions`)
+- **`GameZoneException`**: Unchecked abstract root exception (`extends RuntimeException`) with optional error code.
+  - **`ResourceNotFoundException`**: Triggered when a requested entity (product, person, sale) does not exist by its identifier.
+  - **`BusinessRuleException`**: Triggered when a domain constraint is violated (insufficient inventory stock, duplicate person ID, empty sale).
+  - **`InvalidDataException`**: Triggered when an input field fails validation (negative prices, negative stock, blank mandatory fields, malformed email).
+  - **`PersistenceException`**: Triggered when storage I/O fails, preserving the original cause (`IOException`) while isolating upper layers from disk details.
+
+### Dedicated Validators (`com.gamezone.validation`)
+- Stateless validator classes (`ProductValidator`, `PersonValidator`, `SaleValidator`) isolate domain checks from core business workflows.
+- Services invoke validators at the entry point of each operation prior to state changes.
+- Validators never access persistence directly, preserving clean dependency direction.
+
+### User Interface Presentation (`com.gamezone.ui`)
+- `ConsoleUI` captures domain exceptions with differentiated handlers, presenting clear Spanish error messages:
+  - Resource not found: `"No se encontró el recurso solicitado: <detalle>"`
+  - Business rules: `"No se puede completar la operación: <detalle>"`
+  - Invalid data: `"Los datos ingresados no son válidos: <detalle>"`
+  - Persistence error: `"Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador."`
+
+---
+
 ## Team
 
 See [`TEAM.md`](./TEAM.md) for roles, class distribution, and responsibilities.
@@ -150,8 +175,11 @@ See [`TEAM.md`](./TEAM.md) for roles, class distribution, and responsibilities.
 ## Design Documentation
 
 See the [`docs/`](./docs) folder for detailed system analysis, design documents, and diagrams:
+- [`docs/exception-analysis.md`](./docs/exception-analysis.md): Technical analysis for custom exceptions and validators (Requerimiento 6).
+- [`docs/exception-class-diagram.md`](./docs/exception-class-diagram.md): Class diagram for the exception handling and validation architecture.
 - [`docs/integration-analysis.md`](./docs/integration-analysis.md): Complete analysis of adjustments A1 through A7.
 - [`docs/integrated-class-diagram.md`](./docs/integrated-class-diagram.md): Unified Mermaid class diagram for the integrated system.
 - [`docs/layers-diagram.md`](./docs/layers-diagram.md): Layered architecture diagram.
 - Individual module analysis: [`accessory-analysis.md`](./docs/accessory-analysis.md), [`promotion-analysis.md`](./docs/promotion-analysis.md), [`warranty-analysis.md`](./docs/warranty-analysis.md), [`return-analysis.md`](./docs/return-analysis.md).
 - AI usage logs: [`docs/ai-usage/`](./docs/ai-usage/).
+
