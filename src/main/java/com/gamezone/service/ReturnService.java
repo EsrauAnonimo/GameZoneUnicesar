@@ -1,5 +1,8 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Accessory;
 import com.gamezone.model.Console;
 import com.gamezone.model.Product;
@@ -70,28 +73,29 @@ public class ReturnService {
      * @param productIds ids of the products being returned from that sale
      * @param reason     reason given for the return
      * @return the newly registered return
-     * @throws IllegalArgumentException with a message in Spanish if the
-     *                                  sale does not exist, is outside the
-     *                                  30-day window, or a product id does
-     *                                  not belong to the sale
+     * @throws ResourceNotFoundException if the sale does not exist or a product
+     *                                   id does not belong to the sale
+     * @throws BusinessRuleException     if the sale is outside the 30-day window
+     *                                   or a product was already returned
+     * @throws InvalidDataException      if no product ids are given
      */
     public Return registerReturn(String saleId, List<String> productIds, String reason) {
         Sale sale = findSaleById(saleId);
         if (sale == null) {
-            throw new IllegalArgumentException("No existe una venta con el ID indicado.");
+            throw new ResourceNotFoundException("No existe una venta con el ID indicado.");
         }
         if (!sale.canBeReturned()) {
-            throw new IllegalArgumentException("La venta ya supero el plazo de 30 dias para devoluciones.");
+            throw new BusinessRuleException("La venta ya supero el plazo de 30 dias para devoluciones.");
         }
         if (productIds == null || productIds.isEmpty()) {
-            throw new IllegalArgumentException("Debe indicar al menos un producto para devolver.");
+            throw new InvalidDataException("Debe indicar al menos un producto para devolver.");
         }
 
         List<Product> productsToReturn = new ArrayList<>();
         for (String productId : productIds) {
             Product product = findProductInSale(sale, productId);
             if (product == null) {
-                throw new IllegalArgumentException(
+                throw new ResourceNotFoundException(
                         "El producto " + productId + " no pertenece a la venta indicada.");
             }
             productsToReturn.add(product);
@@ -259,7 +263,7 @@ public class ReturnService {
      *
      * @param sale             the original sale of the return
      * @param productsToReturn the products of the return being registered
-     * @throws IllegalArgumentException if a product would be over returned
+     * @throws BusinessRuleException if a product would be over returned
      */
     private void rejectAlreadyReturned(Sale sale, List<Product> productsToReturn) {
         for (Product product : productsToReturn) {
@@ -268,7 +272,7 @@ public class ReturnService {
             int requested = countInList(productsToReturn, product.getId());
 
             if (alreadyReturned + requested > sold) {
-                throw new IllegalArgumentException("El producto " + product.getId()
+                throw new BusinessRuleException("El producto " + product.getId()
                         + " ya fue devuelto y no quedan unidades por devolver.");
             }
         }

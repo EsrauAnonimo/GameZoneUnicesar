@@ -1,5 +1,6 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.model.BasicWarranty;
 import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
@@ -51,7 +52,7 @@ public class WarrantyService {
      * @param sale      the sale the product belongs to
      * @param startDate the date the warranty starts
      * @return the created warranty
-     * @throws IllegalArgumentException if any argument is null
+     * @throws InvalidDataException if any argument is null
      */
     public BasicWarranty assignBasicWarranty(Product product, Sale sale, LocalDate startDate) {
         String id = saveRecord(WarrantyRepository.TYPE_BASIC, product, sale, startDate);
@@ -65,7 +66,7 @@ public class WarrantyService {
      * @param sale      the sale the product belongs to
      * @param startDate the date the warranty starts
      * @return the created warranty
-     * @throws IllegalArgumentException if any argument is null
+     * @throws InvalidDataException if any argument is null
      */
     public ExtendedWarranty assignExtendedWarranty(Product product, Sale sale, LocalDate startDate) {
         String id = saveRecord(WarrantyRepository.TYPE_EXTENDED, product, sale, startDate);
@@ -130,11 +131,11 @@ public class WarrantyService {
      *
      * @param daysAhead number of days to look ahead (zero or more)
      * @return active warranties that expire within that period
-     * @throws IllegalArgumentException if daysAhead is negative
+     * @throws InvalidDataException if daysAhead is negative
      */
     public List<Warranty> listWarrantiesExpiringSoon(int daysAhead) {
         if (daysAhead < 0) {
-            throw new IllegalArgumentException("Los dias de anticipacion no pueden ser negativos.");
+            throw new InvalidDataException("Los dias de anticipacion no pueden ser negativos.");
         }
         LocalDate today = LocalDate.now();
         LocalDate limit = today.plusDays(daysAhead);
@@ -209,7 +210,7 @@ public class WarrantyService {
 
     private void validateAssignment(Product product, Sale sale, LocalDate startDate) {
         if (product == null || sale == null || startDate == null) {
-            throw new IllegalArgumentException(
+            throw new InvalidDataException(
                     "El producto, la venta y la fecha de inicio son obligatorios.");
         }
     }

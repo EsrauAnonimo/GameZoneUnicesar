@@ -1,7 +1,8 @@
 package com.gamezone.persistence;
 
+import com.gamezone.exceptions.PersistenceException;
+
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,7 +68,8 @@ public class WarrantyRepository {
             }
             Files.write(filePath, lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new UncheckedIOException("Could not save warranties", e);
+            throw new PersistenceException("No se pudo guardar el archivo " + filePath
+                    + " (operacion: guardar garantias): " + e.getMessage());
         }
     }
 
@@ -93,7 +95,8 @@ public class WarrantyRepository {
                 }
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("Could not load warranties", e);
+            throw new PersistenceException("No se pudo leer el archivo " + filePath
+                    + " (operacion: cargar garantias): " + e.getMessage());
         }
         return records;
     }
