@@ -86,3 +86,79 @@
 * **Evidence 3:** `SaleService.java:299-301`.
   - **Explanation:** `SaleService` prints warning messages directly to `System.out` when a promotion fails to apply. Business services should not handle console output.
 
+---
+
+## 6. Polymorphism
+
+* **Verdict:** Violation (V-L04)
+* **Module:** `SaleService.java`.
+* **Evidence:**
+  - `SaleService.java:144-148`:
+    ```java
+    if (product instanceof Accessory) {
+        accessoryService.updateStock(id, newQuantity);
+    } else {
+        productService.updateStock(id, newQuantity);
+    }
+    ```
+  - `SaleService.java:175-177`:
+    ```java
+    if (product instanceof Console && wantsExtendedWarranty(product, productIdsWithExtendedWarranty)) {
+        total += product.getPrice() * 0.10;
+    }
+    ```
+  - `SaleService.java:196-198`:
+    ```java
+    if (!(product instanceof Console)) {
+        continue;
+    }
+    ```
+* **Explanation:** `SaleService` uses type inspection (`instanceof`) to handle differences in behavior. It branches depending on whether a product is an `Accessory` or a regular `Product` for stock updates, and checks if a product is a `Console` to calculate and assign warranties.
+* **Consequence:** Violates Polymorphism and the Open/Closed Principle. If a new type of product is introduced (such as digital codes, merchandise, or accessories with warranties), `SaleService` must be modified with more conditional branches.
+* **Proposed Solution:** Delegate stock update through a unified polymorphic method (e.g., in a unified stock catalog) and let `Product` provide a polymorphic method `boolean isWarrantyEligible()` or let the warranty module evaluate eligibility polymorphically.
+
+---
+
+## 7. Pure Fabrication
+
+* **Verdict:** Correct
+* **Evidence:** `SalePersistence.java:9-49` (and `SaleValidator.java:1-50`).
+* **Explanation:** `SalePersistence` is a clear example of Pure Fabrication. Saving and loading sales to a binary file (`data/sales.dat`) is not a problem that naturally belongs to the domain concept of a "Sale". Creating an artificial class `SalePersistence` prevents low cohesion in `Sale` and separates serialization logic from domain logic.
+* **In Validation:** `SaleValidator` is also a pure fabrication that isolates input validation rules so they don't pollute the domain entity or the service.
+
+---
+
+## 8. Indirection
+
+* **Verdict:** Correct
+* **Evidence:** `SaleService.java:32-314` between `ConsoleUI.java` and `SalePersistence.java`.
+* **Explanation:** `SaleService` acts as an intermediary (indirection layer) between the user interface (`ConsoleUI`) and the persistence layer (`SalePersistence`).
+* **Advantage:** `ConsoleUI` has no knowledge of how sales are stored on disk. If the persistence mechanism changes from Java serialization to JSON, XML, or SQL, `ConsoleUI` remains unaffected because `SaleService` absorbs the interface.
+
+---
+
+## 9. Protected Variations
+
+* **Verdict:** Violation (V-L06)
+* **Module:** `SaleService.java`.
+* **Evidence:** `SaleService.java:144-148` (inventory dispatching) and `SaleService.java:175-177` (warranty price hardcoding).
+* **Explanation:** The design fails to protect `SaleService` against anticipated variations in the product hierarchy. Because product types and stock repositories vary, the code uses hardcoded `instanceof` checks and calculates warranty percentages directly (`0.10`).
+* **Consequence:** Changes to warranty pricing policies or new product classes directly impact `SaleService`.
+* **Proposed Solution:** Introduce stable interfaces for inventory updates and delegate warranty price calculations to `WarrantyService` or `Warranty` sub-classes so that variations in rules are encapsulated behind those interfaces.
+
+---
+
+## Summary of Proposed Solutions for Refactoring (Phase 2)
+
+1. **Unify Inventory Management (fixes V-L01, V-L04, V-L06):**
+   - Create a common interface or facade for inventory (`StockManager` or `InventoryService`) that handles both `Product` and `Accessory` items uniformly. `SaleService` will only depend on this single service instead of depending on both `ProductService` and `AccessoryService`.
+2. **Move Receipt Generation out of Domain (fixes V-L02):**
+   - Extract `Sale.generateReceipt()` into a Pure Fabrication formatter class (e.g., `SaleReceiptPrinter` or `SaleView`). `Sale` should only contain transaction data and domain logic.
+3. **Encapsulate Total & Discount Logic in Sale (fixes V-L05):**
+   - Add methods to `Sale` like `applyPromotionDiscount(double amount, String promoName)` and `addExtendedWarranty(double cost)` that update the total internally, removing public setters for `total` and `discountAmount`.
+4. **Decompose ConsoleUI (fixes V-L03):**
+   - Split `ConsoleUI` into dedicated sub-menu handlers (`SaleMenuHandler`, `ProductMenuHandler`, etc.) so no single presentation class handles all 7 modules.
+5. **Clean up Product Stock Restoration in ProductService:**
+   - Add a method `product.increaseStock(quantity)` in `Product` so that `ProductService.restoreStock()` does not directly call getters and setters on available quantity.
+
+
