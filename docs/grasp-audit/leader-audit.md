@@ -17,3 +17,72 @@
 | V-L05 | Information Expert | `SaleService.java` & `Sale.java` | `SaleService.java:122-126`, `175-177`, `291-294` | Medium | Service calculates discounts and warranty math and pushes values into `Sale` via setters. |
 | V-L06 | Protected Variations | `SaleService.java` | `SaleService.java:144-148` | Medium | Adding a new Product category requires modifying stock update logic in SaleService. |
 
+---
+
+## 1. Information Expert
+
+* **Verdict:** Partially Correct / Violation (V-L05)
+* **Compliant Areas:**
+  - `Sale.java:40-50` (`calculateTotal()`): `Sale` holds the list of products (`List<Product> products`) and computes the subtotal by summing each product's price. This is a clean example of Information Expert because `Sale` has the information needed for this calculation.
+* **Violation Details:**
+  - **Module:** `SaleService.java` and `Sale.java`.
+  - **Evidence:** `SaleService.java:122-126`, `SaleService.java:175-177`, and `SaleService.java:291-294`.
+  - **Explanation:** Even though `Sale` stores fields like `total`, `discountAmount`, and `extendedWarrantyCost`, it does not manage its own calculations. Instead, `SaleService` calculates the discount and warranty amounts and mutates `Sale` using setters (`sale.setTotal()`, `sale.setDiscountAmount()`, `sale.setExtendedWarrantyCost()`). Furthermore, `SaleService.java:175-177` hardcodes the warranty cost rule (`product.getPrice() * 0.10`), which is business knowledge belonging to the warranty/product domain.
+  - **Secondary Observation:** In `ProductService.java:112` (`restoreStock`), the service calls `product.setAvailableQuantity(product.getAvailableQuantity() + quantity)`. `Product` should be the expert responsible for altering its own stock rather than exposing raw setters.
+* **Consequence:** `Sale` acts mostly as a data holder (anemic domain model) for totals and discounts, while `SaleService` takes on the calculation responsibilities.
+* **Proposed Solution:** Move total calculation and discount application methods inside `Sale` (e.g., `sale.applyDiscount(amount, promotionName)` and `sale.applyWarrantyCost(cost)`). Remove public setters for `total` and `discountAmount`.
+
+---
+
+## 2. Creator
+
+* **Verdict:** Correct
+* **Evidence:** `Main.java:26-62`.
+* **Explanation:** `Main.java` acts as the composition root of the application. It creates instances of repositories (`SalePersistence`, `ProductPersistence`, `WarrantyRepository`, etc.), services (`SaleService`, `ProductService`, etc.), and `ConsoleUI`, wiring them together through constructor injection.
+* **In Sale Scope:** `SaleService` does not directly instantiate `Sale` objects; it receives them already constructed from `ConsoleUI` (where user input is gathered). For warranties, `SaleService.java:191-218` delegates the creation/granting of warranties to `warrantyService.grantWarranty(...)`, respecting the Creator pattern by letting the dedicated service handle warranty records.
+
+---
+
+## 3. Controller
+
+* **Verdict:** Applicable / Design Smell (Overburdened Controller)
+* **Evidence:** `ConsoleUI.java:48-75` and `ConsoleUI.java:63-73`.
+* **Explanation:** `ConsoleUI` serves as the system controller for console input. It receives the user's menu choice and coordinates calls to the domain services (`saleService.registerSale()`, `productService.listAllProducts()`, etc.).
+* **Observation:** While it correctly prevents UI code from directly manipulating persistence, `ConsoleUI` is a monolithic controller of over 1100 lines. It controls 7 different business domains at once and directly does input parsing, validation display, and service coordination.
+* **Proposed Solution:** Decompose `ConsoleUI` into sub-controllers or dedicated menu handlers (e.g., `SaleMenuHandler`, `ProductMenuHandler`).
+
+---
+
+## 4. Low Coupling
+
+* **Verdict:** Violation (V-L01)
+* **Module:** `SaleService.java`.
+* **Evidence:**
+  - `SaleService.java:49-57`: The constructor requires 5 dependencies: `SalePersistence`, `ProductService`, `AccessoryService`, `PromotionService`, and `WarrantyService`.
+  - `SaleService.java:144-148`:
+    ```java
+    if (product instanceof Accessory) {
+        accessoryService.updateStock(id, newQuantity);
+    } else {
+        productService.updateStock(id, newQuantity);
+    }
+    ```
+* **Explanation:** `SaleService` is directly tied to two separate inventory services (`ProductService` and `AccessoryService`) plus promotion and warranty services. It has high coupling because it explicitly knows about concrete sub-types of products to figure out which service updates stock.
+* **Consequence:** If a new inventory service is added or if the way accessory stock is stored changes, `SaleService` breaks and must be updated. Testing `SaleService` requires mocking or instantiating 5 different services.
+* **Proposed Solution:** Create a unified inventory interface/service (e.g., `StockService` or `InventoryManager`) that hides whether an item is an Accessory, Console, or VideoGame. `SaleService` would only depend on that single inventory coordinator.
+
+---
+
+## 5. High Cohesion
+
+* **Verdict:** Violation (V-L02, V-L03)
+* **Evidence 1 (V-L02):** `Sale.java:158-195` (`generateReceipt()`).
+  - **Explanation:** `Sale` is a domain entity meant to hold the business data of a transaction. However, `generateReceipt()` constructs formatted text for console display (`=== Recibo GameZone Unicesar ===`, column labels, dashed separators).
+  - **Consequence:** If the presentation format changes (e.g., translating labels, changing layout, or formatting for a GUI), the domain class `Sale` has to be changed. This lowers the cohesion of `Sale`.
+  - **Proposed Solution:** Move receipt formatting to a dedicated presentation class (e.g., `ReceiptFormatter` or `SaleView`).
+* **Evidence 2 (V-L03):** `ConsoleUI.java:48-1107`.
+  - **Explanation:** `ConsoleUI` contains 1107 lines of code doing scanner management, numeric parsing, string validation, business service calls, and error handling for all 7 modules of the store.
+  - **Consequence:** The class has too many responsibilities, making it hard to maintain and modify without introducing side effects.
+* **Evidence 3:** `SaleService.java:299-301`.
+  - **Explanation:** `SaleService` prints warning messages directly to `System.out` when a promotion fails to apply. Business services should not handle console output.
+
