@@ -66,13 +66,16 @@ public SaleService(SalePersistence persistence, ProductService productService,
    * **Polymorphism (V-L04):** Replaces polymorphic dispatch with manual type branching.
    * **Protected Variations (V-L06):** Adding a new product category with specialized storage (e.g., `DigitalGame` or `Merchandise`) forces modifications to `SaleService`.
 
-### 2.2 Stock Restoration and Returns Boundary
-A secondary boundary friction occurs between `ReturnService` / `ReturnRepository` (Developer 2) and `SaleService` / `ProductService` (Tech Lead & Developer 1):
-* In `ReturnRepository.java` (lines 37–56), the CSV persistence class explicitly injects `SaleService`, `ProductService`, and `AccessoryService` to resolve referenced entities when loading returns from disk. This creates an inverted boundary dependency where a storage class depends on high-level business services.
-* In `ProductService.java` (lines 104–118), `restoreStock` directly mutates `product.setAvailableQuantity(...)` rather than delegating stock adjustment to an encapsulated method within `Product`.
+### 2.2 Stock Restoration, Warranties, and Returns Boundary
+A critical cross-module boundary friction occurs between Developer 2's components (`ReturnService`, `ReturnRepository`) and components implemented by Developer 1 (`Product`, `Console`, `Accessory`, `ProductService`) and the Technical Leader (`SaleService`):
+* **Persistence Layer Inversion:** In `ReturnRepository.java` (lines 37–56), Developer 2's CSV persistence class directly injects `SaleService`, `ProductService`, and `AccessoryService` to resolve referenced entities when parsing returns from disk (`parseLine`, lines 180–222). This creates an inverted boundary dependency where a storage class depends on high-level business services.
+* **Type Inspection on Product Subtypes:** In `ReturnService.java` (lines 114–117 and 323–329), Developer 2 was forced to evaluate `instanceof Console` to cancel warranties and `instanceof Accessory` to restore stock, because Developer 1's base class `Product` lacked polymorphic contracts for warranty eligibility and unified inventory alterations.
+* **Setter-based Stock Mutation:** In `ProductService.java` (lines 104–118), `restoreStock` directly mutates `product.setAvailableQuantity(...)` rather than delegating stock adjustment to an encapsulated method within `Product`.
 
-#### Proposed Architectural Boundary Resolution:
-Introduce a unified inventory coordination interface or delegate method (`StockManager` or unified catalog dispatch) so that `SaleService` and `ReturnService` communicate with a single entry point for inventory updates without inspecting concrete item subtypes.
+#### Architectural Boundary Resolution & Work Distribution:
+* **Developer 1 (Base Model & Catalog):** Luis enriches the base class `Product` with polymorphic methods `isWarrantyEligible()` and `increaseStock(int qty)`, eliminating the need for callers to branch on concrete subtypes, and provides clean lookup utilities in `ProductService`.
+* **Developer 2 (Returns Module):** Cristian decouples `ReturnRepository` by removing service injections from its constructor (passing preloaded lists or delegating entity hydration to `ReturnService`) and updates `ReturnService` to invoke `product.isWarrantyEligible()` instead of `instanceof Console`.
+* **Technical Leader & Team (Inventory Coordination):** Establish a unified inventory coordination interface (`StockManager` or unified catalog dispatch) so that `SaleService` and `ReturnService` communicate with a single entry point for inventory updates without inspecting concrete item subtypes.
 
 ---
 
@@ -187,7 +190,7 @@ To avoid merge conflicts, circular dependencies, and broken intermediate states,
 ## 6. Summary of Team Alignment
 
 The team has reached full consensus on all audited findings:
-1. Technical Leader findings (V-L01 to V-L06) and Developer 1 findings (V-01 to V-05) are thoroughly integrated.
-2. Developer 2's completed modules (`Person`, `Accessory`, `Promotion`, and `ReturnRepository`) have been merged, and dedicated consolidation placeholders have been reserved for his final batch.
-3. The boundary friction between `SaleService`, `ProductService`, and `AccessoryService` is clearly diagnosed with an agreed-upon polymorphic resolution plan.
+1. Technical Leader findings (V-L01 to V-L06 / V-01 to V-06) and Developer 1 findings (V-D1-01 to V-D1-05 / V-07 to V-11) are thoroughly integrated.
+2. Developer 2's completed modules (`Person`, `Accessory`, `Promotion`, `ReturnRepository`, `ReturnService`, `WarrantyRepository`, and `WarrantyService` / V-D2-01 / V-12) are 100% audited, merged, and fully integrated in the consolidated audit.
+3. The boundary frictions between `SaleService`, `ProductService`, `AccessoryService`, `ReturnRepository`, and `ReturnService` are clearly diagnosed with explicit work distribution: Developer 1 refactors base entities and catalog lookup methods, Developer 2 refactors repository persistence and service calls, and the Technical Leader coordinates unified inventory orchestration.
 4. The sequential correction order guarantees independent, conflict-free refactoring during Phase 2.
