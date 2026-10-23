@@ -2,26 +2,50 @@
 
 Audited against the state of the `develop` branch at commit `916d492`.
 
-## 1. Scope
+## 1\. Scope
 
 Classes and methods audited, by module and requirement.
 
-| Module (requirement) | Classes / methods audited |
-|---|---|
-| People (Taller 1) | Person, Customer, Seller, PersonRepository, PersonService |
-| Accessories (Req. 1) | AccessoryRepository, AccessoryService |
-| Promotions (Req. 2) | PromotionRepository, PromotionService |
-| Returns (Req. 3) | ReturnRepository, ReturnService (including the monthly balance) |
-| Warranties (Req. 4) | WarrantyRepository, WarrantyService |
-| Exceptions and validations (Req. 6) | Use of exceptions and validators in my services and repositories |
+|Module (requirement)|Classes / methods audited|
+|-|-|
+|People (Taller 1)|Person, Customer, Seller, PersonRepository, PersonService|
+|Accessories (Req. 1)|AccessoryRepository, AccessoryService|
+|Promotions (Req. 2)|PromotionRepository, PromotionService|
+|Returns (Req. 3)|ReturnRepository, ReturnService (including the monthly balance)|
+|Warranties (Req. 4)|WarrantyRepository, WarrantyService|
+|Exceptions and validations (Req. 6)|Use of exceptions and validators in my services and repositories|
 
-## 2. Pattern verdicts
+## 2\. Pattern verdicts
 
 Verdict values: **violation**, **correct**, **not applicable**.
 
 ### 2.1 Information Expert
 
-Verdict:
+Verdict: correct.
+
+
+
+According to the Information Expert pattern, a responsibility
+
+should belong to the class that already has the data needed to
+
+fulfill it. In PersonService.registerCustomer, PersonService
+
+maintains the lists of customers and sellers, so it is the right
+
+class to check that the ID is not duplicated. Saving is delegated
+
+to PersonPersistence, the only class that touches files. Field
+
+validation is done by PersonValidator, a team design decision to
+
+centralize the rules. It could be argued that Customer also has
+
+the data, but we preferred not to spread that logic into the model.
+
+
+
+Evidence: PersonService.registerCustomer, lines 60 to 70.
 
 ### 2.2 Creator
 
@@ -55,17 +79,20 @@ Verdict:
 
 Verdict:
 
-## 3. Violation template
+## 3\. Violation template
 
 Copy this table once for each violation (V-01, V-02, ...).
 
-| Field | Content |
-|---|---|
-| ID | V-01 |
-| Pattern | |
-| Module | |
-| Evidence | Class, method and code fragment or exact lines in `develop` |
-| Explanation | |
-| Consequence | |
-| Proposed solution | |
-| Code of another developer | |
+|Field|Content|
+|-|-|
+|ID|V-01|
+|Pattern||
+|Module||
+|Evidence|Class, method and code fragment or exact lines in `develop`|
+|Explanation||
+|Consequence||
+|Proposed solution||
+|Code of another developer||
+
+
+
