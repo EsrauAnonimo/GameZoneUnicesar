@@ -39,7 +39,14 @@ public class ReturnRepository {
     private final AccessoryService accessoryService;
 
     /**
-     * Creates the repository.
+     * Default constructor allowing decoupled persistence without service dependencies (V-02).
+     */
+    public ReturnRepository() {
+        this(null, null, null);
+    }
+
+    /**
+     * Creates the repository with optional service references.
      *
      * @param saleService      used to resolve the original Sale referenced by
      *                         each stored return
@@ -222,6 +229,9 @@ public class ReturnRepository {
     }
 
     private Sale findSaleById(String saleId) {
+        if (saleService == null) {
+            return null;
+        }
         for (Sale sale : saleService.listAllSales()) {
             if (sale.getId().equals(saleId)) {
                 return sale;
@@ -231,15 +241,17 @@ public class ReturnRepository {
     }
 
     private Product findProductById(String productId) {
-        for (Product product : productService.listAllProducts()) {
-            if (product.getId().equals(productId)) {
-                return product;
+        if (productService != null) {
+            for (Product product : productService.listAllProducts()) {
+                if (product.getId().equals(productId)) {
+                    return product;
+                }
             }
         }
-        // Los accesorios no viven en la lista de productos, asi que sin esta
-        // segunda busqueda una devolucion de un accesorio se recargaria sin
-        // productos y con reembolso cero.
-        return accessoryService.findById(productId);
+        if (accessoryService != null) {
+            return accessoryService.findById(productId);
+        }
+        return null;
     }
 
     private void ensureDataFolderExists() {
