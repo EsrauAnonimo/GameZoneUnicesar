@@ -273,9 +273,7 @@ public class ConsoleUI {
 
                 if (registered) {
                     System.out.println("Venta registrada. Total: " + sale.getTotal());
-                    // El recibo muestra el subtotal, el descuento aplicado (con el
-                    // nombre de la promocion), el costo de garantias y el total final.
-                    System.out.println(sale.generateReceipt());
+                    System.out.println(ReceiptFormatter.formatReceipt(sale));
                 }
             } catch (ResourceNotFoundException e) {
                 System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
