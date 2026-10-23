@@ -89,53 +89,29 @@ Evidence: PersonService.registerCustomer, lines 60 to 70. A search
 
 of PersonService for Scanner, System.out and println found
 
-No maches.
+No matches.
 
 ### 2.4 Low Coupling
 
-Verdict: correct.
+ReturnRepository - Verdict: violation.
 
+It depends directly on SaleService, ProductService and
 
+AccessoryService, so it is tightly bound to those classes.
 
-In PersonService, the 8 project dependencies are necessary and
-
-point in the expected direction: the model (Customer, Seller,
-
-Person), the layer below (PersonPersistence) and the validator.
-
-PersonService does not depend on the UI or on other services, and
-
-it receives PersonPersistence through the constructor instead of
-
-creating it inside.
-
-
-
-If PersonValidator changed, only three calls would be affected
-
-(validate, validateUniquePerson and validatePersonExists). If
-
-PersonPersistence changed, only loadAll and save would be
-
-affected. The damage stays contained in a few points.
-
-
-
-Evidence: PersonService imports, lines 3 to 10; constructor,
-
-lines 36 to 50.
+Evidence: ReturnRepository imports, lines 7 to 9.
 
 ### 2.5 High Cohesion
 
-PersonService - Verdict: correct.
+ReturnRepository - Verdict: correct.
 
-The class concentrates responsibilities related to managing
+The class is mainly in charge of saving, loading and rebuilding
 
-customers and sellers: registering them, finding them,
+returns from the file.
 
-validating them and coordinating their storage.
+Evidence: ReturnRepository.parseLine, saveAll and loadAll,
 
-Evidence: PersonService, lines 22 to 184.
+lines 64 to 222 .
 
 ### 2.6 Polymorphism
 
