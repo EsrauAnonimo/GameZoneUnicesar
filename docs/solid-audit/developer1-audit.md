@@ -40,3 +40,6 @@
 *   **Explanation:** The high-level module (`ProductService`) is directly depending on the low-level concrete implementation (`ProductPersistence`). It should depend on an abstraction.
 *   **Consequence:** It is impossible to easily swap the file-based persistence for a database without modifying `ProductService`.
 *   **Proposed Solution:** Create an interface (e.g., `IProductPersistence`) that defines `save` and `loadAll`. `ProductService` should depend on that abstraction.
+
+## Conclusion
+This audit shows that while the model classes (Product, Accessory, Warranty) are well-structured and satisfy LSP, the `ProductService` class has design flaws regarding SRP, OCP, and DIP. These will be addressed in Phase 2 to improve maintainability.
