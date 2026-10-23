@@ -143,7 +143,9 @@ customers and sellers: registering them, finding them,
 
 validating them and coordinating their storage.
 
-Evidence: PersonService, lines 22 to 184.ReturnRepository - Verdict: correct.
+Evidence: PersonService, lines 22 to 184.
+
+ReturnRepository - Verdict: correct.
 
 The class is mainly in charge of saving, loading and rebuilding
 
