@@ -140,4 +140,23 @@ public abstract class Product implements Serializable {
             productService.updateStock(getId(), newQuantity);
         }
     }
+        /**
+     * Increases the available stock of the product.
+     * 
+     * @param quantity The amount to add to the stock.
+     */
+    public void increaseStock(int quantity) {
+        if (quantity > 0) {
+            this.availableQuantity += quantity;
+        }
+    }
+
+    /**
+     * Gets the category of the product for promotion purposes.
+     * 
+     * @return The category string.
+     */
+    public String getCategory() {
+        return "GENERAL";
+    }
 }
