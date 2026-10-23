@@ -3,8 +3,6 @@ package com.gamezone.service;
 import com.gamezone.exceptions.BusinessRuleException;
 import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.exceptions.ResourceNotFoundException;
-import com.gamezone.model.Accessory;
-import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
@@ -111,7 +109,8 @@ public class ReturnService {
         if (warrantyService != null) {
             double warrantyRefund = 0.0;
             for (Product product : productsToReturn) {
-                if (product instanceof Console) {
+                // Evaluacion polimorfica de garantia sin instanceof (V-06)
+                if (product != null && product.isWarrantyEligible()) {
                     warrantyRefund += warrantyService.cancelWarranties(product.getId(), sale.getId());
                 }
             }
@@ -335,10 +334,14 @@ public class ReturnService {
      * @param product the product being returned
      */
     private void restoreStock(Product product) {
-        if (product instanceof Accessory) {
+        if (product == null) {
+            return;
+        }
+        // Despacho polimorfico sin acoplamiento a clase concreta Accessory (V-06)
+        if (product.isAccessory()) {
             accessoryService.restoreStock(product.getId(), 1);
             return;
         }
         productService.restoreStock(product.getId(), 1);
     }
-}
+}
