@@ -75,7 +75,37 @@ Verdict:
 
 ### 2.4 Low Coupling
 
-Verdict:
+Verdict: correct.
+
+
+
+In PersonService, the 8 project dependencies are necessary and
+
+point in the expected direction: the model (Customer, Seller,
+
+Person), the layer below (PersonPersistence) and the validator.
+
+PersonService does not depend on the UI or on other services, and
+
+it receives PersonPersistence through the constructor instead of
+
+creating it inside.
+
+
+
+If PersonValidator changed, only three calls would be affected
+
+(validate, validateUniquePerson and validatePersonExists). If
+
+PersonPersistence changed, only loadAll and save would be
+
+affected. The damage stays contained in a few points.
+
+
+
+Evidence: PersonService imports, lines 3 to 10; constructor,
+
+lines 36 to 50.
 
 ### 2.5 High Cohesion
 
