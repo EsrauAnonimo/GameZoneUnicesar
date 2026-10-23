@@ -35,7 +35,21 @@ public class SaleService {
     private WarrantyService warrantyService;
 
     /**
-     * Creates a SaleService.
+     * Creates a SaleService with core dependencies for persistence and inventory updates.
+     * Auxiliary services for promotions and warranties default to null, achieving
+     * Low Coupling for callers that only require core sales operations (V-L01).
+     *
+     * @param persistence      persistence layer used to load/save sales
+     * @param productService   service used to update stock for non-accessory products
+     * @param accessoryService service used to update stock for accessory items
+     */
+    public SaleService(SalePersistence persistence, ProductService productService,
+                       AccessoryService accessoryService) {
+        this(persistence, productService, accessoryService, null, null);
+    }
+
+    /**
+     * Creates a SaleService with all operational dependencies.
      *
      * @param persistence      persistence layer used to load/save sales
      * @param productService   service used to update stock for non-accessory products
@@ -265,6 +279,9 @@ public class SaleService {
      * @param sale the sale whose total must be adjusted
      */
     private void applyBestPromotion(Sale sale) {
+        if (promotionService == null) {
+            return;
+        }
         double subtotal = sale.getSubtotal();
         try {
             Promotion promotion = promotionService.findBestPromotionFor(sale);

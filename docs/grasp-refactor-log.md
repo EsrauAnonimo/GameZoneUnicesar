@@ -41,12 +41,14 @@ A continuación se registra cada intervención realizada por el Líder Técnico,
 
 | ID Violación | Patrón GRASP | Clases Modificadas | Descripción del Cambio | Estado |
 |---|---|---|---|---|
-| **V-L02** | High Cohesion | `Sale.java`, `ReceiptFormatter.java`, `ConsoleUI.java` | Extracción de la lógica de presentación `generateReceipt()` desde la entidad `Sale` hacia una Fabricación Pura (`ReceiptFormatter`). `Sale` queda como entidad pura de negocio. | En ejecución |
-| **V-L04** | Polymorphism | `Product.java`, `Console.java`, `Accessory.java`, `SaleService.java` | Adición de métodos polimórficos `getExtendedWarrantyCost()`, `isWarrantyEligible()` y `updateStock(...)` en `Product` y subclases. Eliminación de todos los `if (instanceof Console)` e `if (instanceof Accessory)` en `SaleService`. | En ejecución |
-| **V-L01** | Low Coupling | `SaleService.java`, `Main.java` | Desacoplamiento de `SaleService` respecto a subclases concretas (`Accessory`, `Console`) y adición de constructor sobrecargado simplificado para operaciones núcleo de venta. | En ejecución |
+| **V-L02** | High Cohesion | `Sale.java`, `ReceiptFormatter.java`, `ConsoleUI.java` | Extracción de la lógica de presentación `generateReceipt()` desde la entidad `Sale` hacia una Fabricación Pura (`ReceiptFormatter`). `Sale` queda como entidad pura de negocio. | **Completado y Verificado** |
+| **V-L04** | Polymorphism | `Product.java`, `Console.java`, `Accessory.java`, `SaleService.java` | Adición de métodos polimórficos `getWarrantyCost()`, `isWarrantyEligible()`, `isAccessory()` y `updateStock(...)` en `Product` y subclases. Eliminación de todos los `if (instanceof Console)` e `if (instanceof Accessory)` en `SaleService`. | **Completado y Verificado** |
+| **V-L01** | Low Coupling | `SaleService.java` | Desacoplamiento de `SaleService` respecto a subclases concretas (`Accessory`, `Console`, `Warranty`), adición de constructor sobrecargado simplificado de 3 parámetros y null-check de seguridad en promociones. | **Completado y Verificado** |
 
 ---
 
 ## 3. Verificación de Compilación y Paridad
 * **Compilador:** `javac` (Java 17).
-* **Paridad de Salida:** Verificada contra las trazas previas de terminal.
+* **Prueba de Compilación:** Ejecutada con éxito sobre la totalidad de los archivos fuente de `src/` sin errores.
+* **Paridad de Salida:** Verificada contra las trazas previas de terminal; el recibo mantiene el encabezado, líneas de descuento, costo de garantía extendida y formato idéntico.
+
