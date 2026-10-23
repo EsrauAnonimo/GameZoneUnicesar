@@ -38,7 +38,15 @@ AI explained and validated structural solutions for the sales and integration or
 
 ---
 
-## 4. What I did NOT ask AI to do
+## 4. Interaction Log (Requerimiento 8 — Auditoría y Corrección SOLID - Fase 1)
+
+| Fecha | Herramienta | Fase y rama | Objetivo | Consulta | Respuesta | Decisión | Commit relacionado |
+|:---|:---|:---|:---|:---|:---|:---|:---|
+| **23/10/2026** | Antigravity AI | Fase 1<br>`feature/solid-audit` | Auditar las clases del Líder (`Sale`, `SalePersistence`, `SaleService`, `ConsoleUI`, `Main`, `ReceiptFormatter`, `ProductService.restoreStock`) bajo los 5 principios SOLID. | "¿Qué violaciones concretas a SRP, OCP, LSP, ISP y DIP existen en mis clases tras la corrección GRASP, respetando la regla de cero interfaces nuevas y cero Optional/Stream?" | Identificó SRP en `SaleService` (gestión simultánea de stock, promociones, garantías y logs a consola) y en `Sale` (`canBeReturned`), DIP en `ConsoleUI` (acoplamiento a 7 servicios y escáner hardcodeado), OCP en la firma de `Product.updateStock`, y LSP en `ProductService.restoreStock` por saltarse `product.increaseStock`. | Se documentaron 5 violaciones reales con líneas exactas en `docs/solid-audit/leader-audit.md` y se resolvieron las 5 preguntas orientadoras en `docs/solid-analysis.md`. | `docs: create leader solid audit report with identified violations` |
+
+---
+
+## 5. What I did NOT ask AI to do
 - Did not ask AI to generate arbitrary architecture or bypass established course rules.
 - Did not ask AI to generate patterns that violate the rubric (no factories, no builders, no interfaces, no streams, no lambdas).
 - Did not ask AI to perform direct commits or bypass peer review pull requests.
