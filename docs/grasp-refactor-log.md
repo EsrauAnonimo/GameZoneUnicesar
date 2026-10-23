@@ -52,3 +52,6 @@ A continuación se registra cada intervención realizada por el Líder Técnico,
 * **Prueba de Compilación:** Ejecutada con éxito sobre la totalidad de los archivos fuente de `src/` sin errores.
 * **Paridad de Salida:** Verificada contra las trazas previas de terminal; el recibo mantiene el encabezado, líneas de descuento, costo de garantía extendida y formato idéntico.
 
+| ProductService | Added `findById` method to centralize product search. | V-F01 | Indirection / Low Coupling | 13ad1a6 | Developer 1 |
+| Product | Added `increaseStock` method to encapsulate inventory increase. | V-F02 | Encapsulation | 53500ee | Developer 1 |
+| Product, Console, VideoGame, Accessory, CategoryDiscount | Replaced `instanceof` with polymorphic `getCategory()` method. | V-02, V-04 | Polymorphism | 015c1f4 | Developer 1 |
