@@ -27,7 +27,10 @@ public class Main {
         PersonPersistence personPersistence = new PersonPersistence();
         PersonService personService = new PersonService(personPersistence);
 
-        ProductService productService = new ProductService();
+        // ⬇️ AQUI ESTÁ EL CAMBIO (Paso 3): Inyección de dependencia en ProductService ⬇️
+        ProductPersistence productPersistence = new ProductPersistence();
+        ProductService productService = new ProductService(productPersistence);
+        // ⬆️ FIN DEL CAMBIO ⬆️
 
         AccessoryPersistence accessoryPersistence = new AccessoryPersistence();
         AccessoryService accessoryService = new AccessoryService(accessoryPersistence, currentConsoles(productService));
