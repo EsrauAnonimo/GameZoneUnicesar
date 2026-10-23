@@ -95,4 +95,49 @@ public abstract class Product implements Serializable {
     public void setAvailableQuantity(int quantity) {
         this.availableQuantity = quantity;
     }
+
+    /**
+     * Indicates whether this product is eligible for warranty coverage.
+     * Subclasses like Console override this to return true.
+     *
+     * @return true if warranty eligible, false otherwise
+     */
+    public boolean isWarrantyEligible() {
+        return false;
+    }
+
+    /**
+     * Calculates the additional cost of an extended warranty for this product.
+     * Default returns 0.0 for non-eligible products.
+     *
+     * @return the extended warranty cost
+     */
+    public double getWarrantyCost() {
+        return 0.0;
+    }
+
+    /**
+     * Indicates whether this product is an accessory.
+     *
+     * @return true if accessory, false otherwise
+     */
+    public boolean isAccessory() {
+        return false;
+    }
+
+    /**
+     * Updates the stock of this product through the appropriate service.
+     * By default, delegates to ProductService for standard products.
+     *
+     * @param productService service for standard products
+     * @param accessoryService service for accessories
+     * @param newQuantity the updated stock quantity
+     */
+    public void updateStock(com.gamezone.service.ProductService productService,
+                            com.gamezone.service.AccessoryService accessoryService,
+                            int newQuantity) {
+        if (productService != null) {
+            productService.updateStock(getId(), newQuantity);
+        }
+    }
 }

@@ -3,12 +3,9 @@ package com.gamezone.service;
 import com.gamezone.exceptions.BusinessRuleException;
 import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.exceptions.ResourceNotFoundException;
-import com.gamezone.model.Accessory;
-import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.Promotion;
 import com.gamezone.model.Sale;
-import com.gamezone.model.Warranty;
 import com.gamezone.persistence.SalePersistence;
 import com.gamezone.validation.ProductValidator;
 import com.gamezone.validation.SaleValidator;
@@ -141,11 +138,7 @@ public class SaleService {
             }
 
             int newQuantity = product.getAvailableQuantity() - count;
-            if (product instanceof Accessory) {
-                accessoryService.updateStock(id, newQuantity);
-            } else {
-                productService.updateStock(id, newQuantity);
-            }
+            product.updateStock(productService, accessoryService, newQuantity);
         }
 
         sales.add(sale);
@@ -172,8 +165,8 @@ public class SaleService {
         }
         double total = 0.0;
         for (Product product : sale.getProducts()) {
-            if (product instanceof Console && wantsExtendedWarranty(product, productIdsWithExtendedWarranty)) {
-                total += product.getPrice() * 0.10;
+            if (wantsExtendedWarranty(product, productIdsWithExtendedWarranty)) {
+                total += product.getWarrantyCost();
             }
         }
         return total;
@@ -193,7 +186,7 @@ public class SaleService {
             return;
         }
         for (Product product : sale.getProducts()) {
-            if (!(product instanceof Console)) {
+            if (!product.isWarrantyEligible()) {
                 continue;
             }
             // Una sola garantia por producto y venta. Si el producto ya tiene
