@@ -28,3 +28,15 @@
 *   **Module:** Products & Warranties.
 *   **Evidence:** `Product.java` (Line 81) has `isWarrantyEligible()`. Subclasses like `Console.java` override it correctly to return `true`. Also, the `getCategory()` fix ensures all subclasses behave correctly.
 *   **Explanation:** Any subclass can replace the base `Product` class without breaking the system's behavior.
+
+## 4. Interface Segregation Principle (ISP)
+*   **Verdict:** Not Applicable
+*   **Justification:** In my current code, I am using abstract classes (`Product`, `Accessory`, `Promotion`, `Warranty`) but not specific Java interfaces for the domain. Therefore, there are no "fat interfaces" forcing classes to implement methods they don't use.
+
+## 5. Dependency Inversion Principle (DIP)
+*   **Verdict:** Violation (V-03)
+*   **Module:** Products - `ProductService`.
+*   **Evidence:** `ProductService.java` (Line 22). `private ProductPersistence persistence; ... this.persistence = new ProductPersistence();`
+*   **Explanation:** The high-level module (`ProductService`) is directly depending on the low-level concrete implementation (`ProductPersistence`). It should depend on an abstraction.
+*   **Consequence:** It is impossible to easily swap the file-based persistence for a database without modifying `ProductService`.
+*   **Proposed Solution:** Create an interface (e.g., `IProductPersistence`) that defines `save` and `loadAll`. `ProductService` should depend on that abstraction.
