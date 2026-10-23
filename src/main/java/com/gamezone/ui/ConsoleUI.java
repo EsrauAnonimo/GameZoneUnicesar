@@ -707,7 +707,7 @@ public class ConsoleUI {
             System.out.println("Error: no fue posible registrar la devolucion.");
             return;
         }
-        System.out.println(registeredReturn.generateReturnReceipt());
+        System.out.println(ReceiptFormatter.formatReturnReceipt(registeredReturn));
     }
 
     /**

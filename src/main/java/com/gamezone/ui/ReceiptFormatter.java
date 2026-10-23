@@ -55,4 +55,39 @@ public class ReceiptFormatter {
     private static String describe(Person person) {
         return person == null ? "(desconocido)" : person.getId();
     }
+
+    /**
+     * Formats the textual receipt of a product return, showing the return ID,
+     * the date, original sale ID, reason, returned products, and refund amount.
+     *
+     * @param productReturn the return to format into a receipt
+     * @return the receipt as a multi-line string
+     */
+    public static String formatReturnReceipt(com.gamezone.model.Return productReturn) {
+        if (productReturn == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("===== COMPROBANTE DE DEVOLUCION =====\n");
+        sb.append("ID: ").append(productReturn.getId() != null ? productReturn.getId() : "N/A").append("\n");
+        sb.append("Fecha: ").append(productReturn.getDate() != null ? productReturn.getDate() : "N/A").append("\n");
+        sb.append("Venta original: ").append(productReturn.getOriginalSale() != null ? productReturn.getOriginalSale().getId() : "N/A").append("\n");
+        sb.append("Motivo: ").append(productReturn.getReason() != null ? productReturn.getReason() : "No especificado").append("\n");
+        sb.append("Productos devueltos:\n");
+        
+        java.util.List<com.gamezone.model.Product> products = productReturn.getReturnedProducts();
+        if (products == null || products.isEmpty()) {
+            sb.append("  (No hay productos devueltos)\n");
+        } else {
+            for (com.gamezone.model.Product product : products) {
+                if (product != null) {
+                    sb.append("  - ").append(product.getDescription()).append("\n");
+                }
+            }
+        }
+        
+        sb.append("Monto reembolsado: $").append(String.format("%.2f", productReturn.getRefundAmount())).append("\n");
+        sb.append("=====================================");
+        return sb.toString();
+    }
 }
