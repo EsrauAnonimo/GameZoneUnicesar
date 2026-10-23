@@ -6,3 +6,6 @@
 ## Phase 2 - Correction
 - **Prompt:** "How can I remove the instanceof checks in CategoryDiscount and replace them with a polymorphic approach using @Override?"
 - **Result:** The AI suggested adding a getCategory() method to Product and overriding it in all subclasses. I applied this pattern to resolve violations V-02 and V-04.
+## Phase 2 - SOLID Correction
+- **Prompt:** "How can I fix the DIP violation in ProductService if I cannot use interfaces?"
+- **Result:** The AI suggested using constructor injection by passing the concrete ProductPersistence class as an argument in the constructor, rather than instantiating it inside the class.
