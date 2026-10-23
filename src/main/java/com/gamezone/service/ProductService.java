@@ -20,7 +20,16 @@ public class ProductService {
     private ProductPersistence persistence;
 
     public ProductService() {
-        this.persistence = new ProductPersistence();
+        this(new ProductPersistence());
+    }
+
+    /**
+     * Creates a ProductService with injected persistence for DIP and testability (V-09).
+     *
+     * @param persistence the persistence provider for products
+     */
+    public ProductService(ProductPersistence persistence) {
+        this.persistence = persistence != null ? persistence : new ProductPersistence();
     }
 
     public void registerVideoGame(VideoGame videoGame) {
@@ -110,7 +119,8 @@ public class ProductService {
         List<Product> products = persistence.loadAll();
         for (Product product : products) {
             if (product.getId().equals(productId)) {
-                product.setAvailableQuantity(product.getAvailableQuantity() + quantity);
+                // Delegacion a metodo de dominio encapsulado (V-07, LSP)
+                product.increaseStock(quantity);
                 break;
             }
         }
