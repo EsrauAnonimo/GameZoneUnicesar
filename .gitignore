@@ -5,3 +5,6 @@ data/*.dat
 .vscode/
 
 target/
+
+# Ejemplos temporales de codigo para examen / preparacion
+src/main/java/com/gamezone/examples/
