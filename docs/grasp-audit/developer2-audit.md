@@ -49,7 +49,25 @@ Evidence: PersonService.registerCustomer, lines 60 to 70.
 
 ### 2.2 Creator
 
-Verdict:
+Verdict: correct.
+
+
+
+In PersonService.preloadVendorsIfEmpty, the service creates the
+
+Seller objects with new Seller(...) because it is the class that
+
+contains the sellers list and has the data needed to initialize
+
+them, which is exactly when the Creator pattern says that class
+
+should create them.
+
+
+
+Evidence: PersonService.preloadVendorsIfEmpty, lines 160 to 171
+
+(the new Seller(...) calls are on lines 163, 165 and 167).
 
 ### 2.3 Controller
 
