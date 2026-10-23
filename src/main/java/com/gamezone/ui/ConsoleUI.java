@@ -32,9 +32,22 @@ public class ConsoleUI {
     private WarrantyService warrantyService;
     private Scanner scanner;
 
+    /**
+     * Creates a ConsoleUI with an injected Scanner instance, respecting
+     * Dependency Inversion and enabling automated testing without standard in (V-03).
+     *
+     * @param personService    service for customer/seller operations
+     * @param productService   service for product operations
+     * @param saleService      service for sale operations
+     * @param accessoryService service for accessory operations
+     * @param promotionService service for promotion operations
+     * @param returnService    service for return operations
+     * @param warrantyService  service for warranty operations
+     * @param scanner          input reader to use (may be simulated for tests)
+     */
     public ConsoleUI(PersonService personService, ProductService productService, SaleService saleService,
                       AccessoryService accessoryService, PromotionService promotionService,
-                      ReturnService returnService, WarrantyService warrantyService) {
+                      ReturnService returnService, WarrantyService warrantyService, Scanner scanner) {
         this.personService = personService;
         this.productService = productService;
         this.saleService = saleService;
@@ -42,7 +55,17 @@ public class ConsoleUI {
         this.promotionService = promotionService;
         this.returnService = returnService;
         this.warrantyService = warrantyService;
-        this.scanner = new Scanner(System.in);
+        this.scanner = scanner != null ? scanner : new Scanner(System.in);
+    }
+
+    /**
+     * Default constructor creating a standard console reader backed by System.in.
+     */
+    public ConsoleUI(PersonService personService, ProductService productService, SaleService saleService,
+                      AccessoryService accessoryService, PromotionService promotionService,
+                      ReturnService returnService, WarrantyService warrantyService) {
+        this(personService, productService, saleService, accessoryService, promotionService,
+                returnService, warrantyService, new Scanner(System.in));
     }
 
     public void showMainMenu() {
@@ -707,7 +730,7 @@ public class ConsoleUI {
             System.out.println("Error: no fue posible registrar la devolucion.");
             return;
         }
-        System.out.println(registeredReturn.generateReturnReceipt());
+        System.out.println(ReceiptFormatter.formatReturnReceipt(registeredReturn));
     }
 
     /**

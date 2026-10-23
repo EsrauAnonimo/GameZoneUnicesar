@@ -3,8 +3,6 @@ package com.gamezone.service;
 import com.gamezone.exceptions.BusinessRuleException;
 import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.exceptions.ResourceNotFoundException;
-import com.gamezone.model.Accessory;
-import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
@@ -84,7 +82,7 @@ public class ReturnService {
         if (sale == null) {
             throw new ResourceNotFoundException("No existe una venta con el ID indicado.");
         }
-        if (!sale.canBeReturned()) {
+        if (!isEligibleForReturn(sale)) {
             throw new BusinessRuleException("La venta ya supero el plazo de 30 dias para devoluciones.");
         }
         if (productIds == null || productIds.isEmpty()) {
@@ -111,7 +109,8 @@ public class ReturnService {
         if (warrantyService != null) {
             double warrantyRefund = 0.0;
             for (Product product : productsToReturn) {
-                if (product instanceof Console) {
+                // Evaluacion polimorfica de garantia sin instanceof (V-06)
+                if (product != null && product.isWarrantyEligible()) {
                     warrantyRefund += warrantyService.cancelWarranties(product.getId(), sale.getId());
                 }
             }
@@ -128,6 +127,20 @@ public class ReturnService {
         returns.add(newReturn);
         returnRepository.saveAll(returns);
         return newReturn;
+    }
+
+    /**
+     * Checks if a sale is currently eligible for return according to store policy.
+     * Evaluates that the sale is not null and within 30 days of purchase (V-11).
+     *
+     * @param sale the sale to check
+     * @return true if the sale can be returned, false otherwise
+     */
+    public boolean isEligibleForReturn(Sale sale) {
+        if (sale == null) {
+            return false;
+        }
+        return sale.canBeReturnedOn(LocalDate.now());
     }
 
     /**
@@ -321,10 +334,14 @@ public class ReturnService {
      * @param product the product being returned
      */
     private void restoreStock(Product product) {
-        if (product instanceof Accessory) {
+        if (product == null) {
+            return;
+        }
+        // Despacho polimorfico sin acoplamiento a clase concreta Accessory (V-06)
+        if (product.isAccessory()) {
             accessoryService.restoreStock(product.getId(), 1);
             return;
         }
         productService.restoreStock(product.getId(), 1);
     }
-}
+}
