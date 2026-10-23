@@ -10,3 +10,7 @@
 ## Phase 1 - SOLID Audit
 - **Prompt:** "How can I explain the difference between SRP and DIP in my ProductService class?"
 - **Result:** The AI explained that SRP is about the class having one reason to change, while DIP is about depending on abstractions. I used this to write my audit findings for V-01 and V-03.
+
+## Phase 2 - SOLID Correction
+- **Prompt:** "How can I fix the DIP violation in ProductService if I cannot use interfaces?"
+- **Result:** The AI suggested using constructor injection by passing the concrete ProductPersistence class as an argument in the constructor, rather than instantiating it inside the class.
