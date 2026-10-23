@@ -71,7 +71,25 @@ Evidence: PersonService.preloadVendorsIfEmpty, lines 160 to 171
 
 ### 2.3 Controller
 
-Verdict:
+Verdict: correct.
+
+
+
+PersonService is the first object after the UI that coordinates
+
+the registerCustomer operation, and it does not mix console input
+
+or output. The UI does not contain the business rules, and the
+
+service knows nothing about how the result is displayed.
+
+
+
+Evidence: PersonService.registerCustomer, lines 60 to 70. A search
+
+of PersonService for Scanner, System.out and println found
+
+No maches.
 
 ### 2.4 Low Coupling
 
