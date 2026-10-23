@@ -40,4 +40,14 @@ public class Console extends Product {
                ", generation='" + generation + '\'' +
                '}';
     }
+
+    @Override
+    public boolean isWarrantyEligible() {
+        return true;
+    }
+
+    @Override
+    public double getWarrantyCost() {
+        return getPrice() * 0.10;
+    }
 }

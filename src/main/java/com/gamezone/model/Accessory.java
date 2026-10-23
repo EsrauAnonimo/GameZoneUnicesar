@@ -72,4 +72,28 @@ public abstract class Accessory extends Product {
      */
     @Override
     public abstract String getDescription();
+
+    @Override
+    public boolean isAccessory() {
+        return true;
+    }
+
+    @Override
+    public boolean isWarrantyEligible() {
+        return false;
+    }
+
+    @Override
+    public double getWarrantyCost() {
+        return 0.0;
+    }
+
+    @Override
+    public void updateStock(com.gamezone.service.ProductService productService,
+                            com.gamezone.service.AccessoryService accessoryService,
+                            int newQuantity) {
+        if (accessoryService != null) {
+            accessoryService.updateStock(getId(), newQuantity);
+        }
+    }
 }

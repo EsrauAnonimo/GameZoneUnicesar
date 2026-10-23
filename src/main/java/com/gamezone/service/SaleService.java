@@ -3,12 +3,9 @@ package com.gamezone.service;
 import com.gamezone.exceptions.BusinessRuleException;
 import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.exceptions.ResourceNotFoundException;
-import com.gamezone.model.Accessory;
-import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.Promotion;
 import com.gamezone.model.Sale;
-import com.gamezone.model.Warranty;
 import com.gamezone.persistence.SalePersistence;
 import com.gamezone.validation.ProductValidator;
 import com.gamezone.validation.SaleValidator;
@@ -38,7 +35,21 @@ public class SaleService {
     private WarrantyService warrantyService;
 
     /**
-     * Creates a SaleService.
+     * Creates a SaleService with core dependencies for persistence and inventory updates.
+     * Auxiliary services for promotions and warranties default to null, achieving
+     * Low Coupling for callers that only require core sales operations (V-L01).
+     *
+     * @param persistence      persistence layer used to load/save sales
+     * @param productService   service used to update stock for non-accessory products
+     * @param accessoryService service used to update stock for accessory items
+     */
+    public SaleService(SalePersistence persistence, ProductService productService,
+                       AccessoryService accessoryService) {
+        this(persistence, productService, accessoryService, null, null);
+    }
+
+    /**
+     * Creates a SaleService with all operational dependencies.
      *
      * @param persistence      persistence layer used to load/save sales
      * @param productService   service used to update stock for non-accessory products
@@ -141,11 +152,7 @@ public class SaleService {
             }
 
             int newQuantity = product.getAvailableQuantity() - count;
-            if (product instanceof Accessory) {
-                accessoryService.updateStock(id, newQuantity);
-            } else {
-                productService.updateStock(id, newQuantity);
-            }
+            product.updateStock(productService, accessoryService, newQuantity);
         }
 
         sales.add(sale);
@@ -172,8 +179,8 @@ public class SaleService {
         }
         double total = 0.0;
         for (Product product : sale.getProducts()) {
-            if (product instanceof Console && wantsExtendedWarranty(product, productIdsWithExtendedWarranty)) {
-                total += product.getPrice() * 0.10;
+            if (wantsExtendedWarranty(product, productIdsWithExtendedWarranty)) {
+                total += product.getWarrantyCost();
             }
         }
         return total;
@@ -193,7 +200,7 @@ public class SaleService {
             return;
         }
         for (Product product : sale.getProducts()) {
-            if (!(product instanceof Console)) {
+            if (!product.isWarrantyEligible()) {
                 continue;
             }
             // Una sola garantia por producto y venta. Si el producto ya tiene
@@ -272,6 +279,9 @@ public class SaleService {
      * @param sale the sale whose total must be adjusted
      */
     private void applyBestPromotion(Sale sale) {
+        if (promotionService == null) {
+            return;
+        }
         double subtotal = sale.getSubtotal();
         try {
             Promotion promotion = promotionService.findBestPromotionFor(sale);

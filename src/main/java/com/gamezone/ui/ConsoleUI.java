@@ -242,9 +242,9 @@ public class ConsoleUI {
                 Product product = findItemById(itemId);
                 if (product != null) {
                     products.add(product);
-                    // Taller 4: solo las consolas tienen garantia, y la basica
+                    // Taller 4: solo los productos con garantia la soportan, y la basica
                     // viene incluida. Se pregunta unicamente por la extendida.
-                    if (product instanceof Console && wantsExtendedWarranty(product)) {
+                    if (product.isWarrantyEligible() && wantsExtendedWarranty(product)) {
                         productIdsWithExtendedWarranty.add(product.getId());
                     }
                 } else {
@@ -273,9 +273,7 @@ public class ConsoleUI {
 
                 if (registered) {
                     System.out.println("Venta registrada. Total: " + sale.getTotal());
-                    // El recibo muestra el subtotal, el descuento aplicado (con el
-                    // nombre de la promocion), el costo de garantias y el total final.
-                    System.out.println(sale.generateReceipt());
+                    System.out.println(ReceiptFormatter.formatReceipt(sale));
                 }
             } catch (ResourceNotFoundException e) {
                 System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
@@ -1080,7 +1078,7 @@ public class ConsoleUI {
  * @return true when the customer accepts the extended warranty
  */
 private boolean wantsExtendedWarranty(Product product) {
-    double extraCost = product.getPrice() * 0.10;
+    double extraCost = product.getWarrantyCost();
     System.out.println("  La consola " + product.getId() + " (" + product.getTitle()
             + ") incluye garantia basica de 6 meses.");
     System.out.println("  Desea comprar la garantia extendida de 12 meses por $"
