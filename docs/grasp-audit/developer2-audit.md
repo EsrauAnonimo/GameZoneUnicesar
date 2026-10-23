@@ -186,13 +186,13 @@ Copy this table once for each violation (V-01, V-02, ...).
 |Field|Content|
 |-|-|
 |ID|V-01|
-|Pattern||
-|Module||
-|Evidence|Class, method and code fragment or exact lines in `develop`|
-|Explanation||
-|Consequence||
-|Proposed solution||
-|Code of another developer||
+|Pattern|Low Coupling|
+|Module|Returns (Req. 3)|
+|Evidence|ReturnRepository imports, lines 7 to 9; attributes, lines 37 to 39; constructor, line 51.|
+|Explanation|ReturnRepository depends directly on SaleService, ProductService and AccessoryService, so it is tightly bound to those classes.|
+|Consequence|If SaleService, ProductService or AccessoryService change tomorrow, ReturnRepository may stop working or need changes; also, to test it on its own it would need those three services prepared with their data.|
+|Proposed solution|ReturnRepository could directly receive the information it needs, for example the already loaded lists of Sale, Product and accessories, instead of asking SaleService, ProductService and AccessoryService to look them up.|
+|Code of another developer|No.|
 
 
 
