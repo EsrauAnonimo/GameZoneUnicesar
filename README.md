@@ -181,5 +181,6 @@ See the [`docs/`](./docs) folder for detailed system analysis, design documents,
 - [`docs/integrated-class-diagram.md`](./docs/integrated-class-diagram.md): Unified Mermaid class diagram for the integrated system.
 - [`docs/layers-diagram.md`](./docs/layers-diagram.md): Layered architecture diagram.
 - Individual module analysis: [`accessory-analysis.md`](./docs/accessory-analysis.md), [`promotion-analysis.md`](./docs/promotion-analysis.md), [`warranty-analysis.md`](./docs/warranty-analysis.md), [`return-analysis.md`](./docs/return-analysis.md).
+- GRASP and SOLID audits: [`docs/grasp-analysis.md`](./docs/grasp-analysis.md), [`docs/grasp-audit/`](./docs/grasp-audit/), [`docs/solid-analysis.md`](./docs/solid-analysis.md), [`docs/solid-audit/leader-audit.md`](./docs/solid-audit/leader-audit.md).
 - AI usage logs: [`docs/ai-usage/`](./docs/ai-usage/).
 
