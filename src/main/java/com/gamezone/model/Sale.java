@@ -150,18 +150,26 @@ public class Sale implements Serializable {
 
 
     /**
-     * Checks if the sale can be returned.
-     * A sale can be returned if the current date is within 30 calendar days
-     * after the sale date.
+     * Checks if the sale can be returned relative to today.
+     * Kept as a convenience delegating to {@link #canBeReturnedOn(LocalDate)} (V-11).
      * 
      * @return true if the sale can be returned, false otherwise
      */
     public boolean canBeReturned() {
-        if (date == null) {
+        return canBeReturnedOn(LocalDate.now());
+    }
+
+    /**
+     * Checks if the sale is within the 30-day window relative to a specified date.
+     *
+     * @param evaluationDate the date against which the sale is checked
+     * @return true if the evaluation date is within 30 days of the sale date
+     */
+    public boolean canBeReturnedOn(LocalDate evaluationDate) {
+        if (date == null || evaluationDate == null) {
             return false;
         }
-        LocalDate today = LocalDate.now();
         LocalDate limitDate = date.plusDays(30);
-        return !today.isAfter(limitDate);
+        return !evaluationDate.isAfter(limitDate);
     }
 }

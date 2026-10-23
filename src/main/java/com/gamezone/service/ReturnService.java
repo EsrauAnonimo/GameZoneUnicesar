@@ -84,7 +84,7 @@ public class ReturnService {
         if (sale == null) {
             throw new ResourceNotFoundException("No existe una venta con el ID indicado.");
         }
-        if (!sale.canBeReturned()) {
+        if (!isEligibleForReturn(sale)) {
             throw new BusinessRuleException("La venta ya supero el plazo de 30 dias para devoluciones.");
         }
         if (productIds == null || productIds.isEmpty()) {
@@ -128,6 +128,20 @@ public class ReturnService {
         returns.add(newReturn);
         returnRepository.saveAll(returns);
         return newReturn;
+    }
+
+    /**
+     * Checks if a sale is currently eligible for return according to store policy.
+     * Evaluates that the sale is not null and within 30 days of purchase (V-11).
+     *
+     * @param sale the sale to check
+     * @return true if the sale can be returned, false otherwise
+     */
+    public boolean isEligibleForReturn(Sale sale) {
+        if (sale == null) {
+            return false;
+        }
+        return sale.canBeReturnedOn(LocalDate.now());
     }
 
     /**
