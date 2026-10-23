@@ -69,6 +69,54 @@ Evidence: PersonService.preloadVendorsIfEmpty, lines 160 to 171
 
 (the new Seller(...) calls are on lines 163, 165 and 167).
 
+ReturnService - Verdict: correct.
+
+It creates the Return because it is the class that manages and
+
+registers returns.
+
+Evidence: ReturnService, line 994 (new Return).
+
+
+
+WarrantyService - Verdict: correct.
+
+It creates BasicWarranty and ExtendedWarranty because it is the
+
+class that manages the creation of warranties.
+
+Evidence: WarrantyService, lines 263 and 266.
+
+
+
+AccessoryService - Verdict: correct.
+
+It receives the accessories already created by the caller and
+
+takes care of registering and storing them.
+
+Evidence: AccessoryService, lines 782 to 795.
+
+
+
+PromotionService - Verdict: correct.
+
+It is the class that creates the concrete promotions
+
+(PercentageDiscount, CategoryDiscount and BulkPurchaseDiscount).
+
+Evidence: PromotionService, lines 229 to 241.
+
+
+
+WarrantyRepository - Verdict: correct.
+
+It creates WarrantyRecord because that object directly
+
+represents the record the repository reads and stores.
+
+Evidence: WarrantyRepository, line 353.
+
 ### 2.3 Controller
 
 Verdict: correct.
@@ -133,6 +181,54 @@ AccessoryService, so it is tightly bound to those classes.
 
 Evidence: ReturnRepository imports, lines 7 to 9.
 
+WarrantyService - Verdict: correct.
+
+It receives its dependencies through the constructor and uses
+
+them to resolve the warranties.
+
+Evidence: imports, lines 3 to 11; constructor, line 41.
+
+
+
+AccessoryService - Verdict: correct.
+
+It receives AccessoryPersistence and the list of consoles
+
+through the constructor instead of creating them internally.
+
+Evidence: imports, lines 3 to 12; constructor, line 38.
+
+
+
+PromotionService - Verdict: correct.
+
+It only depends directly on PromotionRepository for persistence
+
+and receives it through the constructor.
+
+Evidence: imports, lines 3 to 10; constructor, line 31.
+
+
+
+WarrantyRepository - Verdict: correct.
+
+It only handles warranty data persistence and does not depend on
+
+Sale, Product or their services.
+
+Evidence: import, line 3.
+
+
+
+ReturnService - Verdict: violation.
+
+It depends directly on several services (SaleService,
+
+ProductService, AccessoryService and WarrantyService).
+
+Evidence: ReturnService, lines 8 to 4.
+
 ### 2.5 High Cohesion
 
 PersonService - Verdict: correct.
@@ -155,6 +251,50 @@ Evidence: ReturnRepository.saveAll (lines 64 to 75), loadAll
 
 (lines 85 to 107) and parseLine (lines 180 to 222).
 
+ReturnService - Verdict: correct.
+
+It concentrates the operations of returns, although it has
+
+several external dependencies to complete them.
+
+Evidence: ReturnService, lines 55 to 997.
+
+
+
+WarrantyService - Verdict: correct.
+
+It focuses on creating, finding and managing warranties.
+
+Evidence: lines 25 to 160.
+
+
+
+AccessoryService - Verdict: correct.
+
+All its operations relate to administering accessories, their
+
+stock and compatibility.
+
+Evidence: lines 22 to 157.
+
+
+
+PromotionService - Verdict: correct.
+
+The whole class is focused on registering, querying and
+
+evaluating promotions.
+
+Evidence: lines 20 to 156.
+
+
+
+WarrantyRepository - Verdict: correct.
+
+Its only responsibility is saving and loading warranty records.
+
+Evidence: lines 25 to 144. 
+
 ### 2.6 Polymorphism
 
 PersonService - Verdict: correct.
@@ -164,6 +304,62 @@ It uses instanceof to identify whether a Person object is a
 Customer or a Seller and acts according to its type.
 
 Evidence: PersonService constructor, lines 44 to 46.
+
+ReturnService - Verdict: violation.
+
+It uses instanceof to decide whether the product is an
+
+Accessory or a Console, instead of taking advantage of
+
+polymorphism.
+
+Evidence: ReturnService, lines 991 and 994.
+
+
+
+WarrantyService - Verdict: violation.
+
+It decides the warranty type with if statements comparing
+
+TYPE\_BASIC and TYPE\_EXTENDED, instead of delegating the behavior
+
+through polymorphism.
+
+Evidence: WarrantyService, lines 262 to 266.
+
+
+
+AccessoryService - Verdict: correct.
+
+It works with Accessory and its subtypes without using
+
+instanceof to decide which behavior to run.
+
+Evidence: AccessoryService, lines 447 to 486.
+
+
+
+PromotionService - Verdict: correct.
+
+The concrete promotions work through the Promotion abstraction,
+
+for example when calling calculateDiscount(sale), without
+
+checking the type with instanceof.
+
+Evidence: PromotionService.findBestPromotionFor, lines 1079 to 1084.
+
+
+
+WarrantyRepository - Verdict: violation.
+
+It uses if to distinguish between BASIC and EXTENDED; the
+
+repository takes part in the type decision instead of leaving it
+
+entirely to polymorphism.
+
+Evidence: WarrantyRepository.parse, lines 353 to 365.
 
 ### 2.7 Pure Fabrication
 
@@ -211,6 +407,43 @@ Copy this table once for each violation (V-01, V-02, ...).
 |Consequence|If SaleService, ProductService or AccessoryService change tomorrow, ReturnRepository may stop working or need changes; also, to test it on its own it would need those three services prepared with their data.|
 |Proposed solution|ReturnRepository could directly receive the information it needs, for example the already loaded lists of Sale, Product and accessories, instead of asking SaleService, ProductService and AccessoryService to look them up.|
 |Code of another developer|No.|
+|||
+|ID|V-02|
+| Pattern|Low Coupling|
+|Module|Returns (Req. 3)|
+|Evidence|ReturnService, lines 80 to 84|
+|Explanation |It depends directly on several services (SaleService, ProductService, AccessoryService and WarrantyService).|
+| Consequence|If SaleService, ProductService, AccessoryService or WarrantyService change tomorrow, ReturnService could need changes and, to test it in isolation, those services would have to be prepared. |
+|Proposed solution|One way to reduce the coupling would be for ReturnService to receive directly the data it needs, such as the already loaded sales, products and accessories, instead of depending directly on so many services to look them up. |
+| Code of another developer|NO.|
+|||
+|ID|V-03|
+|<br />Pattern|Polymorphism|
+|Module|Returns (Req. 3)|
+|Evidence|ReturnService, lines 991 and 992 (instanceof)|
+|Explanation|It uses instanceof to decide whether the product is an Accessory or a Console, instead of taking advantage of polymorphism.|
+|Consequence|It would have to be modified if new product types appear.|
+|Proposed solution|Delegate the behavior of restoring stock to the classes themselves, avoiding instanceof.|
+|Code of another developer|No.|
+|||
+|ID|V-04|
+|Pattern|Polymorphism|
+|Module|Warranties (Req. 4)|
+|Evidence|WarrantyService, lines 262 to 266 (TYPE\_BASIC / TYPE\_EXTENDED)|
+|Explanation|It decides the warranty type with if statements comparing TYPE\_BASIC and TYPE\_EXTENDED, instead of delegating the behavior through polymorphism.|
+|Consequence|Each new warranty type would force adding more if statements.|
+|Proposed solution|Use polymorphism so that each warranty determines its own behavior.|
+|Code of another developer|No.|
+|||
+|ID|V-05|
+|Pattern|Polymorphism|
+|Module|Warranties (Req. 4)|
+|Evidence|WarrantyRepository.parse, lines 353 to 365|
+|Explanation|It uses if to distinguish between BASIC and EXTENDED; the repository takes part in the type decision instead of leaving it entirely to polymorphism.|
+|Consequence|Each new warranty type would force modifying the repository.|
+|Proposed solution|Delegate the creation of the warranty type through a factory or a polymorphic mechanism.|
+|Code of another developer|No.|
+|||
 
 
 
