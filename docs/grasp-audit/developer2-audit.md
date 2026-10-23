@@ -125,6 +125,14 @@ Evidence: PersonService imports, lines 3 to 10; constructor,
 
 lines 36 to 50.
 
+ReturnRepository - Verdict: violation.
+
+It depends directly on SaleService, ProductService and
+
+AccessoryService, so it is tightly bound to those classes.
+
+Evidence: ReturnRepository imports, lines 7 to 9.
+
 ### 2.5 High Cohesion
 
 PersonService - Verdict: correct.
@@ -135,7 +143,15 @@ customers and sellers: registering them, finding them,
 
 validating them and coordinating their storage.
 
-Evidence: PersonService, lines 22 to 184.
+Evidence: PersonService, lines 22 to 184.ReturnRepository - Verdict: correct.
+
+The class is mainly in charge of saving, loading and rebuilding
+
+returns from the file.
+
+Evidence: ReturnRepository.saveAll (lines 64 to 75), loadAll
+
+(lines 85 to 107) and parseLine (lines 180 to 222).
 
 ### 2.6 Polymorphism
 
