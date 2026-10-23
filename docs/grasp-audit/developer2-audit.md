@@ -127,23 +127,57 @@ lines 36 to 50.
 
 ### 2.5 High Cohesion
 
-Verdict:
+PersonService - Verdict: correct.
+
+The class concentrates responsibilities related to managing
+
+customers and sellers: registering them, finding them,
+
+validating them and coordinating their storage.
+
+Evidence: PersonService, lines 22 to 184.
 
 ### 2.6 Polymorphism
 
-Verdict:
+PersonService - Verdict: correct.
+
+It uses instanceof to identify whether a Person object is a
+
+Customer or a Seller and acts according to its type.
+
+Evidence: PersonService constructor, lines 44 to 46.
 
 ### 2.7 Pure Fabrication
 
-Verdict:
+PersonService - Verdict: correct.
+
+It organizes customers and sellers and delegates storage to
+
+PersonPersistence instead of mixing responsibilities.
+
+Evidence: PersonService.saveAll, lines 178 to 184.
 
 ### 2.8 Indirection
 
-Verdict:
+PersonService - Verdict: correct.
+
+The user interface does not access PersonPersistence directly;
+
+it goes through PersonService first.
+
+Evidence: PersonService, lines 42 to 182.
 
 ### 2.9 Protected Variations
 
-Verdict:
+PersonService - Verdict: correct.
+
+Changes in how people are stored stay protected behind
+
+PersonService and PersonPersistence, so other parts do not
+
+depend on those details.
+
+Evidence: PersonService and PersonPersistence, lines 42 to 182.
 
 ## 3\. Violation template
 
