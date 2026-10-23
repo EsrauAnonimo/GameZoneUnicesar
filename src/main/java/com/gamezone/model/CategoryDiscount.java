@@ -96,23 +96,14 @@ public class CategoryDiscount extends Promotion {
         }
         
         double categoryTotal = 0.0;
-        List<Product> products = sale.getProducts();
-        
-        if (targetCategory == null) {
-    return 0.0;
-}
-
-for (Product product : products) {
-    if (CATEGORY_VIDEOGAME.equals(targetCategory) && product instanceof VideoGame) {
-        categoryTotal += product.getPrice();
-    } else if (CATEGORY_CONSOLE.equals(targetCategory) && product instanceof Console) {
-        categoryTotal += product.getPrice();
-    } else if (CATEGORY_ACCESSORY.equals(targetCategory) && product instanceof Accessory) {
+        for (Product product : sale.getProducts()) {
+            // Usamos Polimorfismo en lugar de instanceof
+            if (product.getCategory().equals(targetCategory)) {
                 categoryTotal += product.getPrice();
             }
-
-}
+        }
         
         return categoryTotal * (percentage / 100.0);
     }
+   
 }

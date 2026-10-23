@@ -40,4 +40,8 @@ public class VideoGame extends Product {
                ", ageRating='" + ageRating + '\'' +
                '}';
     }
+        @Override
+    public String getCategory() {
+        return "VIDEOGAME";
+    }
 }

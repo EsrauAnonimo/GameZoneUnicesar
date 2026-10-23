@@ -50,4 +50,8 @@ public class Console extends Product {
     public double getWarrantyCost() {
         return getPrice() * 0.10;
     }
+        @Override
+    public String getCategory() {
+        return "CONSOLE";
+    }
 }

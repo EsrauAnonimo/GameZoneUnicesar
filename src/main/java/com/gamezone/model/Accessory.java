@@ -96,4 +96,8 @@ public abstract class Accessory extends Product {
             accessoryService.updateStock(getId(), newQuantity);
         }
     }
+        @Override
+    public String getCategory() {
+        return "ACCESSORY";
+    }
 }
