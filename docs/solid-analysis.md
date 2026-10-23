@@ -200,3 +200,7 @@ While we cannot introduce `public interface ProductRepository` due to the rule p
 - **Consistent Constructor Injection:** Every class must receive its dependencies via constructor (as `PersonService` and `SaleService` do), completely eliminating calls to `new ConcreteService()` inside constructors.
 - **Abstract Classes as Abstractions:** In Java, an `abstract class` provides the same architectural inversion as an `interface`. High-level services can depend on abstract repositories or abstract providers.
 - **Composition Root (`Main.java`):** `Main` already acts as a manual Dependency Injection container. It instantiates the leaf repositories and wires them into services and UI, preserving the unidirectional architectural flow: `UI -> Service -> Persistence -> Model`.
+
+---
+**Developer 1 Note:** 
+Regarding DIP in our module, the main issue is `ProductService` depending directly on `ProductPersistence`. Since we are not allowed to use interfaces, we can fix this in Phase 2 by passing the persistence object through the constructor (Dependency Injection) instead of instantiating it with `new`. This will make it easier to test.
