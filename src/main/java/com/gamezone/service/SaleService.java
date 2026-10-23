@@ -303,11 +303,10 @@ public class SaleService {
             sale.setDiscountAmount(appliedDiscount);
             sale.setTotal(roundToCents(subtotal - appliedDiscount));
         } catch (RuntimeException e) {
+            // Se registra sin descuento si la evaluacion de la promocion falla (V-01)
             sale.setAppliedPromotionName(null);
             sale.setDiscountAmount(0);
             sale.setTotal(roundToCents(subtotal));
-            System.out.println("Advertencia: no se pudo aplicar la promocion a la venta "
-                    + sale.getId() + ". Se registra sin descuento. Detalle: " + e.getMessage());
         }
     }
 
